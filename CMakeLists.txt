@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5.1)
 
 set(CMAKE_CXX_STANDARD 17)
 
-project(maze_cv_stitching
+project(habitat_cv
         VERSION 2019.1.0
         DESCRIPTION "Agent cell world simulation framework"
         LANGUAGES CXX)
@@ -14,26 +14,27 @@ find_package( OpenCV 4.0.1 REQUIRED )
 ### MAIN LIBRARY SETUP
 ###
 
-set( maze_cv_stitching_files
-        src/stitcher.cpp
-        include/camera.h include/bg_subtraction.h include/detection.h include/core.h src/core.cpp include/cleaner.h src/bg_subtraction.cpp src/cleaner.cpp include/composite.h catchtests/core.cpp src/detection.cpp catchtests/detection.cpp src/composite.cpp)
+set( habitat_cv_files
+        src/bg_subtraction.cpp
+        src/cleaner.cpp
+        src/detection.cpp
+        src/composite.cpp
+        src/core.cpp)
 
-add_library(maze_cv_stitching ${maze_cv_stitching_files})
+add_library(habitat_cv ${habitat_cv_files})
 
-target_link_libraries(maze_cv_stitching ${OpenCV_LIBS})
-target_link_libraries(maze_cv_stitching cellworld)
+target_link_libraries(habitat_cv ${OpenCV_LIBS})
+target_link_libraries(habitat_cv cellworld)
 
-target_include_directories(maze_cv_stitching
+target_include_directories(habitat_cv
         SYSTEM INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         $<INSTALL_INTERFACE:include>)
 
-target_include_directories(maze_cv_stitching
+target_include_directories(habitat_cv
         PRIVATE
         include )
 
-add_executable(stitch_test src/test.cpp)
-target_link_libraries(stitch_test maze_cv_stitching)
 
 ###
 ### TESTS
@@ -46,20 +47,20 @@ find_package(CatchTests CONFIG QUIET)
 ###
 
 if (CMAKE_BUILD_TYPE MATCHES Release)
-    export(TARGETS maze_cv_stitching FILE MazeCVStitchingConfig.cmake)
+    export(TARGETS habitat_cv FILE HabitatCvConfig.cmake)
 
     include(GNUInstallDirs)
 
-    install(TARGETS maze_cv_stitching EXPORT Maze_cv_stitchingConfig
+    install(TARGETS habitat_cv EXPORT Habitat_cvConfig
             ARCHIVE  DESTINATION ${CMAKE_INSTALL_LIBDIR}
             LIBRARY  DESTINATION ${CMAKE_INSTALL_LIBDIR}
             RUNTIME  DESTINATION ${CMAKE_INSTALL_BINDIR})
 
     install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-    install(EXPORT Maze_cv_stitchingConfig
-            DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/Maze_cv_stitching
+    install(EXPORT Habitat_cvConfig
+            DESTINATION ${CMAKE_INSTALL_DATADIR}/cmake/Habitat_cv
             EXPORT_LINK_INTERFACE_LIBRARIES)
 
-    export(TARGETS maze_cv_stitching FILE Maze_cv_stitchingConfig.cmake)
+    export(TARGETS habitat_cv FILE Habitat_cvConfig.cmake)
 endif()
