@@ -1,4 +1,0 @@
-/opt/clion-2020.3.1/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" /maze/maze_cv_stitching
--- Configuring done
--- Generating done
--- Build files have been written to: /maze/maze_cv_stitching/cmake-build-debug
