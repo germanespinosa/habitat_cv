@@ -4,7 +4,6 @@
 #include <bg_subtraction.h>
 #include <cleaner.h>
 
-namespace fs = std::filesystem;
 using namespace habitat_cv;
 using namespace std;
 using namespace cell_world;
