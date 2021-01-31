@@ -1,21 +1,21 @@
 Performing C++ SOURCE FILE Test CMAKE_HAVE_LIBC_PTHREAD failed with the following output:
 Change Dir: /maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_a8158/fast && /usr/bin/make -f CMakeFiles/cmTC_a8158.dir/build.make CMakeFiles/cmTC_a8158.dir/build
+Run Build Command(s):/usr/bin/make cmTC_72489/fast && /usr/bin/make -f CMakeFiles/cmTC_72489.dir/build.make CMakeFiles/cmTC_72489.dir/build
 make[1]: Entering directory '/maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_a8158.dir/src.cxx.o
-/usr/bin/c++    -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_a8158.dir/src.cxx.o -c /maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp/src.cxx
-Linking CXX executable cmTC_a8158
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_a8158.dir/link.txt --verbose=1
-/usr/bin/c++   -DCMAKE_HAVE_LIBC_PTHREAD    CMakeFiles/cmTC_a8158.dir/src.cxx.o  -o cmTC_a8158 
-/usr/bin/ld: CMakeFiles/cmTC_a8158.dir/src.cxx.o: in function `main':
+Building CXX object CMakeFiles/cmTC_72489.dir/src.cxx.o
+/usr/bin/c++    -DCMAKE_HAVE_LIBC_PTHREAD   -o CMakeFiles/cmTC_72489.dir/src.cxx.o -c /maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp/src.cxx
+Linking CXX executable cmTC_72489
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_72489.dir/link.txt --verbose=1
+/usr/bin/c++   -DCMAKE_HAVE_LIBC_PTHREAD    CMakeFiles/cmTC_72489.dir/src.cxx.o  -o cmTC_72489 
+/usr/bin/ld: CMakeFiles/cmTC_72489.dir/src.cxx.o: in function `main':
 src.cxx:(.text+0x46): undefined reference to `pthread_create'
 /usr/bin/ld: src.cxx:(.text+0x52): undefined reference to `pthread_detach'
 /usr/bin/ld: src.cxx:(.text+0x63): undefined reference to `pthread_join'
 collect2: error: ld returned 1 exit status
-make[1]: *** [CMakeFiles/cmTC_a8158.dir/build.make:87: cmTC_a8158] Error 1
+make[1]: *** [CMakeFiles/cmTC_72489.dir/build.make:87: cmTC_72489] Error 1
 make[1]: Leaving directory '/maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp'
-make: *** [Makefile:121: cmTC_a8158/fast] Error 2
+make: *** [Makefile:121: cmTC_72489/fast] Error 2
 
 
 Source file was:
@@ -41,18 +41,18 @@ int main(void)
 Determining if the function pthread_create exists in the pthreads failed with the following output:
 Change Dir: /maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp
 
-Run Build Command(s):/usr/bin/make cmTC_824f1/fast && /usr/bin/make -f CMakeFiles/cmTC_824f1.dir/build.make CMakeFiles/cmTC_824f1.dir/build
+Run Build Command(s):/usr/bin/make cmTC_ee37c/fast && /usr/bin/make -f CMakeFiles/cmTC_ee37c.dir/build.make CMakeFiles/cmTC_ee37c.dir/build
 make[1]: Entering directory '/maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp'
-Building CXX object CMakeFiles/cmTC_824f1.dir/CheckFunctionExists.cxx.o
-/usr/bin/c++    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_824f1.dir/CheckFunctionExists.cxx.o -c /maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
-Linking CXX executable cmTC_824f1
-/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_824f1.dir/link.txt --verbose=1
-/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_824f1.dir/CheckFunctionExists.cxx.o  -o cmTC_824f1  -lpthreads 
+Building CXX object CMakeFiles/cmTC_ee37c.dir/CheckFunctionExists.cxx.o
+/usr/bin/c++    -DCHECK_FUNCTION_EXISTS=pthread_create   -o CMakeFiles/cmTC_ee37c.dir/CheckFunctionExists.cxx.o -c /maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CheckLibraryExists/CheckFunctionExists.cxx
+Linking CXX executable cmTC_ee37c
+/usr/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ee37c.dir/link.txt --verbose=1
+/usr/bin/c++   -DCHECK_FUNCTION_EXISTS=pthread_create    CMakeFiles/cmTC_ee37c.dir/CheckFunctionExists.cxx.o  -o cmTC_ee37c  -lpthreads 
 /usr/bin/ld: cannot find -lpthreads
 collect2: error: ld returned 1 exit status
-make[1]: *** [CMakeFiles/cmTC_824f1.dir/build.make:87: cmTC_824f1] Error 1
+make[1]: *** [CMakeFiles/cmTC_ee37c.dir/build.make:87: cmTC_ee37c] Error 1
 make[1]: Leaving directory '/maze/maze_cv_stitching/cmake-build-release/CMakeFiles/CMakeTmp'
-make: *** [Makefile:121: cmTC_824f1/fast] Error 2
+make: *** [Makefile:121: cmTC_ee37c/fast] Error 2
 
 
 

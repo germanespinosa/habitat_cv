@@ -15,7 +15,7 @@ int main(int arc, char **arv){
     Camera_order co;
     co.load("../config/camera_order.config");
     Composite composite(size, co, associations.filter(key_points));
-    Stitcher stitcher("../config/stitcher.config", "../config/associations.config");
+//    Stitcher stitcher("../config/stitcher.config", "../config/associations.config");
     vector<cv::Mat> images;
     for (int i = 0 ;i<4; i++){
         stringstream ss;
@@ -25,7 +25,7 @@ int main(int arc, char **arv){
         cv::cvtColor(colorMat, greyMat, cv::COLOR_BGR2GRAY);
         images.push_back(greyMat);
     }
-    cv::Mat comp = stitcher.get_composite(images);
+    cv::Mat comp = composite.get_composite(images);
     cv::imshow("composite",comp);
     cv::waitKey(0);
 }

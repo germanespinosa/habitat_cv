@@ -6,6 +6,10 @@
 
 #IncludeRegexTransform: 
 
+../include/composite.h
+core.h
+-
+
 ../include/core.h
 json_cpp.h
 -
@@ -14,12 +18,8 @@ cell_world.h
 opencv2/opencv.hpp
 -
 
-/maze/maze_cv_stitching/catchtests/core.cpp
-catch.h
--
-core.h
--
-iostream
+/maze/maze_cv_stitching/src/composite.cpp
+composite.h
 -
 
 /usr/local/include/opencv4/opencv2/calib3d.hpp

@@ -6,14 +6,6 @@
 
 #IncludeRegexTransform: 
 
-../include/bg_subtraction.h
-core.h
--
-
-../include/cleaner.h
-core.h
--
-
 ../include/composite.h
 core.h
 -
@@ -26,44 +18,8 @@ cell_world.h
 opencv2/opencv.hpp
 -
 
-../include/detection.h
-core.h
--
-
-/maze/maze_cv_stitching/catchtests/core.cpp
-catch.h
--
-core.h
--
-iostream
--
-
-/maze/maze_cv_stitching/catchtests/detection.cpp
-catch.h
--
-detection.h
--
-iostream
--
-
-/maze/maze_cv_stitching/src/bg_subtraction.cpp
-bg_subtraction.h
--
-
-/maze/maze_cv_stitching/src/cleaner.cpp
-cleaner.h
--
-
 /maze/maze_cv_stitching/src/composite.cpp
 composite.h
--
-
-/maze/maze_cv_stitching/src/core.cpp
-core.h
--
-
-/maze/maze_cv_stitching/src/detection.cpp
-detection.h
 -
 
 /usr/local/include/opencv4/opencv2/calib3d.hpp

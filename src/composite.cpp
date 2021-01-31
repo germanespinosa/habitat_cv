@@ -20,6 +20,7 @@ namespace habitat_cv {
 
     Composite::Composite(const cv::Size size, const Camera_order &camera_order, const Cameras_associations &key_points) :
     size(size),
+    composite(size.height,size.width,CV_8UC1),
     camera_order(camera_order){
         cv::Size crop_size (size.width/camera_order.cols(), size.height/camera_order.rows());
         for (unsigned int c=0; c<camera_order.count(); c++) {

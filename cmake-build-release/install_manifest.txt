@@ -1,4 +1,0 @@
-/usr/local/lib/libmaze_cv_stitching.a
-/usr/local/include/stitcher.h
-/usr/local/share/cmake/Maze_cv_stitching/Maze_cv_stitchingConfig.cmake
-/usr/local/share/cmake/Maze_cv_stitching/Maze_cv_stitchingConfig-release.cmake
