@@ -1,12 +1,10 @@
-#include <fstream>
-#include <stitcher.h>
-#include <opencv2/imgproc/imgproc.hpp>
+#include <catch.h>
 #include <composite.h>
-using namespace std;
-using namespace maze_cv;
-using namespace habitat_cv;
+#include <iostream>
 
-int main(int arc, char **arv){
+using namespace std;
+using namespace habitat_cv;
+TEST_CASE("Composite"){
     Cameras_associations associations;
     cell_world::Coordinates_list  key_points;
     associations.load("../config/associations.config");
