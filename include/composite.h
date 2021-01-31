@@ -1,8 +1,17 @@
-//
-// Created by german on 1/30/21.
-//
+#pragma once
+#include <core.h>
 
-#ifndef MAZE_CV_STITCHING_COMPOSITE_H
-#define MAZE_CV_STITCHING_COMPOSITE_H
+namespace habitat_cv{
+    struct Composite {
+        Composite(const cv::Size, const Camera_order &, const Cameras_associations &);
+        cv::Mat &get_composite (const std::vector<cv::Mat> &);
+        cv::Point get_point(const cell_world::Coordinates &) const;
+        cv::Mat composite;
+        Camera_order camera_order;
+        cv::Size size;
+        std::vector<cv::Mat> homographies;
+        std::vector<cv::Mat> warped;
+        std::vector<cv::Rect> crop_rectangles;
 
-#endif //MAZE_CV_STITCHING_COMPOSITE_H
+    };
+}

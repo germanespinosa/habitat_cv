@@ -16,7 +16,7 @@ find_package( OpenCV 4.0.1 REQUIRED )
 
 set( maze_cv_stitching_files
         src/stitcher.cpp
-)
+        include/camera.h include/bg_subtraction.h include/detection.h include/core.h src/core.cpp include/cleaner.h src/bg_subtraction.cpp src/cleaner.cpp include/composite.h catchtests/core.cpp src/detection.cpp catchtests/detection.cpp src/composite.cpp)
 
 add_library(maze_cv_stitching ${maze_cv_stitching_files})
 
@@ -32,8 +32,8 @@ target_include_directories(maze_cv_stitching
         PRIVATE
         include )
 
-add_executable(test src/test.cpp)
-target_link_libraries(test maze_cv_stitching)
+add_executable(stitch_test src/test.cpp)
+target_link_libraries(stitch_test maze_cv_stitching)
 
 ###
 ### TESTS

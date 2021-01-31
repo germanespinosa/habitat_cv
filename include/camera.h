@@ -1,8 +1,9 @@
-//
-// Created by german on 1/30/21.
-//
+#pragma once
+#include <opencv2/opencv.hpp>
 
-#ifndef MAZE_CV_STITCHING_CAMERA_H
-#define MAZE_CV_STITCHING_CAMERA_H
-
-#endif //MAZE_CV_STITCHING_CAMERA_H
+namespace maze_cv {
+    struct Camera {
+        virtual cv:Mat &Capture() = 0;
+        cv::Mat image;
+    };
+}

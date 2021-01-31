@@ -1,8 +1,9 @@
-//
-// Created by german on 1/30/21.
-//
+#pragma once
+#include <core.h>
 
-#ifndef MAZE_CV_STITCHING_CLEANER_H
-#define MAZE_CV_STITCHING_CLEANER_H
-
-#endif //MAZE_CV_STITCHING_CLEANER_H
+namespace habitat_cv{
+    struct Cleaner {
+        cv::Mat &clean (cv::Mat &subtracted);
+        cv::Mat clean_image;
+    };
+}

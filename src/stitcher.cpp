@@ -3,6 +3,7 @@
 
 using namespace std;
 using namespace cell_world;
+using namespace maze_cv;
 
 Stitcher::Stitcher(const string &stitcher_config_file_path, const string &camera_association_config_file_path) {
     parameters.load(stitcher_config_file_path);
@@ -44,8 +45,8 @@ srcMat(srcRect).copyTo(dstMat(dstRect)); //copy from (0,1) to (3,5) max allowed 
 cv::Point2f Stitcher::create_point(const cell_world::Coordinates &coord) const {
     double center_x = parameters.width / 2;
     double center_y = parameters.height / 2;
-    double offset_x = parameters.width / 41 * double(coord.x);
-    double offset_y = parameters.height / 21 * double(coord.y);
+    double offset_x = parameters.width / 42 * double(coord.x);
+    double offset_y = parameters.height / 22 * double(coord.y);
     return cv::Point2f(center_x-offset_x,center_y+offset_y);
 }
 

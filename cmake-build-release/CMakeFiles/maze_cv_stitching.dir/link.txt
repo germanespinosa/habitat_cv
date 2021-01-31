@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmaze_cv_stitching.a  CMakeFiles/maze_cv_stitching.dir/src/stitcher.cpp.o CMakeFiles/maze_cv_stitching.dir/src/core.cpp.o CMakeFiles/maze_cv_stitching.dir/src/bg_subtraction.cpp.o CMakeFiles/maze_cv_stitching.dir/src/cleaner.cpp.o CMakeFiles/maze_cv_stitching.dir/catchtests/core.cpp.o CMakeFiles/maze_cv_stitching.dir/src/detection.cpp.o CMakeFiles/maze_cv_stitching.dir/catchtests/detection.cpp.o CMakeFiles/maze_cv_stitching.dir/src/composite.cpp.o
+/usr/bin/ranlib libmaze_cv_stitching.a

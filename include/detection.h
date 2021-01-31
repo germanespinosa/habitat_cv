@@ -1,8 +1,7 @@
-//
-// Created by german on 1/30/21.
-//
+#include <core.h>
 
-#ifndef MAZE_CV_STITCHING_DETECTION_H
-#define MAZE_CV_STITCHING_DETECTION_H
-
-#endif //MAZE_CV_STITCHING_DETECTION_H
+namespace habitat_cv {
+    struct Detection {
+        Detection_location_list get_detections(cv::Mat &, Profile_list &);
+    };
+}

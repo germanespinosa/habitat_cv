@@ -1,0 +1,282 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6"/>
+	<Project>
+		<Option title="maze_cv_stitching"/>
+		<Option makefile_is_custom="1"/>
+		<Option compiler="gcc"/>
+		<Option virtualFolders="CMake Files\;CMake Files\..\;CMake Files\..\..\;CMake Files\..\..\usr\;CMake Files\..\..\usr\local\;CMake Files\..\..\usr\local\share\;CMake Files\..\..\usr\local\share\cmake\;CMake Files\..\..\usr\local\share\cmake\Cellworld\;CMake Files\..\..\usr\local\share\cmake\Json-cpp\;CMake Files\..\..\usr\local\share\cmake\CatchTests\;CMake Files\..\..\usr\local\share\CatchTests\;CMake Files\..\..\usr\local\lib\;CMake Files\..\..\usr\local\lib\cmake\;CMake Files\..\..\usr\local\lib\cmake\opencv4\;"/>
+		<Build>
+			<Target title="all">
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 all"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="rebuild_cache">
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 rebuild_cache"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="edit_cache">
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 edit_cache"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="maze_cv_stitching">
+				<Option output="/maze/maze_cv_stitching/cmake-build-debug/libmaze_cv_stitching.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/maze/maze_cv_stitching/include"/>
+					<Add directory="/usr/local/include/opencv4"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 maze_cv_stitching"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="maze_cv_stitching/fast">
+				<Option output="/maze/maze_cv_stitching/cmake-build-debug/libmaze_cv_stitching.a" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="2"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/maze/maze_cv_stitching/include"/>
+					<Add directory="/usr/local/include/opencv4"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 maze_cv_stitching/fast"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="stitch_test">
+				<Option output="/maze/maze_cv_stitching/cmake-build-debug/stitch_test" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/maze/maze_cv_stitching/include"/>
+					<Add directory="/usr/local/include/opencv4"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 stitch_test"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="stitch_test/fast">
+				<Option output="/maze/maze_cv_stitching/cmake-build-debug/stitch_test" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/maze/maze_cv_stitching/include"/>
+					<Add directory="/usr/local/include/opencv4"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 stitch_test/fast"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="test">
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option type="4"/>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 test"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="maze_cv_stitching_tests">
+				<Option output="/maze/maze_cv_stitching/cmake-build-debug/.tests/maze_cv_stitching_tests" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/maze/maze_cv_stitching/include"/>
+					<Add directory="/usr/local/include/opencv4"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 maze_cv_stitching_tests"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+			<Target title="maze_cv_stitching_tests/fast">
+				<Option output="/maze/maze_cv_stitching/cmake-build-debug/.tests/maze_cv_stitching_tests" prefix_auto="0" extension_auto="0"/>
+				<Option working_dir="/maze/maze_cv_stitching/cmake-build-debug"/>
+				<Option object_output="./"/>
+				<Option type="1"/>
+				<Option compiler="gcc"/>
+				<Compiler>
+					<Add directory="/maze/maze_cv_stitching/include"/>
+					<Add directory="/usr/local/include/opencv4"/>
+					<Add directory="/usr/local/include"/>
+					<Add directory="/usr/include/c++/9"/>
+					<Add directory="/usr/include/x86_64-linux-gnu/c++/9"/>
+					<Add directory="/usr/include/c++/9/backward"/>
+					<Add directory="/usr/lib/gcc/x86_64-linux-gnu/9/include"/>
+					<Add directory="/usr/include/x86_64-linux-gnu"/>
+					<Add directory="/usr/include"/>
+				</Compiler>
+				<MakeCommands>
+					<Build command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 maze_cv_stitching_tests/fast"/>
+					<CompileFile command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 &quot;$file&quot;"/>
+					<Clean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+					<DistClean command="/usr/bin/make -j36 -f &quot;/maze/maze_cv_stitching/cmake-build-debug/Makefile&quot;  VERBOSE=1 clean"/>
+				</MakeCommands>
+			</Target>
+		</Build>
+		<Unit filename="/maze/maze_cv_stitching/catchtests/core.cpp">
+			<Option target="maze_cv_stitching"/>
+			<Option target="maze_cv_stitching_tests"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/catchtests/detection.cpp">
+			<Option target="maze_cv_stitching"/>
+			<Option target="maze_cv_stitching_tests"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/include/bg_subtraction.h">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/include/camera.h">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/include/cleaner.h">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/include/composite.h">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/include/core.h">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/include/detection.h">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/bg_subtraction.cpp">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/cleaner.cpp">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/composite.cpp">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/core.cpp">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/detection.cpp">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/stitcher.cpp">
+			<Option target="maze_cv_stitching"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/src/test.cpp">
+			<Option target="stitch_test"/>
+		</Unit>
+		<Unit filename="/usr/local/share/CatchTests/catchtests.cpp">
+			<Option target="maze_cv_stitching_tests"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/CMakeLists.txt">
+			<Option virtualFolder="CMake Files\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/cmake/Cellworld/CellworldConfig-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\cmake\Cellworld\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/cmake/Cellworld/CellworldConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\cmake\Cellworld\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/cmake/Json-cpp/Json-cppConfig-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\cmake\Json-cpp\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/cmake/Json-cpp/Json-cppConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\cmake\Json-cpp\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/cmake/CatchTests/CatchTestsConfig-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\cmake\CatchTests\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/cmake/CatchTests/CatchTestsConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\cmake\CatchTests\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/share/CatchTests/catchtests.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\share\CatchTests\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/lib/cmake/opencv4/OpenCVConfig-version.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\lib\cmake\opencv4\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/lib/cmake/opencv4/OpenCVConfig.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\lib\cmake\opencv4\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/lib/cmake/opencv4/OpenCVModules-release.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\lib\cmake\opencv4\"/>
+		</Unit>
+		<Unit filename="/maze/maze_cv_stitching/../../usr/local/lib/cmake/opencv4/OpenCVModules.cmake">
+			<Option virtualFolder="CMake Files\..\..\usr\local\lib\cmake\opencv4\"/>
+		</Unit>
+	</Project>
+</CodeBlocks_project_file>
