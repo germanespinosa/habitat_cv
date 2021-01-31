@@ -3,8 +3,6 @@
 #include <iostream>
 #include <bg_subtraction.h>
 #include <cleaner.h>
-#include <iostream>
-#include <filesystem>
 
 namespace fs = std::filesystem;
 using namespace habitat_cv;
