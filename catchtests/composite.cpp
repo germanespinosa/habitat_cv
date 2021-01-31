@@ -24,6 +24,7 @@ TEST_CASE("Composite"){
         images.push_back(greyMat);
     }
     cv::Mat comp = composite.get_composite(images);
-    cv::imshow("composite",comp);
-    cv::waitKey(0);
+    cv::imwrite("composite.png",comp);
+    CHECK(comp.cols == size.width);
+    CHECK(comp.rows == size.height);
 }
