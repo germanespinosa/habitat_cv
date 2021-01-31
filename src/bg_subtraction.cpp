@@ -8,7 +8,7 @@ namespace habitat_cv{
     }
 
     void Bg_subtraction::set_background(cv::Mat &image) {
-        cv::cvtColor(image, background, cv::COLOR_BGR2GRAY);
+        background = image.clone();
     }
 
     Bg_subtraction::Bg_subtraction(cv::Mat &image) {
