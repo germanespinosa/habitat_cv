@@ -1,0 +1,8 @@
+//
+// Created by german on 1/30/21.
+//
+
+#ifndef MAZE_CV_STITCHING_DETECTION_H
+#define MAZE_CV_STITCHING_DETECTION_H
+
+#endif //MAZE_CV_STITCHING_DETECTION_H
