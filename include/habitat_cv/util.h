@@ -3,4 +3,6 @@
 
 namespace habitat_cv{
     cv::Mat to_gray(const cv::Mat &);
+    bool file_exists(const std::string &);
+    std::vector<cv::Mat> read_images(const std::string &path, const std::vector<std::string> &files);
 };
