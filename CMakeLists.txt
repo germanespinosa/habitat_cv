@@ -19,7 +19,8 @@ set( habitat_cv_files
         src/cleaner.cpp
         src/detection.cpp
         src/composite.cpp
-        src/core.cpp)
+        src/core.cpp
+        src/util.cpp)
 
 add_library(habitat_cv ${habitat_cv_files})
 

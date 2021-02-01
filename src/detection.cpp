@@ -1,4 +1,4 @@
-#include <detection.h>
+#include <habitat_cv/detection.h>
 
 namespace habitat_cv{
     Detection_location_list Detection::get_detections(cv::Mat &clean_image, Profile_list &profiles) {

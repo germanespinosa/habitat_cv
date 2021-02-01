@@ -1,5 +1,5 @@
 #include <catch.h>
-#include <core.h>
+#include <habitat_cv/core.h>
 #include<iostream>
 #include <filesystem>
 

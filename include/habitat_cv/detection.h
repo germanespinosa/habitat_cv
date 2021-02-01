@@ -1,4 +1,4 @@
-#include <core.h>
+#include <habitat_cv/core.h>
 
 namespace habitat_cv {
     struct Detection {

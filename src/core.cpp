@@ -1,4 +1,4 @@
-#include <core.h>
+#include <habitat_cv/core.h>
 
 using namespace cell_world;
 

@@ -1,5 +1,5 @@
 #pragma once
-#include <core.h>
+#include <habitat_cv/core.h>
 namespace habitat_cv {
     struct Bg_subtraction {
         Bg_subtraction(cv::Mat &);

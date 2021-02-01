@@ -1,4 +1,4 @@
-#include <composite.h>
+#include <habitat_cv/composite.h>
 using namespace std;
 
 namespace habitat_cv {

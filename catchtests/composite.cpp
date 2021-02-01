@@ -1,5 +1,5 @@
 #include <catch.h>
-#include <composite.h>
+#include <habitat_cv/composite.h>
 #include <iostream>
 
 using namespace std;

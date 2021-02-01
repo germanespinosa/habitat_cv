@@ -1,8 +1,8 @@
 #include <catch.h>
-#include <detection.h>
+#include <habitat_cv/detection.h>
 #include <iostream>
-#include <bg_subtraction.h>
-#include <cleaner.h>
+#include <habitat_cv/bg_subtraction.h>
+#include <habitat_cv/cleaner.h>
 
 using namespace habitat_cv;
 using namespace std;
