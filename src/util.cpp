@@ -15,15 +15,10 @@ namespace habitat_cv {
         return  (stat (file_path.c_str(), &buffer) == 0);
     }
 
-
     std::vector<cv::Mat> read_images(const std::string &path, const std::vector<std::string> &file_paths){
         std::vector<cv::Mat> images;
-        for (auto &f : file_paths){
-            cv::Mat original = cv::imread(path + "/" + f);
-            cv::Mat image;
-            cv::cvtColor(original, image, cv::COLOR_BGR2GRAY);
-            images.push_back(image);
-        }
+        for (auto &f : file_paths)
+            images.push_back(to_gray(cv::imread(path + "/" + f)));
         return images;
     }
 }
