@@ -1,3 +1,4 @@
+#pragma once
 #include <habitat_cv/core.h>
 
 namespace habitat_cv {
