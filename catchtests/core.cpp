@@ -1,7 +1,7 @@
 #include <catch.h>
 #include <core.h>
 #include<iostream>
-
+#include <filesystem>
 
 using namespace habitat_cv;
 using namespace std;
@@ -10,10 +10,9 @@ using namespace cell_world;
 TEST_CASE("Cell_association"){
     Cell_association ca;
     "{\"centroid\":{\"x\":1.5,\"y\":2.5}, \"cell_coordinates\":{\"x\":1,\"y\":2}, \"trust\":1}" >> ca;
-    Cell_association_list cal;
-//    "[{\"centroid\":{\"x\":1.5,\"y\":2.5}, \"cell_coordinates\":{\"x\":1,\"y\":2}, \"trust\":1}]" >> cal;
-    cal.load("../../config/associations.config");
-    cout << cal.size();
+    std::cout << "Current path is " <<  std::filesystem::current_path() << '\n';
+    auto cal = json_cpp::Json_from_file<Cameras_associations>("../config/associations.config");
+    CHECK(cal.size() == 4);
 }
 
 TEST_CASE("Camera_order"){

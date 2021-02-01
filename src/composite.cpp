@@ -5,7 +5,7 @@ namespace habitat_cv {
     cv::Point Composite::get_point(const cell_world::Coordinates &coord) const {
         double center_x = size.width / 2;
         double center_y = size.height / 2;
-        double offset_x = size.width / 42 * double(coord.x);
+        double offset_x = size.width / 40 * double(coord.x);
         double offset_y = size.height / 22 * double(coord.y);
         return cv::Point2f(center_x-offset_x,center_y+offset_y);
     }

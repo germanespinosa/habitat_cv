@@ -13,7 +13,6 @@ TEST_CASE("Composite"){
     Camera_order co;
     co.load("../config/camera_order.config");
     Composite composite(size, co, associations.filter(key_points));
-//    Stitcher stitcher("../config/stitcher.config", "../config/associations.config");
     vector<cv::Mat> images;
     for (int i = 0 ;i<4; i++){
         stringstream ss;
