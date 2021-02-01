@@ -4,10 +4,12 @@ using namespace cell_world;
 
 namespace habitat_cv {
     Cell_association &Cell_association_list::get_closest(Point &point) {
-        double distance = 0;
+        double min_distance = 0;
         int closest = Not_found;
         for (int i = 0; i < this->size(); i++) {
-            if (closest == Not_found || (*this)[i].centroid.dist(point) < distance) {
+            double distance = (*this)[i].centroid.dist(point);
+            if (closest == Not_found || min_distance > distance) {
+                min_distance = distance;
                 closest = i;
             }
         }
