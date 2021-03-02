@@ -67,6 +67,7 @@ namespace habitat_cv{
 
     struct Cell_association_list : json_cpp::Json_vector<Cell_association> {
         Cell_association &get_closest (Point &);
+        Detection_coordinates_list get_detections_coordinates(Detection_location_list &);
         Cell_association_list filter (cell_world::Coordinates_list);
     };
 

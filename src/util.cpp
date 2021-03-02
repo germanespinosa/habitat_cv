@@ -21,4 +21,11 @@ namespace habitat_cv {
             images.push_back(to_gray(cv::imread(path + "/" + f)));
         return images;
     }
+
+    void write_images(const std::vector<cv::Mat> &images, const std::string &path, const std::vector<std::string> &file_paths){
+        int i=0;
+        for (auto &f : file_paths)
+            cv::imwrite(path + "/" + f, images[i++]);
+
+    }
 }
