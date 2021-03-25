@@ -14,4 +14,8 @@ namespace habitat_cv{
     Bg_subtraction::Bg_subtraction(cv::Mat &image) {
         set_background(image);
     }
+
+    Bg_subtraction::Bg_subtraction() {
+
+    }
 }
