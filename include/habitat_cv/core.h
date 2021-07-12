@@ -6,6 +6,8 @@
 namespace habitat_cv{
 
     struct Point : cell_world::Location{
+        Point () = default;
+        Point (double , double );
         template<typename T> T to(){
             T point;
             point.x = x;
@@ -58,11 +60,11 @@ namespace habitat_cv{
         Json_object_members(
                 Add_member(centroid);
                 Add_member(cell_coordinates);
-                Add_member(trust);
+                Add_optional_member(trust);
                 );
         Point centroid;
         cell_world::Coordinates cell_coordinates;
-        bool trust{};
+        bool trust{true};
     };
 
     struct Cell_association_list : json_cpp::Json_vector<Cell_association> {

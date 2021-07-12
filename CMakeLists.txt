@@ -47,7 +47,7 @@ find_package(CatchTests CONFIG QUIET)
 ### LIBRARY INSTALLATION
 ###
 
-if (CMAKE_BUILD_TYPE MATCHES Release)
+#if (CMAKE_BUILD_TYPE MATCHES Release)
     export(TARGETS habitat_cv FILE HabitatCvConfig.cmake)
 
     include(GNUInstallDirs)
@@ -64,4 +64,4 @@ if (CMAKE_BUILD_TYPE MATCHES Release)
             EXPORT_LINK_INTERFACE_LIBRARIES)
 
     export(TARGETS habitat_cv FILE Habitat_cvConfig.cmake)
-endif()
+#endif()

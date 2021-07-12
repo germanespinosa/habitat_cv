@@ -18,7 +18,7 @@ namespace habitat_cv {
 
     Cell_association_list Cell_association_list::filter(cell_world::Coordinates_list criteria) {
         Cell_association_list filtered;
-        for (auto &ca : *this){
+        for (auto &ca : *this) {
             for (auto &cc : criteria)
                 if (ca.cell_coordinates == cc) {
                     filtered.emplace_back(ca);
@@ -43,7 +43,7 @@ namespace habitat_cv {
         return cols_count;
     }
 
-    Coordinates Camera_order::get_camera_coordinates(unsigned int camera) const{
+    Coordinates Camera_order::get_camera_coordinates(unsigned int camera) const {
         for (int r = 0; r < rows(); r++)
             for (int c = 0; c < (*this).size(); c++)
                 if ((*this)[r][c] == camera) return Coordinates{c, r};
@@ -67,9 +67,12 @@ namespace habitat_cv {
 
     Cameras_associations Cameras_associations::filter(cell_world::Coordinates_list key_points) {
         Cameras_associations filtered;
-        for (auto &ca: *this){
+        for (auto &ca: *this) {
             filtered.emplace_back(ca.filter(key_points));
         }
         return filtered;
+    }
+
+    Point::Point(double x, double y) : Location(x, y) {
     }
 }
