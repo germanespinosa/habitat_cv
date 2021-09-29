@@ -84,4 +84,16 @@ namespace habitat_cv{
         cell_world::Coordinates get_camera_coordinates(unsigned int) const;
     };
 
+    struct Frame_detection : json_cpp::Json_object{
+        Json_object_members(
+                Add_member(frame);
+                Add_member(time_stamp);
+                Add_member(theta);
+                Add_member(detection_coordinates);
+        )
+        unsigned int frame;
+        double time_stamp;
+        double theta;
+        Detection_coordinates detection_coordinates;
+    };
 }
