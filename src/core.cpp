@@ -81,6 +81,7 @@ namespace habitat_cv {
         ai.coordinates = this->detection_coordinates.coordinates;
         ai.location = this->detection_coordinates.detection_location.location;
         ai.agent_name = this->detection_coordinates.detection_location.profile.agent_name;
+        ai.theta = this->theta;
         return ai;
     }
 }

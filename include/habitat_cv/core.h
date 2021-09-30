@@ -87,6 +87,7 @@ namespace habitat_cv{
     struct Agent_info{
         cell_world::Coordinates coordinates;
         cell_world::Location location;
+        double theta;
         std::string agent_name;
     };
 
