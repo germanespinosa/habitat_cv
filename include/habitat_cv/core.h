@@ -84,7 +84,13 @@ namespace habitat_cv{
         cell_world::Coordinates get_camera_coordinates(unsigned int) const;
     };
 
-    struct Agent_info{
+    struct Agent_info : json_cpp::Json_object{
+        Json_object_members(
+                Add_member(coordinates);
+                Add_member(location);
+                Add_member(theta);
+                Add_member(agent_name);
+        );
         cell_world::Coordinates coordinates;
         cell_world::Location location;
         double theta;
