@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.5.1)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 project(habitat_cv
         VERSION 2019.1.0

@@ -75,4 +75,12 @@ namespace habitat_cv {
 
     Point::Point(double x, double y) : Location(x, y) {
     }
+
+    Agent_info Frame_detection::to_agent_info() {
+        Agent_info ai;
+        ai.coordinates = this->detection_coordinates.coordinates;
+        ai.location = this->detection_coordinates.detection_location.location;
+        ai.agent_name = this->detection_coordinates.detection_location.profile.agent_name;
+        return ai;
+    }
 }
