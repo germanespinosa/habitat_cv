@@ -1,12 +1,17 @@
 #include <habitat_cv/composite.h>
+#include <cell_world_tools.h>
 #include <math.h>
+
+using namespace json_cpp;
 using namespace std;
+using namespace cell_world;
 
 namespace habitat_cv {
     cv::Point Composite::get_point(const cell_world::Coordinates &coord) const {
-        if (is_valid(coord))
-            return cell_centroids[coord.x+20][coord.y+10];
-        return cv::Point2f(0,0);
+        auto cell_id = map.find(coord);
+        if (cell_id == Not_found) return cv::Point2f(0,0);
+        auto location = map.cells[cell_id].location;
+        return cv::Point2f(location.x, location.y);
     }
 
     cv::Mat &Composite::get_composite(const std::vector<cv::Mat> &images, bool draw_all) {
@@ -24,20 +29,19 @@ namespace habitat_cv {
     size(size),
     composite(size.height,size.width,CV_8UC1),
     camera_order(camera_order){
-        double center_x = size.width / 2;
-        double center_y = size.height / 2;
-        for (int x = -20; x <= 20; x++){
-            cell_centroids.emplace_back();
-            for (int y = -10; y <= 10; y++){
-                auto coord = cell_world::Coordinates{x, y};
-                double offset_x = size.width / 42 * double(x);
-                double offset_y = size.height / 22 * double(y);
-                cell_centroids.back().push_back(cv::Point2f(center_x+offset_x,center_y-offset_y));
-                if (is_valid(coord)) {
-                    valid_coordinates.push_back(coord);
-                }
-            }
+        auto wc =  Json_create<World_configuration>(Web_resource::from("world_configuration").key("hexagonal").get());
+        auto wi =  Json_create<World_implementation>(Web_resource::from("world_implementation").key("hexagonal").key("canonical").get());
+        world = World(wc, wi);
+        map = Map(world.create_cell_group());
+
+
+        if (size.width != size.height) throw;
+
+        for (auto &c:world.cells) {
+            c.location= c.location * size.width;
+            cells.emplace_back(c.location, wc.cell_shape, wi.cell_transformation);
         }
+
         cv::Size crop_size (size.width/camera_order.cols(), size.height/camera_order.rows());
         for (unsigned int c=0; c<camera_order.count(); c++) {
             warped.emplace_back(size.height,size.width,CV_8UC1);
@@ -67,14 +71,13 @@ namespace habitat_cv {
     }
 
     std::vector<cv::Point> Composite::get_hexagon(const cell_world::Coordinates &coordinates) const {
-        auto center = get_point(coordinates);
-        double radius = size.width * 0.027492869961410742;
+        auto cell_id = map.find(coordinates);
+        auto &polygon = cells[cell_id];
+
         vector<cv::Point> points;
         float c = M_PI / 3;
-        for (float i=0;i<6;i++){
-            float x = sin(i*c) * radius + center.x;
-            float y = cos(i*c) * radius + center.y;
-            points.emplace_back(x,y);
+        for (auto &vertex:polygon.vertices){
+            points.emplace_back(vertex.x,vertex.y);
         }
         return points;
     }
@@ -82,39 +85,15 @@ namespace habitat_cv {
     void Composite::draw_cell(cv::Mat &img, const cell_world::Coordinates &coordinates, const cv::Scalar color) const{
         auto points = get_hexagon(coordinates);
         cv::polylines(img,points,true,color,1);
-//        auto c = to_string(coordinates.x);
-//        cv::putText(composite,
-//                    c.c_str(),
-//                    get_point(coordinates), // Coordinates
-//                    cv::FONT_HERSHEY_DUPLEX, // Font
-//                    .5, // Scale. 2.0 = 2x bigger
-//                    cv::Scalar(255,255,255), // BGR Color
-//                    1 // Line Thickness (Optional)
-//        );
     }
 
     cell_world::Coordinates Composite::get_coordinates(cv::Point point) {
-        cell_world::Coordinates best;
-        float best_distance = -1;
-        for (auto coord : valid_coordinates)
-        {
-            auto centroid = get_point(coord);
-            auto distance = cv::norm(point-centroid);
-            if (best_distance == -1 || distance < best_distance ){
-                best_distance = distance;
-                best = coord;
-            }
-        }
-        return best;
+        auto cell_id = map.cells.find(Location(point.x, point.y));
+        return map.cells[cell_id].coordinates;
     }
 
     void Composite::draw_circle(cv::Mat &img, cv::Point &center, int radius, const cv::Scalar color) const {
         cv::circle(img, center, radius, color);
-    }
-
-    bool Composite::is_valid(const cell_world::Coordinates &coord) const {
-        auto check = abs(coord.x) + abs(coord.y);
-        return check <= 20 && check % 2 == 0;
     }
 
     void Composite::draw_arrow(cv::Mat &img, cv::Point &center, double theta, const cv::Scalar color) const {

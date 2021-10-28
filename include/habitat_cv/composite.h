@@ -23,6 +23,8 @@ namespace habitat_cv{
         std::vector<cv::Mat> warped;
         std::vector<cv::Rect> crop_rectangles;
         cell_world::Coordinates_list valid_coordinates;
-        std::vector<std::vector<cv::Point>> cell_centroids;
+        cell_world::World world;
+        cell_world::Map map;
+        cell_world::Polygon_list cells;
     };
 }
