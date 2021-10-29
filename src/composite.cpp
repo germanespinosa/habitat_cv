@@ -34,6 +34,7 @@ namespace habitat_cv {
         auto wc =  Json_create<World_configuration>(Web_resource::from("world_configuration").key("hexagonal").get());
         auto wi =  Json_create<World_implementation>(Web_resource::from("world_implementation").key("hexagonal").key("canonical").get());
         wi.transform(composite_space);
+        cells = Polygon_list(wi.cell_locations,wc.cell_shape,wi.cell_transformation);
         world = World(wc, wi);
         map = Map(world.create_cell_group());
 
@@ -87,17 +88,20 @@ namespace habitat_cv {
         return map.cells[cell_id].coordinates;
     }
 
-    void Composite::draw_circle(cv::Mat &img, cv::Point &center, int radius, const cv::Scalar color) const {
-        cv::circle(img, center, radius, color);
+    void Composite::draw_circle(cv::Mat &img, const cv::Point &center, int radius, const cv::Scalar color) const {
+        cv::Point new_center (center.x, flip_y(center.y));
+        cv::circle(img, new_center, radius, color);
     }
 
-    void Composite::draw_arrow(cv::Mat &img, cv::Point &center, double theta, const cv::Scalar color) const {
+    void Composite::draw_arrow(cv::Mat &img, const cv::Point &center, double theta, const cv::Scalar color) const {
         int thickness = 2;
         int lineType = cv::LINE_8;
         cv::Point end;
         end.x = center.x + cos(theta) * 50;
-        end.y = center.y + sin(theta) * 50;
-        cv::line( img, center,  end, color, thickness, lineType );
+        end.y = flip_y(center.y) + sin(theta) * 50;
+        auto new_center = center;
+        new_center.y = flip_y(new_center.y);
+        cv::line( img, new_center,  end, color, thickness, lineType );
     }
 
     float Composite::flip_y(double y) const{

@@ -9,8 +9,8 @@ namespace habitat_cv{
         cv::Point get_point(const cell_world::Coordinates &) const;
         std::vector<cv::Point> get_hexagon(const cell_world::Coordinates &) const;
         void draw_cell(cv::Mat &, const cell_world::Coordinates &, const cv::Scalar = cv::Scalar(255,0,255)) const;
-        void draw_circle (cv::Mat &, cv::Point &, int, const cv::Scalar = cv::Scalar(255,0,255)) const;
-        void draw_arrow(cv::Mat &, cv::Point &, double, const cv::Scalar = cv::Scalar(255,0,255)) const;
+        void draw_circle (cv::Mat &, const cv::Point &, int, const cv::Scalar = cv::Scalar(255,0,255)) const;
+        void draw_arrow(cv::Mat &, const cv::Point &, double, const cv::Scalar = cv::Scalar(255,0,255)) const;
         cell_world::Coordinates get_coordinates(cv::Point);
         Point get_location(Point, unsigned int);
 
