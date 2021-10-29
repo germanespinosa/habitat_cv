@@ -27,17 +27,15 @@ namespace habitat_cv {
 
     Composite::Composite(const Camera_order &camera_order, const Cameras_associations &key_points) :
     camera_order(camera_order){
-        auto composite_space =  Json_create<Space>(Web_resource::from("space").key("hexagonal").key("composite").get());
+        auto composite_space =  Web_resource::from("space").key("hexagonal").key("composite").get_resource<Space>();
         size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
         composite= cv::Mat(size.height,size.width,CV_8UC1);
-
-        auto wc =  Json_create<World_configuration>(Web_resource::from("world_configuration").key("hexagonal").get());
-        auto wi =  Json_create<World_implementation>(Web_resource::from("world_implementation").key("hexagonal").key("canonical").get());
+        auto wc =  Web_resource::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
+        auto wi =  Web_resource::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
         wi.transform(composite_space);
         cells = Polygon_list(wi.cell_locations,wc.cell_shape,wi.cell_transformation);
         world = World(wc, wi);
         map = Map(world.create_cell_group());
-
         cv::Size crop_size (size.width/camera_order.cols(), size.height/camera_order.rows());
         for (unsigned int c=0; c<camera_order.count(); c++) {
             warped.emplace_back(size.height,size.width,CV_8UC1);
