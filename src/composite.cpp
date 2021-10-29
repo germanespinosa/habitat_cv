@@ -1,5 +1,5 @@
 #include <habitat_cv/composite.h>
-#include <cell_world_tools.h>
+#include <cell_world.h>
 #include <math.h>
 
 using namespace json_cpp;
@@ -11,7 +11,7 @@ namespace habitat_cv {
         auto cell_id = map.find(coord);
         if (cell_id == Not_found) return cv::Point2f(0,0);
         auto location = map.cells[cell_id].location;
-        return cv::Point2f(location.x, location.y);
+        return cv::Point2f(location.x,  flip_y(location.y));
     }
 
     cv::Mat &Composite::get_composite(const std::vector<cv::Mat> &images, bool draw_all) {
@@ -25,22 +25,17 @@ namespace habitat_cv {
         return composite;
     }
 
-    Composite::Composite(const cv::Size size, const Camera_order &camera_order, const Cameras_associations &key_points) :
-    size(size),
-    composite(size.height,size.width,CV_8UC1),
+    Composite::Composite(const Camera_order &camera_order, const Cameras_associations &key_points) :
     camera_order(camera_order){
+        auto composite_space =  Json_create<Space>(Web_resource::from("space").key("hexagonal").key("composite").get());
+        size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
+        composite= cv::Mat(size.height,size.width,CV_8UC1);
+
         auto wc =  Json_create<World_configuration>(Web_resource::from("world_configuration").key("hexagonal").get());
         auto wi =  Json_create<World_implementation>(Web_resource::from("world_implementation").key("hexagonal").key("canonical").get());
+        wi.transform(composite_space);
         world = World(wc, wi);
         map = Map(world.create_cell_group());
-
-
-        if (size.width != size.height) throw;
-
-        for (auto &c:world.cells) {
-            c.location= c.location * size.width;
-            cells.emplace_back(c.location, wc.cell_shape, wi.cell_transformation);
-        }
 
         cv::Size crop_size (size.width/camera_order.cols(), size.height/camera_order.rows());
         for (unsigned int c=0; c<camera_order.count(); c++) {
@@ -77,7 +72,7 @@ namespace habitat_cv {
         vector<cv::Point> points;
         float c = M_PI / 3;
         for (auto &vertex:polygon.vertices){
-            points.emplace_back(vertex.x,vertex.y);
+            points.emplace_back(vertex.x,flip_y(vertex.y));
         }
         return points;
     }
@@ -103,6 +98,10 @@ namespace habitat_cv {
         end.x = center.x + cos(theta) * 50;
         end.y = center.y + sin(theta) * 50;
         cv::line( img, center,  end, color, thickness, lineType );
+    }
+
+    float Composite::flip_y(double y) const{
+        return (float)size.height - y;
     }
 
 }

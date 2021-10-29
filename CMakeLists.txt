@@ -7,7 +7,7 @@ project(habitat_cv
         DESCRIPTION "Agent cell world simulation framework"
         LANGUAGES CXX)
 
-find_package( Cellworld_tools REQUIRED )
+find_package( Cellworld REQUIRED )
 find_package( OpenCV 4.0.1 REQUIRED )
 
 ###
@@ -25,7 +25,7 @@ set( habitat_cv_files
 add_library(habitat_cv ${habitat_cv_files})
 
 target_link_libraries(habitat_cv ${OpenCV_LIBS})
-target_link_libraries(habitat_cv ${CELLWORLD_TOOLS_LIBRARIES})
+target_link_libraries(habitat_cv ${CELLWORLD_LIBRARIES})
 
 target_include_directories(habitat_cv
         SYSTEM INTERFACE
