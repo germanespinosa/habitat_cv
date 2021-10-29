@@ -27,11 +27,11 @@ namespace habitat_cv {
 
     Composite::Composite(const Camera_order &camera_order, const Cameras_associations &key_points) :
     camera_order(camera_order){
-        auto composite_space =  Web_resource::from("space").key("hexagonal").key("composite").get_resource<Space>();
+        auto composite_space =  Resources::from("space").key("hexagonal").key("composite").get_resource<Space>();
         size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
         composite= cv::Mat(size.height,size.width,CV_8UC1);
-        auto wc =  Web_resource::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
-        auto wi =  Web_resource::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
+        auto wc =  Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
+        auto wi =  Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
         wi.transform(composite_space);
         cells = Polygon_list(wi.cell_locations,wc.cell_shape,wi.cell_transformation);
         world = World(wc, wi);
