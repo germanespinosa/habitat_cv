@@ -30,6 +30,8 @@ TEST_CASE("Composite"){
     }
     cv::imwrite("composite.png",comp);
     cv::imwrite("rgb.png",rgb);
+    cv::imshow("test", rgb);
+    cv::waitKey();
 }
 
 
@@ -53,6 +55,8 @@ TEST_CASE("point-coordinates association") {
         composite.draw_cell(rgb, coord);
     }
     cv::imwrite("centroid_check.png",rgb);
+    cv::imshow("test", rgb);
+    cv::waitKey();
 }
 
 
@@ -78,4 +82,6 @@ TEST_CASE("arrows") {
         composite.draw_arrow(rgb, point, theta);
     }
     cv::imwrite("arrow_check.png",rgb);
+    cv::imshow("test", rgb);
+    cv::waitKey();
 }
