@@ -18,11 +18,9 @@ namespace habitat_cv{
 
     struct Profile : json_cpp::Json_object {
         Json_object_members(
-                Add_member(agent_name);
                 Add_member(area_lower_bound);
                 Add_member(area_upper_bound);
                 );
-        std::string agent_name;
         unsigned int area_lower_bound;
         unsigned int area_upper_bound;
         bool match(unsigned int area);
@@ -55,34 +53,6 @@ namespace habitat_cv{
     };
 
     using Detection_coordinates_list = json_cpp::Json_vector<Detection_coordinates> ;
-
-    struct Cell_association : json_cpp::Json_object{
-        Json_object_members(
-                Add_member(centroid);
-                Add_member(cell_coordinates);
-                Add_optional_member(trust);
-                );
-        Point centroid;
-        cell_world::Coordinates cell_coordinates;
-        bool trust{true};
-    };
-
-    struct Cell_association_list : json_cpp::Json_vector<Cell_association> {
-        Cell_association &get_closest (Point &);
-        Detection_coordinates_list get_detections_coordinates(Detection_location_list &);
-        Cell_association_list filter (cell_world::Coordinates_list);
-    };
-
-    struct Cameras_associations : json_cpp::Json_vector<Cell_association_list> {
-        Cameras_associations filter (cell_world::Coordinates_list);
-    };
-
-    struct Camera_order: json_cpp::Json_vector <json_cpp::Json_vector<unsigned int>> {
-        unsigned int rows() const;
-        unsigned int cols() const;
-        unsigned int count() const ;
-        cell_world::Coordinates get_camera_coordinates(unsigned int) const;
-    };
 
     struct Agent_info : json_cpp::Json_object{
         Json_object_members(

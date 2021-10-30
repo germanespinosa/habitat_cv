@@ -8,13 +8,8 @@ using namespace habitat_cv;
 using namespace cell_world;
 
 TEST_CASE("Composite"){
-    Cameras_associations associations;
-    Coordinates_list  key_points;
-    associations.load("../../config/associations.config");
-    key_points.load("../../config/key_points.config");
-    Camera_order co;
-    co.load("../../config/camera_order.config");
-    Composite composite( co, associations);
+    auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
+    Composite composite( camera_configuration);
     auto images = read_images("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
     cv::Mat comp = composite.get_composite(images, true);
     cv::Mat rgb;
@@ -30,17 +25,14 @@ TEST_CASE("Composite"){
     }
     cv::imwrite("composite.png",comp);
     cv::imwrite("rgb.png",rgb);
+//    cv::imshow("test", rgb);
+//    cv::waitKey();
 }
 
 
 TEST_CASE("point-coordinates association") {
-    Cameras_associations associations;
-    Coordinates_list  key_points;
-    associations.load("../../config/associations.config");
-    key_points.load("../../config/key_points.config");
-    Camera_order co;
-    co.load("../../config/camera_order.config");
-    Composite composite(co, associations);
+    auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
+    Composite composite( camera_configuration);
     auto images = read_images("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
     cv::Mat comp = composite.get_composite(images);
     cv::Mat rgb;
@@ -53,17 +45,14 @@ TEST_CASE("point-coordinates association") {
         composite.draw_cell(rgb, coord);
     }
     cv::imwrite("centroid_check.png",rgb);
+//    cv::imshow("test", rgb);
+//    cv::waitKey();
 }
 
 
 TEST_CASE("arrows") {
-    Cameras_associations associations;
-    Coordinates_list  key_points;
-    associations.load("../../config/associations.config");
-    key_points.load("../../config/key_points.config");
-    Camera_order co;
-    co.load("../../config/camera_order.config");
-    Composite composite(co, associations);
+    auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
+    Composite composite( camera_configuration);
     auto images = read_images("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
     cv::Mat comp = composite.get_composite(images);
     cv::Mat rgb;
@@ -78,4 +67,6 @@ TEST_CASE("arrows") {
         composite.draw_arrow(rgb, point, theta);
     }
     cv::imwrite("arrow_check.png",rgb);
+//    cv::imshow("test", rgb);
+//    cv::waitKey();
 }

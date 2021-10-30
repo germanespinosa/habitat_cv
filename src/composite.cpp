@@ -15,7 +15,7 @@ namespace habitat_cv {
     }
 
     cv::Mat &Composite::get_composite(const std::vector<cv::Mat> &images, bool draw_all) {
-        for (unsigned int c=0; c<camera_order.count(); c++){
+        for (unsigned int c=0; c< configuration.order.count(); c++){
             cv::warpPerspective(images[c], warped[c], homographies[c], size);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
         }
@@ -25,27 +25,27 @@ namespace habitat_cv {
         return composite;
     }
 
-    Composite::Composite(const Camera_order &camera_order, const Cameras_associations &key_points) :
-    camera_order(camera_order){
-        auto composite_space =  Web_resource::from("space").key("hexagonal").key("composite").get_resource<Space>();
+    Composite::Composite(const Camera_configuration &camera_configuration) :
+    configuration(camera_configuration){
+        auto composite_space =  Resources::from("space").key("hexagonal").key("composite").get_resource<Space>();
         size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
         composite= cv::Mat(size.height,size.width,CV_8UC1);
-        auto wc =  Web_resource::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
-        auto wi =  Web_resource::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
+        auto wc =  Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
+        auto wi =  Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
         wi.transform(composite_space);
         cells = Polygon_list(wi.cell_locations,wc.cell_shape,wi.cell_transformation);
         world = World(wc, wi);
         map = Map(world.create_cell_group());
-        cv::Size crop_size (size.width/camera_order.cols(), size.height/camera_order.rows());
-        for (unsigned int c=0; c<camera_order.count(); c++) {
+        cv::Size crop_size (size.width/configuration.order.cols(), size.height/configuration.order.rows());
+        for (unsigned int c=0; c<configuration.order.count(); c++) {
             warped.emplace_back(size.height,size.width,CV_8UC1);
-            auto camera_coordinates = camera_order.get_camera_coordinates(c);
+            auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
                                      camera_coordinates.y * crop_size.height);
             crop_rectangles.emplace_back( crop_location, crop_size);
             vector<cv::Point2f> src_cp;
             vector<cv::Point2f> dst_cp;
-            for (auto &a : key_points[c]) {
+            for (auto &a:configuration.centroids[c]) {
                 src_cp.emplace_back(a.centroid.x,a.centroid.y);
                 dst_cp.emplace_back(get_point(a.cell_coordinates));
             }

@@ -1,10 +1,11 @@
 #pragma once
 #include <habitat_cv/core.h>
 #include <cell_world.h>
+#include <habitat_cv/camera_configuration.h>
 
 namespace habitat_cv{
     struct Composite {
-        Composite(const Camera_order &, const Cameras_associations &);
+        Composite(const Camera_configuration &camera_configuration);
         cv::Mat &get_composite (const std::vector<cv::Mat> &, bool = false);
         cv::Point get_point(const cell_world::Coordinates &) const;
         std::vector<cv::Point> get_hexagon(const cell_world::Coordinates &) const;
@@ -16,7 +17,6 @@ namespace habitat_cv{
 
         float flip_y(double y) const;
         cv::Mat composite;
-        Camera_order camera_order;
         cv::Size size;
         std::vector<cv::Mat> homographies;
         std::vector<cv::Mat> warped;
@@ -25,5 +25,6 @@ namespace habitat_cv{
         cell_world::World world;
         cell_world::Map map;
         cell_world::Polygon_list cells;
+        Camera_configuration configuration;
     };
 }
