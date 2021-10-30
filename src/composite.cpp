@@ -19,9 +19,10 @@ namespace habitat_cv {
             cv::warpPerspective(images[c], warped[c], homographies[c], size);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
         }
+        cvtColor(composite, rgb_composite, cv::COLOR_GRAY2RGB);
         if (draw_all)
             for (auto coord : valid_coordinates)
-                    draw_cell(composite, coord);
+                draw_cell(coord);
         return composite;
     }
 
@@ -53,12 +54,12 @@ namespace habitat_cv {
         }
     }
 
-    Point Composite::get_location(Point point, unsigned int camera) {
+    Location Composite::get_location(const Location &point, unsigned int camera) {
         vector<cv::Point2f> src;
-        src.push_back(point.to<cv::Point2f>());
+        src.push_back(to_point(point));
         vector<cv::Point2f> dst;
         cv::perspectiveTransform(src, dst, homographies[camera]);
-        Point p;
+        Location p;
         p.x = dst[0].x / (double)size.width;
         p.y = dst[0].y / (double)size.height;
         return p;
@@ -76,34 +77,36 @@ namespace habitat_cv {
         return points;
     }
 
-    void Composite::draw_cell(cv::Mat &img, const cell_world::Coordinates &coordinates, const cv::Scalar color) const{
+    void Composite::draw_cell(const cell_world::Coordinates &coordinates, const cv::Scalar color) {
         auto points = get_hexagon(coordinates);
-        cv::polylines(img,points,true,color,1);
+        cv::polylines(rgb_composite,points,true,color,1);
     }
 
-    cell_world::Coordinates Composite::get_coordinates(cv::Point point) {
-        auto cell_id = map.cells.find(Location(point.x, point.y));
+    cell_world::Coordinates Composite::get_coordinates(const cell_world::Location & point) {
+        auto cell_id = map.cells.find(point);
         return map.cells[cell_id].coordinates;
     }
 
-    void Composite::draw_circle(cv::Mat &img, const cv::Point &center, int radius, const cv::Scalar color) const {
+    void Composite::draw_circle(const Location &center, int radius, const cv::Scalar color) {
         cv::Point new_center (center.x, flip_y(center.y));
-        cv::circle(img, new_center, radius, color);
+        cv::circle(rgb_composite, new_center, radius, color);
     }
 
-    void Composite::draw_arrow(cv::Mat &img, const cv::Point &center, double theta, const cv::Scalar color) const {
-        int thickness = 2;
-        int lineType = cv::LINE_8;
-        cv::Point end;
-        end.x = center.x + cos(theta) * 50;
-        end.y = flip_y(center.y) + sin(theta) * 50;
-        auto new_center = center;
+    void Composite::draw_arrow(const Location &center, double theta, const cv::Scalar color, double length) {
+        cv::Point2f end;
+        end.x = center.x + cos(theta) * world.cell_transformation.size * length;
+        end.y = flip_y(center.y + sin(theta) * world.cell_transformation.size * length);
+        auto new_center = to_point(center);
         new_center.y = flip_y(new_center.y);
-        cv::line( img, new_center,  end, color, thickness, lineType );
+        arrow( rgb_composite, new_center,  end, color, 10);
     }
 
     float Composite::flip_y(double y) const{
         return (float)size.height - y;
+    }
+
+    cv::Mat &Composite::get_rgb() {
+        return rgb_composite;
     }
 
 }

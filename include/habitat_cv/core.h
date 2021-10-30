@@ -5,17 +5,8 @@
 
 namespace habitat_cv{
 
-    struct Point : cell_world::Location{
-        Point () = default;
-        Point (double , double );
-        template<typename T> T to(){
-            T point;
-            point.x = x;
-            point.y = y;
-            return point;
-        }
-    };
-
+    cv::Point2f to_point(const cell_world::Location &l);
+    void arrow(cv::Mat &, const cv::Point2f &, const cv::Point2f &, const cv::Scalar &, double size);
     struct Profile : json_cpp::Json_object {
         Json_object_members(
                 Add_member(area_lower_bound);
@@ -36,7 +27,7 @@ namespace habitat_cv{
                 Add_member(area);
                 Add_member(profile);
         );
-        Point location;
+        cell_world::Location location;
         unsigned int area;
         Profile profile;
     };
