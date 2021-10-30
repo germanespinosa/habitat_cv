@@ -23,7 +23,10 @@ namespace habitat_cv {
         Agent_info ai;
         ai.coordinates = this->detection_coordinates.coordinates;
         ai.location = this->detection_coordinates.detection_location.location;
+<<<<<<< HEAD
 //        ai.agent_name = this->detection_coordinates.detection_location.profile.agent_name;
+=======
+>>>>>>> 2348e1bbc129156473b4c8c7565ed3d16a3664d6
         ai.theta = this->theta;
         return ai;
     }

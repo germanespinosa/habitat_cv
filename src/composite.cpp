@@ -25,8 +25,13 @@ namespace habitat_cv {
         return composite;
     }
 
+<<<<<<< HEAD
     Composite::Composite(const Camera_configuration &camera_configuration) :
     configuration(camera_configuration){
+=======
+    Composite::Composite(const Camera_order &camera_order, const Cameras_associations &key_points) :
+    camera_order(camera_order){
+>>>>>>> 2348e1bbc129156473b4c8c7565ed3d16a3664d6
         auto composite_space =  Resources::from("space").key("hexagonal").key("composite").get_resource<Space>();
         size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
         composite= cv::Mat(size.height,size.width,CV_8UC1);
