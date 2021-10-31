@@ -7,7 +7,7 @@
 namespace habitat_cv{
     struct Composite {
         Composite(const Camera_configuration &camera_configuration);
-        cv::Mat &get_composite (const Images &, bool = false);
+        Image &get_composite (const Images &, bool = false);
         std::vector<cv::Point> get_hexagon(const cell_world::Coordinates &) const;
         void draw_cell(const cell_world::Coordinates &, const cv::Scalar = cv::Scalar(255,0,255));
         void draw_circle (const cell_world::Location &, int, const cv::Scalar = cv::Scalar(255,0,255));
@@ -15,7 +15,7 @@ namespace habitat_cv{
         cell_world::Coordinates get_coordinates(const cell_world::Location &);
         cell_world::Location get_location(const cell_world::Location &, unsigned int);
         float flip_y(double y) const;
-        cv::Mat &get_rgb();
+        Image &get_rgb();
         Image composite;
         Image rgb_composite;
         cv::Size size;

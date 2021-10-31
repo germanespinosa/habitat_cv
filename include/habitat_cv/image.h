@@ -26,6 +26,9 @@ namespace habitat_cv {
         Binary_image threshold(unsigned char) const;
         std::string file_name;
         Type type;
+        void save(const std::string &);
+        void save(const std::string &, const std::string &);
+        static Image read(const std::string &, const std::string &);
     };
 
     struct Images : std::vector<Image> {
@@ -34,5 +37,7 @@ namespace habitat_cv {
         static Images read(const std::string &, const std::vector<std::string> &);
         Images to_rgb() const;
         Images to_gray() const;
+        void save(const std::string &);
+        Image &get(const std::string &);
     };
 };

@@ -14,7 +14,7 @@ namespace habitat_cv {
         return cv::Point2f(location.x,  flip_y(location.y));
     }
 
-    cv::Mat &Composite::get_composite(const Images &images, bool draw_all) {
+    Image &Composite::get_composite(const Images &images, bool draw_all) {
         for (unsigned int c=0; c< configuration.order.count(); c++){
             cv::warpPerspective(images[c], warped[c], homographies[c], size);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
@@ -105,7 +105,7 @@ namespace habitat_cv {
         return (float)size.height - y;
     }
 
-    cv::Mat &Composite::get_rgb() {
+    Image &Composite::get_rgb() {
         return rgb_composite;
     }
 

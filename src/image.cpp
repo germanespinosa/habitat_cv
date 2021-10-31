@@ -11,7 +11,7 @@ namespace habitat_cv{
     Images Images::read(const std::string &path, const std::vector<std::string> &file_names) {
         Images images;
         for (auto &f : file_names)
-            images.emplace_back(cv::imread(path + "/" + f), f);
+            images.emplace_back(Image::read(path, f));
         return images;
     }
 
@@ -19,8 +19,8 @@ namespace habitat_cv{
         vector<string> file_names;
         for (const auto &entry : std::filesystem::directory_iterator(path)) {
             if (entry.is_directory()) continue;
-            string file_name(entry.path());
-            if (extension.empty() || file_name.ends_with(extension)) file_names.emplace_back(entry.path());
+            string file_name(entry.path().filename());
+            if (extension.empty() || file_name.ends_with(extension)) file_names.emplace_back(file_name);
         }
         return Images::read(path, file_names);
     }
@@ -37,6 +37,16 @@ namespace habitat_cv{
         for (auto &i:*this)
             images.emplace_back(i.to_gray(), i.file_name);
         return images;
+    }
+
+    void Images::save(const string &path) {
+        for (auto &i:*this) i.save(path);
+    }
+
+    Image &Images::get(const string &file_name) {
+        for (auto &i:*this)
+            if (i.file_name==file_name) return i;
+        throw;
     }
 
     Image::Image(cv::Mat m, std::string file_name) : cv::Mat(m), file_name(std::move(file_name)) {
@@ -69,6 +79,19 @@ namespace habitat_cv{
         cv::Mat gray;
         cv::cvtColor(*this, gray, cv::COLOR_BGR2GRAY);
         return Image(gray, "");
+    }
+
+    void Image::save(const std::string &path) {
+        cv::imwrite(path + "/" + file_name,*this);
+    }
+
+    void Image::save(const string &path, const string &f){
+        file_name = f;
+        cv::imwrite(path + "/" + f,*this);
+    }
+
+    Image Image::read(const string &path, const string &f) {
+        return Image(cv::imread(path + "/" + f, cv::IMREAD_UNCHANGED), f);
     }
 
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {
