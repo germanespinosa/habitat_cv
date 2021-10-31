@@ -65,20 +65,14 @@ namespace habitat_cv {
         return p;
     }
 
-    std::vector<cv::Point> Composite::get_hexagon(const cell_world::Coordinates &coordinates) const {
+    void Composite::draw_cell(const cell_world::Coordinates &coordinates, const cv::Scalar color) {
         auto cell_id = map.find(coordinates);
         auto &polygon = cells[cell_id];
-
         vector<cv::Point> points;
         float c = M_PI / 3;
         for (auto &vertex:polygon.vertices){
             points.emplace_back(vertex.x,flip_y(vertex.y));
         }
-        return points;
-    }
-
-    void Composite::draw_cell(const cell_world::Coordinates &coordinates, const cv::Scalar color) {
-        auto points = get_hexagon(coordinates);
         cv::polylines(rgb_composite,points,true,color,1);
     }
 
