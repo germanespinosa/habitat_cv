@@ -14,7 +14,7 @@ namespace habitat_cv {
         return cv::Point2f(location.x,  flip_y(location.y));
     }
 
-    cv::Mat &Composite::get_composite(const std::vector<cv::Mat> &images, bool draw_all) {
+    cv::Mat &Composite::get_composite(const Images &images, bool draw_all) {
         for (unsigned int c=0; c< configuration.order.count(); c++){
             cv::warpPerspective(images[c], warped[c], homographies[c], size);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
@@ -30,7 +30,7 @@ namespace habitat_cv {
     configuration(camera_configuration){
         auto composite_space =  Resources::from("space").key("hexagonal").key("composite").get_resource<Space>();
         size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
-        composite= cv::Mat(size.height,size.width,CV_8UC1);
+        composite = Image(size.height, size.width, Image::Type::gray);
         auto wc =  Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
         auto wi =  Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
         wi.transform(composite_space);
@@ -39,7 +39,7 @@ namespace habitat_cv {
         map = Map(world.create_cell_group());
         cv::Size crop_size (size.width/configuration.order.cols(), size.height/configuration.order.rows());
         for (unsigned int c=0; c<configuration.order.count(); c++) {
-            warped.emplace_back(size.height,size.width,CV_8UC1);
+            warped.emplace_back(size.height,size.width,Image::Type::gray);
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
                                      camera_coordinates.y * crop_size.height);

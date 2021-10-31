@@ -18,18 +18,4 @@ namespace habitat_cv {
         return area >= area_lower_bound && area <= area_upper_bound;
     }
 
-    std::vector<Profile> Profile_list::match(unsigned int area) {
-        vector <Profile> matches;
-        for (auto &profile : *this)
-            if (profile.match(area)) matches.push_back(profile);
-        return matches;
-    }
-
-    Agent_info Frame_detection::to_agent_info() {
-        Agent_info ai;
-        ai.coordinates = this->detection_coordinates.coordinates;
-        ai.location = this->detection_coordinates.detection_location.location;
-        ai.theta = this->theta;
-        return ai;
-    }
 }

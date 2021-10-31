@@ -10,7 +10,7 @@ using namespace cell_world;
 TEST_CASE("Composite"){
     auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
-    auto images = read_images("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
+    auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"}).to_gray();
     cv::Mat comp = composite.get_composite(images, true);
     srand (time(NULL));
     auto cells = composite.world.create_cell_group();
@@ -30,7 +30,7 @@ TEST_CASE("Composite"){
 TEST_CASE("point-coordinates association") {
     auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
-    auto images = read_images("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
+    auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"}).to_gray();
     cv::Mat comp = composite.get_composite(images);
     srand (time(NULL));
     for (int i=0;i<30; i++) {
@@ -48,7 +48,7 @@ TEST_CASE("point-coordinates association") {
 TEST_CASE("arrows") {
     auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
-    auto images = read_images("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
+    auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"}).to_gray();
     cv::Mat comp = composite.get_composite(images);
     srand (time(NULL));
     for (int i=0;i<30; i++) {
