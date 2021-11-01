@@ -36,6 +36,7 @@ namespace habitat_cv {
         void line (const cell_world::Location &, double, double, const cv::Scalar &color);
         void polygon (const cell_world::Polygon &, const cv::Scalar &color, bool filled = false);
         void circle (const cell_world::Location &, double, const cv::Scalar &color, bool filled = false);
+        void text (const cell_world::Location &, const std::string &, const cv::Scalar &color, float size = .8, int halign = 0, int valign = 0);
         void clear();
         Image diff(const Image &);
         cv::Point2f get_point(const cell_world::Location &) const;

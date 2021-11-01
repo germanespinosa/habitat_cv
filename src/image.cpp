@@ -161,6 +161,36 @@ namespace habitat_cv{
         return new_image;
     }
 
+    void Image::text(const cell_world::Location &l, const std::string &t, const cv::Scalar &color, float size, int halign, int valign) {
+
+        auto point = get_point(l);
+
+        if (valign || halign) {
+            int baseline = 0;
+            auto s = cv::getTextSize(t, cv::FONT_HERSHEY_DUPLEX, size, 1, &baseline);
+
+            if (valign)
+                if (valign == 2)
+                    point.y += s.height;
+                else
+                    point.y += s.height / 2;
+
+            if (halign)
+                if (halign == 2)
+                    point.x -= s.width;
+                else
+                    point.x -= s.width / 2;
+        }
+        cv::putText(*this,
+                    t.c_str(),
+                    point, // Coordinates
+                    cv::FONT_HERSHEY_DUPLEX, // Font
+                    size, // Scale. 2.0 = 2x bigger
+                    color, // BGR Color
+                    1 // Line Thickness (Optional)
+        );
+    }
+
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {
     }
 
