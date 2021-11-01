@@ -6,7 +6,7 @@ namespace habitat_cv {
         Video(const std::string &file_name, const cv::Size &size, const std::string &codec = "mp4v");
         ~Video();
         void add_frame(const Image &);
-
+        unsigned int frame_count;
         int fourcc;
         cv::VideoWriter writer;
     };
