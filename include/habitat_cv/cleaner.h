@@ -1,5 +1,4 @@
 #pragma once
-#include <habitat_cv/core.h>
 #include <habitat_cv/image.h>
 
 namespace habitat_cv{

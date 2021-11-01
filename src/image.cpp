@@ -64,7 +64,7 @@ namespace habitat_cv{
         if (type == rgb) return Image(*this, "");
         cv::Mat rgb;
         cvtColor(*this, rgb, cv::COLOR_GRAY2RGB);
-        return Image(rgb, "");
+        return {rgb, ""};
     }
 
     Binary_image Image::threshold(unsigned char t) const {
@@ -78,7 +78,7 @@ namespace habitat_cv{
         if (type == gray) return Image(*this, "");
         cv::Mat gray;
         cv::cvtColor(*this, gray, cv::COLOR_BGR2GRAY);
-        return Image(gray, "");
+        return {gray, ""};
     }
 
     void Image::save(const std::string &path) {
@@ -91,7 +91,57 @@ namespace habitat_cv{
     }
 
     Image Image::read(const string &path, const string &f) {
-        return Image(cv::imread(path + "/" + f, cv::IMREAD_UNCHANGED), f);
+        return {cv::imread(path + "/" + f, cv::IMREAD_UNCHANGED), f};
+    }
+
+    void Image::clear() {
+        setTo(0);
+    }
+
+    cv::Point2f Image::get_point(const cell_world::Location &l) const {
+        return {(float)l.x, (float)(size().height - l.y)};
+    }
+
+    void Image::line(const cell_world::Location &src, const cell_world::Location &dst, const cv::Scalar &color) {
+        assert(type == rgb);
+        int thickness = 2;
+        int lineType = cv::LINE_8;
+        cv::line( *this, get_point(src), get_point(dst), color, thickness, lineType);
+    }
+
+    void Image::polygon(const cell_world::Polygon &polygon, const cv::Scalar &color) {
+        int n=0;
+        for (auto &v: polygon.vertices)
+            line(v, polygon.vertices[++n % polygon.vertices.size()], color);
+    }
+
+    void Image::circle(const cell_world::Location &center, double radius, const cv::Scalar &color) {
+        assert(type == rgb);
+        cv::circle(*this, get_point(center), radius, color);
+    }
+
+    void Image::line(const cell_world::Location &src, double theta, double dist, const cv::Scalar &color) {
+        line(src, src.move(theta, dist), color);
+    }
+
+    void Image::arrow(const cell_world::Location &src, double theta, double dist, const cv::Scalar &color) {
+        arrow(src, src.move(theta, dist), color);
+    }
+
+    void Image::arrow(const cell_world::Location &src, const cell_world::Location &dst, const cv::Scalar &color) {
+        assert(type == rgb);
+        int thickness = 2;
+        int lineType = cv::LINE_8;
+        cv::arrowedLine( *this, get_point(src), get_point(dst), color, thickness, lineType, 0, .2);
+    }
+
+    Image Image::diff(const Image &image) {
+        assert(image.size == size);
+        assert(type == gray);
+        assert(image.type == gray);
+        cv::Mat subtracted;
+        cv::absdiff(image, *this, subtracted);
+        return {subtracted, ""};
     }
 
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {

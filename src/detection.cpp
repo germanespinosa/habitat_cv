@@ -1,7 +1,7 @@
 #include <habitat_cv/detection.h>
 
 namespace habitat_cv{
-    Detection_list Detection_list::get_detections(cv::Mat &clean_image) {
+    Detection_list Detection_list::get_detections(const Binary_image &clean_image) {
         cv::Mat centroids;
         cv::Mat labels;
         cv::Mat stats;

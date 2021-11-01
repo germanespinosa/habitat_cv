@@ -29,6 +29,15 @@ namespace habitat_cv {
         void save(const std::string &);
         void save(const std::string &, const std::string &);
         static Image read(const std::string &, const std::string &);
+        void arrow (const cell_world::Location &, const cell_world::Location &, const cv::Scalar &color);
+        void arrow (const cell_world::Location &, double, double, const cv::Scalar &color);
+        void line (const cell_world::Location &, const cell_world::Location &, const cv::Scalar &color);
+        void line (const cell_world::Location &, double, double, const cv::Scalar &color);
+        void polygon (const cell_world::Polygon &, const cv::Scalar &color);
+        void circle (const cell_world::Location &, double, const cv::Scalar &color);
+        void clear();
+        Image diff(const Image &);
+        cv::Point2f get_point(const cell_world::Location &) const;
     };
 
     struct Images : std::vector<Image> {

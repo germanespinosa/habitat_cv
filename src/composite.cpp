@@ -7,33 +7,16 @@ using namespace std;
 using namespace cell_world;
 
 namespace habitat_cv {
-    cv::Point Composite::get_point(const cell_world::Coordinates &coord) const {
-        auto cell_id = map.find(coord);
-        if (cell_id == Not_found) return cv::Point2f(0,0);
-        auto location = map.cells[cell_id].location;
-        return cv::Point2f(location.x,  flip_y(location.y));
-    }
-
-    Image &Composite::get_composite(const Images &images, bool draw_all) {
-        for (unsigned int c=0; c< configuration.order.count(); c++){
-            cv::warpPerspective(images[c], warped[c], homographies[c], size);
-            warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
-        }
-        cvtColor(composite, rgb_composite, cv::COLOR_GRAY2RGB);
-        if (draw_all)
-            for (auto coord : valid_coordinates)
-                draw_cell(coord);
-        return composite;
-    }
-
     Composite::Composite(const Camera_configuration &camera_configuration) :
     configuration(camera_configuration){
-        auto composite_space =  Resources::from("space").key("hexagonal").key("composite").get_resource<Space>();
-        size = cv::Size(composite_space.transformation.size, composite_space.transformation.size);
+        auto wc =  Resources::from("world_configuration")
+                .key("hexagonal")
+                .get_resource<World_configuration>();
+        auto wi =  Resources::from("world_implementation")
+                .key("hexagonal")
+                .key("cv").get_resource<World_implementation>();
+        size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
         composite = Image(size.height, size.width, Image::Type::gray);
-        auto wc =  Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
-        auto wi =  Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>();
-        wi.transform(composite_space);
         cells = Polygon_list(wi.cell_locations,wc.cell_shape,wi.cell_transformation);
         world = World(wc, wi);
         map = Map(world.create_cell_group());
@@ -48,32 +31,10 @@ namespace habitat_cv {
             vector<cv::Point2f> dst_cp;
             for (auto &a:configuration.centroids[c]) {
                 src_cp.emplace_back(a.centroid.x,a.centroid.y);
-                dst_cp.emplace_back(get_point(a.cell_coordinates));
+                dst_cp.emplace_back(composite.get_point(map.cells[map.find(a.cell_coordinates)].location));
             }
             homographies.push_back(findHomography(src_cp, dst_cp));
         }
-    }
-
-    Location Composite::get_location(const Location &point, unsigned int camera) {
-        vector<cv::Point2f> src;
-        src.push_back(to_point(point));
-        vector<cv::Point2f> dst;
-        cv::perspectiveTransform(src, dst, homographies[camera]);
-        Location p;
-        p.x = dst[0].x / (double)size.width;
-        p.y = dst[0].y / (double)size.height;
-        return p;
-    }
-
-    void Composite::draw_cell(const cell_world::Coordinates &coordinates, const cv::Scalar color) {
-        auto cell_id = map.find(coordinates);
-        auto &polygon = cells[cell_id];
-        vector<cv::Point> points;
-        float c = M_PI / 3;
-        for (auto &vertex:polygon.vertices){
-            points.emplace_back(vertex.x,flip_y(vertex.y));
-        }
-        cv::polylines(rgb_composite,points,true,color,1);
     }
 
     cell_world::Coordinates Composite::get_coordinates(const cell_world::Location & point) {
@@ -81,26 +42,15 @@ namespace habitat_cv {
         return map.cells[cell_id].coordinates;
     }
 
-    void Composite::draw_circle(const Location &center, int radius, const cv::Scalar color) {
-        cv::Point new_center (center.x, flip_y(center.y));
-        cv::circle(rgb_composite, new_center, radius, color);
+    Image &Composite::get_composite(const Images &images) {
+        for (unsigned int c=0; c< configuration.order.count(); c++){
+            cv::warpPerspective(images[c], warped[c], homographies[c], size);
+            warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
+        }
+        return composite;
     }
 
-    void Composite::draw_arrow(const Location &center, double theta, const cv::Scalar color, double length) {
-        cv::Point2f end;
-        end.x = center.x + cos(theta) * world.cell_transformation.size * length;
-        end.y = flip_y(center.y + sin(theta) * world.cell_transformation.size * length);
-        auto new_center = to_point(center);
-        new_center.y = flip_y(new_center.y);
-        arrow( rgb_composite, new_center,  end, color, 10);
+    cell_world::Polygon &Composite::get_polygon(const Coordinates &coordinates) {
+        return cells[map.find(coordinates)];
     }
-
-    float Composite::flip_y(double y) const{
-        return (float)size.height - y;
-    }
-
-    Image &Composite::get_rgb() {
-        return rgb_composite;
-    }
-
 }

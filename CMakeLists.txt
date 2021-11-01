@@ -15,12 +15,9 @@ find_package( OpenCV 4.0.1 REQUIRED )
 ###
 
 set( habitat_cv_files
-        src/bg_subtraction.cpp
         src/cleaner.cpp
         src/detection.cpp
         src/composite.cpp
-        src/core.cpp
-        src/util.cpp
         src/camera_configuration.cpp
         src/image.cpp catchtests/image.cpp)
 
