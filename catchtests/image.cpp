@@ -1,6 +1,8 @@
 #include <catch.h>
 #include <habitat_cv/composite.h>
 #include <iostream>
+#include <habitat_cv/image.h>
+
 
 using namespace std;
 using namespace habitat_cv;

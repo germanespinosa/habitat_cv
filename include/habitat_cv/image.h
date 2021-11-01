@@ -46,6 +46,7 @@ namespace habitat_cv {
         static Images read(const std::string &, const std::vector<std::string> &);
         Images to_rgb() const;
         Images to_gray() const;
+        void save(const std::string &, const std::vector<std::string> &);
         void save(const std::string &);
         Image &get(const std::string &);
     };

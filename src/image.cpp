@@ -25,6 +25,12 @@ namespace habitat_cv{
         return Images::read(path, file_names);
     }
 
+    void Images::save(const string &path, const vector<std::string> &file_names) {
+        assert(file_names.size()==size());
+        for (int i=0; i<size(); i++)
+            (*this)[i].save(path, file_names[i]);
+    }
+
     Images Images::to_rgb() const {
         Images images;
         for (auto &i:*this)
