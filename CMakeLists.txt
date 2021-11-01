@@ -18,7 +18,8 @@ set( habitat_cv_files
         src/detection.cpp
         src/composite.cpp
         src/camera_configuration.cpp
-        src/image.cpp catchtests/image.cpp)
+        src/image.cpp
+        src/video.cpp)
 
 add_library(habitat_cv ${habitat_cv_files})
 
