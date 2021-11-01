@@ -37,7 +37,7 @@ TEST_CASE("point-coordinates association") {
     for (int i=0;i<30; i++) {
         auto point = Location{(double)(rand() % 1080), (double)(rand() % 1080)};
         auto coord = composite.get_coordinates(point);
-        rgb.circle(point, 3, {255,0,0});
+        rgb.circle(point, 10, {255,0,0}, true);
         rgb.polygon(composite.get_polygon(coord), {255,0,0});
     }
     cv::imwrite("centroid_check.png",rgb);
@@ -65,3 +65,20 @@ TEST_CASE("arrows") {
 //    cv::imshow("test", rgb);
 //    cv::waitKey();
 }
+
+TEST_CASE("mask") {
+    auto wi = Resources::from("world_implementation")
+            .key("hexagonal")
+            .key("cv").get_resource<World_implementation>();
+    auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
+    Composite composite( camera_configuration);
+    auto &space = composite.world.space;
+    Image mask(space.transformation.size, space.transformation.size, Image::Type::gray);
+    mask.clear();
+    Polygon p(space.center, space.shape, space.transformation);
+    mask.polygon(p,{255},true);
+    mask.save(".","mask.png");
+//    cv::imshow("test", rgb);
+//    cv::waitKey();
+}
+

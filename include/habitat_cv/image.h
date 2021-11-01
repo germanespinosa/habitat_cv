@@ -9,6 +9,7 @@ namespace habitat_cv {
         Binary_image(cv::MatExpr);
         Binary_image dilate(unsigned int);
         Binary_image erode(unsigned int);
+        Binary_image mask(const Binary_image &);
     private:
         Binary_image(cv::Mat);
     };
@@ -33,11 +34,12 @@ namespace habitat_cv {
         void arrow (const cell_world::Location &, double, double, const cv::Scalar &color);
         void line (const cell_world::Location &, const cell_world::Location &, const cv::Scalar &color);
         void line (const cell_world::Location &, double, double, const cv::Scalar &color);
-        void polygon (const cell_world::Polygon &, const cv::Scalar &color);
-        void circle (const cell_world::Location &, double, const cv::Scalar &color);
+        void polygon (const cell_world::Polygon &, const cv::Scalar &color, bool filled = false);
+        void circle (const cell_world::Location &, double, const cv::Scalar &color, bool filled = false);
         void clear();
         Image diff(const Image &);
         cv::Point2f get_point(const cell_world::Location &) const;
+        Image mask(const Binary_image &);
     };
 
     struct Images : std::vector<Image> {

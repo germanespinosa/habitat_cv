@@ -109,21 +109,27 @@ namespace habitat_cv{
     }
 
     void Image::line(const cell_world::Location &src, const cell_world::Location &dst, const cv::Scalar &color) {
-        assert(type == rgb);
         int thickness = 2;
         int lineType = cv::LINE_8;
         cv::line( *this, get_point(src), get_point(dst), color, thickness, lineType);
     }
 
-    void Image::polygon(const cell_world::Polygon &polygon, const cv::Scalar &color) {
+    void Image::polygon(const cell_world::Polygon &polygon, const cv::Scalar &color, bool filled) {
         int n=0;
-        for (auto &v: polygon.vertices)
-            line(v, polygon.vertices[++n % polygon.vertices.size()], color);
+        vector<vector<cv::Point>> points;
+        auto &vertices = points.emplace_back();
+        for (auto &v: polygon.vertices) vertices.push_back(get_point(v));
+        if (filled)
+            cv::fillPoly(*this, points, color);
+        else
+            cv::polylines(*this, points, true, color);
     }
 
-    void Image::circle(const cell_world::Location &center, double radius, const cv::Scalar &color) {
-        assert(type == rgb);
-        cv::circle(*this, get_point(center), radius, color);
+    void Image::circle(const cell_world::Location &center, double radius, const cv::Scalar &color, bool filled) {
+        if (filled)
+            cv::circle(*this, get_point(center), radius, color, -1);
+        else
+            cv::circle(*this, get_point(center), radius, color);
     }
 
     void Image::line(const cell_world::Location &src, double theta, double dist, const cv::Scalar &color) {
@@ -135,7 +141,6 @@ namespace habitat_cv{
     }
 
     void Image::arrow(const cell_world::Location &src, const cell_world::Location &dst, const cv::Scalar &color) {
-        assert(type == rgb);
         int thickness = 2;
         int lineType = cv::LINE_8;
         cv::arrowedLine( *this, get_point(src), get_point(dst), color, thickness, lineType, 0, .2);
