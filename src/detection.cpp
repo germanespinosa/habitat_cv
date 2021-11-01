@@ -1,7 +1,9 @@
 #include <habitat_cv/detection.h>
 
 namespace habitat_cv{
-    Detection_list Detection_list::get_detections(const Binary_image &clean_image) {
+    Detection_list Detection_list::get_detections(const Image &image, unsigned char threshold, int cleaning_cycles) {
+        auto clean_image = image.to_gray().threshold(threshold).
+                           erode(cleaning_cycles).dilate(cleaning_cycles * 2).erode(cleaning_cycles);
         cv::Mat centroids;
         cv::Mat labels;
         cv::Mat stats;

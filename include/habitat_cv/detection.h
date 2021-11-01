@@ -10,7 +10,6 @@ namespace habitat_cv {
         );
         unsigned int area_lower_bound;
         unsigned int area_upper_bound;
-        bool match(unsigned int area);
     };
 
     struct Detection : json_cpp::Json_object {
@@ -19,7 +18,8 @@ namespace habitat_cv {
     };
 
     struct Detection_list : json_cpp::Json_vector<Detection> {
-        static Detection_list get_detections(const Binary_image &);
+        static Detection_list get_detections(const Image &, unsigned char threshold, int cleaning_cycles);
+        Detection_list filter (const Profile &);
     private:
         Detection_list();
     };
