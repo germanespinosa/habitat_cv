@@ -6,10 +6,10 @@
 namespace habitat_cv {
 
     struct Binary_image : cv::Mat {
+        Binary_image() = default;
         Binary_image(cv::MatExpr);
         Binary_image dilate(unsigned int);
         Binary_image erode(unsigned int);
-        Binary_image mask(const Binary_image &);
     private:
         Binary_image(cv::Mat);
     };

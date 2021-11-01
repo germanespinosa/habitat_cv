@@ -11,6 +11,8 @@ TEST_CASE("Composite"){
     Composite composite( camera_configuration);
     auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
     auto comp = composite.get_composite(images);
+
+    composite.warped.save(".", {"wcamera_0.png","wcamera_1.png","wcamera_2.png","wcamera_3.png"});
     auto rgb = comp.to_rgb();
     srand (time(NULL));
     auto cells = composite.world.create_cell_group();

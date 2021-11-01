@@ -63,7 +63,7 @@ namespace habitat_cv{
     }
 
     Image::Image(int rows, int cols, Type type) :
-        cv::Mat(rows, cols, type == gray ? CV_8UC1 : CV_8UC3) {
+        cv::Mat(rows, cols, type == gray ? CV_8UC1 : CV_8UC3), type(type) {
     }
 
     Image Image::to_rgb() const{
@@ -75,9 +75,9 @@ namespace habitat_cv{
 
     Binary_image Image::threshold(unsigned char t) const {
         if (type == Type::gray)
-            return (*this)>t;
+            return (*this) > t;
 
-        return this->to_rgb() >t;
+        return this->to_gray() > t;
     }
 
     Image Image::to_gray() const {
@@ -153,6 +153,12 @@ namespace habitat_cv{
         cv::Mat subtracted;
         cv::absdiff(image, *this, subtracted);
         return {subtracted, ""};
+    }
+
+    Image Image::mask(const Binary_image &mask) {
+        Image new_image;
+        cv::bitwise_and(*this,mask,new_image);
+        return new_image;
     }
 
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {

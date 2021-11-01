@@ -17,10 +17,19 @@ namespace habitat_cv {
                 .key("cv").get_resource<World_implementation>();
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
         composite = Image(size.height, size.width, Image::Type::gray);
-        cells = Polygon_list(wi.cell_locations,wc.cell_shape,wi.cell_transformation);
+        cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
         world = World(wc, wi);
+
+        // generate mask
+        Image mask_image(size.height, size.width, Image::Type::gray);
+        mask_image.clear();
+        Polygon habitat_polygon(world.space.center, world.space.shape, world.space.transformation);
+        mask_image.polygon(habitat_polygon,{255},true);
+        mask = mask_image.threshold(0);
+
+
         map = Map(world.create_cell_group());
-        cv::Size crop_size (size.width/configuration.order.cols(), size.height/configuration.order.rows());
+        cv::Size crop_size (size.width / configuration.order.cols(), size.height / configuration.order.rows());
         for (unsigned int c=0; c<configuration.order.count(); c++) {
             warped.emplace_back(size.height,size.width,Image::Type::gray);
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
@@ -43,8 +52,11 @@ namespace habitat_cv {
     }
 
     Image &Composite::get_composite(const Images &images) {
-        for (unsigned int c=0; c< configuration.order.count(); c++){
-            cv::warpPerspective(images[c], warped[c], homographies[c], size);
+
+        for (unsigned int c = 0; c < configuration.order.count(); c++){
+            Image w;
+            cv::warpPerspective(images[c], w, homographies[c], size);
+            warped[c] = w.mask(mask);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
         }
         return composite;

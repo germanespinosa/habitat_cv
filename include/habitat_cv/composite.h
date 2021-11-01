@@ -10,6 +10,7 @@ namespace habitat_cv{
         cell_world::Polygon &get_polygon(const cell_world::Coordinates &);
         cell_world::Coordinates get_coordinates(const cell_world::Location &);
         Image composite;
+        Binary_image mask;
         cv::Size size;
         std::vector<cv::Mat> homographies;
         Images warped;
