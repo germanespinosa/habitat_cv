@@ -39,7 +39,7 @@ namespace habitat_cv {
         void circle (const cell_world::Location &, double, const cv::Scalar &color, bool filled = false);
         void text (const cell_world::Location &, const std::string &, const cv::Scalar &color, float size = 1, int halign = 0, int valign = 0);
         void clear();
-        Image diff(const Image &);
+        Image diff(const Image &) const;
         [[nodiscard]] cv::Point2f get_point(const cell_world::Location &) const;
         Image mask(const Binary_image &);
     };

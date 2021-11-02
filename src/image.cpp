@@ -147,7 +147,7 @@ namespace habitat_cv{
         cv::arrowedLine( *this, get_point(src), get_point(dst), color, thickness, lineType, 0, .2);
     }
 
-    Image Image::diff(const Image &image) {
+    Image Image::diff(const Image &image) const{
         assert(image.size == size);
         assert(type == gray);
         assert(image.type == gray);
