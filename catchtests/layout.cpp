@@ -104,7 +104,7 @@ TEST_CASE("complex frame") {
     Content_text frame ({540,45},Image::Type::rgb,{255,255,255},{30,30,30},.8,2,1);
 
 
-    frame=Image::read(".","composite.png").to_rgb();
+    composite = Image::read(".","composite.png").to_rgb();
     date_time = "  2021-11-02 15:00:05";
     subject = "  Subject: FPP1";
     experiment = "  Experiment: Identifier";
