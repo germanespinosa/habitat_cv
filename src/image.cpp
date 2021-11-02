@@ -1,5 +1,6 @@
 #include <habitat_cv/image.h>
 #include <filesystem>
+#include <utility>
 
 using namespace std;
 
@@ -75,9 +76,9 @@ namespace habitat_cv{
 
     Binary_image Image::threshold(unsigned char t) const {
         if (type == Type::gray)
-            return (*this) > t;
+            return Binary_image((*this) > t);
 
-        return this->to_gray() > t;
+        return Binary_image(this->to_gray() > t);
     }
 
     Image Image::to_gray() const {
@@ -104,7 +105,7 @@ namespace habitat_cv{
         setTo(0);
     }
 
-    cv::Point2f Image::get_point(const cell_world::Location &l) const {
+    cv::Point2f Image::get_point(const cell_world::Location &l) const{
         return {(float)l.x, (float)(size().height - l.y)};
     }
 
@@ -191,6 +192,10 @@ namespace habitat_cv{
         );
     }
 
+    Image::Image(cv::Size size, Image::Type type) : Image(size.height, size.width, type){
+
+    }
+
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {
     }
 
@@ -201,12 +206,12 @@ namespace habitat_cv{
     Binary_image Binary_image::dilate(unsigned int dilations) {
         cv::Mat dilated;
         cv::dilate(*this, dilated, cv::Mat(), cv::Point(-1, -1), dilations, 1, 2);
-        return dilated;
+        return Binary_image(dilated);
     }
 
     Binary_image Binary_image::erode(unsigned int erosions) {
         cv::Mat eroded;
         cv::erode(*this, eroded, cv::Mat(), cv::Point(-1, -1), erosions, 1, 1);
-        return eroded;
+        return Binary_image(eroded);
     }
 }

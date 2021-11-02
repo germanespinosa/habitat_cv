@@ -23,7 +23,9 @@ namespace habitat_cv {
         // generate mask
         Image mask_image(size.height, size.width, Image::Type::gray);
         mask_image.clear();
-        Polygon habitat_polygon(world.space.center, world.space.shape, world.space.transformation);
+        auto t =world.space.transformation;
+        t.size *= 1.05;
+        Polygon habitat_polygon(world.space.center, world.space.shape, t);
         mask_image.polygon(habitat_polygon,{255},true);
         mask = mask_image.threshold(0);
 
