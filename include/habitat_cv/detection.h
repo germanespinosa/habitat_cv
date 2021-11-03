@@ -21,6 +21,6 @@ namespace habitat_cv {
         static Detection_list get_detections(const Image &, unsigned char threshold, int cleaning_cycles);
         Detection_list filter (const Profile &);
     private:
-        Detection_list();
+        Detection_list() = default;
     };
 }

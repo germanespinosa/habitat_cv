@@ -7,7 +7,7 @@ using namespace habitat_cv;
 using namespace cell_world;
 
 TEST_CASE("Composite"){
-    auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
+        auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
     auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
     auto comp = composite.get_composite(images);
