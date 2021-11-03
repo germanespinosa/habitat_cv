@@ -20,4 +20,14 @@ namespace habitat_cv{
         }
         return detections;
     }
+
+    Detection_list habitat_cv::Detection_list::filter(const Profile &profile) {
+        Detection_list filtered;
+        for (Detection &detection:*this){
+            if (detection.area >= profile.area_lower_bound &&
+                detection.area <= profile.area_upper_bound)
+                filtered.push_back(detection);
+        }
+        return filtered;
+    }
 }
