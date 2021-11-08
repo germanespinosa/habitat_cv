@@ -57,6 +57,7 @@ namespace habitat_cv {
 
         for (unsigned int c = 0; c < configuration.order.count(); c++){
             Image w;
+            w.type = images[c].type;
             cv::warpPerspective(images[c], w, homographies[c], size);
             warped[c] = w.mask(mask);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));

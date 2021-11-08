@@ -2,11 +2,14 @@
 
 namespace habitat_cv {
 
-    Video::Video(const std::string &file_name, const cv::Size &size, const std::string &codec):
+    Video::Video(const std::string &file_name, const cv::Size &size, Image::Type type):
+    type(type),
+    fourcc(cv::VideoWriter::fourcc('m', 'p','4','v')),
+//    fourcc(type == Image::Type::rgb ?
+//        cv::VideoWriter::fourcc('m', 'p','4','v'):
+//        cv::VideoWriter::fourcc('X', 'V','I','V')),
     frame_count(0),
-    fourcc(cv::VideoWriter::fourcc(codec[0], codec[1], codec[2], codec[3])),
-    writer(file_name, fourcc, 30, size, true){
-
+    writer(file_name, fourcc, 20, size, type == Image::Type::rgb){
     }
 
     void Video::add_frame(const Image &frame) {

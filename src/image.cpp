@@ -56,6 +56,12 @@ namespace habitat_cv{
         throw;
     }
 
+    Images Images::clone() {
+        Images new_images;
+        for (auto &i:*this) new_images.emplace_back(i.clone(), i.file_name);
+        return new_images;
+    }
+
     Image::Image(cv::Mat m, std::string file_name) : cv::Mat(m), file_name(std::move(file_name)) {
         if(m.channels()==1)
             type = Type::gray;
@@ -158,6 +164,7 @@ namespace habitat_cv{
 
     Image Image::mask(const Binary_image &mask) {
         Image new_image;
+        new_image.type = type;
         cv::bitwise_and(*this,mask,new_image);
         return new_image;
     }
