@@ -40,7 +40,7 @@ namespace habitat_cv {
         };
         Layout (int rows, int cols, Type type);
         void add_place_holder(Content &, const cell_world::Location &);
-        Image get_image();
+        virtual Image get_image();
         std::vector<Place_holder> place_holders;
     };
 }
