@@ -9,7 +9,7 @@ using namespace cell_world;
 TEST_CASE("Composite"){
         auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
-    auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
+    auto images = Images::read("../../images/",{"raw_0.png","raw_1.png","raw_2.png","raw_3.png"});
     auto comp = composite.get_composite(images);
 
     composite.warped.save(".", {"wcamera_0.png","wcamera_1.png","wcamera_2.png","wcamera_3.png"});
@@ -32,7 +32,7 @@ TEST_CASE("Composite"){
 TEST_CASE("point-coordinates association") {
     auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
-    auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
+    auto images = Images::read("../../images/",{"raw_0.png","raw_1.png","raw_2.png","raw_3.png"});
     auto comp = composite.get_composite(images);
     auto rgb = comp.to_rgb();
     srand (time(NULL));
@@ -51,7 +51,7 @@ TEST_CASE("point-coordinates association") {
 TEST_CASE("arrows") {
     auto camera_configuration = Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>();
     Composite composite( camera_configuration);
-    auto images = Images::read("../../images/",{"camera_0.png","camera_1.png","camera_2.png","camera_3.png"});
+    auto images = Images::read("../../images/",{"raw_0.png","raw_1.png","raw_2.png","raw_3.png"});
     auto comp = composite.get_composite(images);
     auto rgb = comp.to_rgb();
     srand (time(NULL));

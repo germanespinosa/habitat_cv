@@ -21,12 +21,12 @@ TEST_CASE("layout resize") {
     layout.add_place_holder(i2, {500,0});
     layout.add_place_holder(i3, {0,500});
 
-    auto images = Images::read("../../images/", {"camera_0.png", "camera_1.png", "camera_2.png", "camera_3.png"});
+    auto images = Images::read("../../images/", {"raw_0.png", "raw_1.png", "raw_2.png", "raw_3.png"});
 
-    i0=images.get("camera_0.png").to_rgb();
-    i1=images.get("camera_1.png").to_rgb();
-    i2=images.get("camera_2.png").to_rgb();
-    i3=images.get("camera_3.png").to_rgb();
+    i0=images.get("raw_0.png").to_rgb();
+    i1=images.get("raw_1.png").to_rgb();
+    i2=images.get("raw_2.png").to_rgb();
+    i3=images.get("raw_3.png").to_rgb();
 
     layout.get_image().save(".","layout-resize.png");
 }
@@ -43,12 +43,12 @@ TEST_CASE("layout crop") {
     layout.add_place_holder(i2, {500,0});
     layout.add_place_holder(i3, {0,500});
 
-    auto images = Images::read("../../images/", {"camera_0.png", "camera_1.png", "camera_2.png", "camera_3.png"});
+    auto images = Images::read("../../images/", {"raw_0.png", "raw_1.png", "raw_2.png", "raw_3.png"});
 
-    i0=images.get("camera_0.png").to_rgb();
-    i1=images.get("camera_1.png").to_rgb();
-    i2=images.get("camera_2.png").to_rgb();
-    i3=images.get("camera_3.png").to_rgb();
+    i0=images.get("raw_0.png").to_rgb();
+    i1=images.get("raw_1.png").to_rgb();
+    i2=images.get("raw_2.png").to_rgb();
+    i3=images.get("raw_3.png").to_rgb();
 
     layout.get_image().save(".","layout-crop.png");
 }
@@ -111,7 +111,7 @@ TEST_CASE("complex frame") {
     episode = "Episode: 005  ";
     frame = "Frame: 00005  ";
 
-    layout.add_place_holder(frame, {0,0});
+    layout.add_place_holder(composite, {0,0});
     layout.add_place_holder(date_time, {0,1080});
     layout.add_place_holder(subject, {0,1035});
     layout.add_place_holder(experiment, {0,990});
@@ -120,4 +120,47 @@ TEST_CASE("complex frame") {
 
 
     layout.get_image().save(".","layout-complex.png");
+}
+
+struct Main_layout : Layout {
+    Main_layout(std::string subject_name, std::string experiment_identifier, int episode_number) :
+            Layout(1125, 1080,Image::Type::rgb),
+            composite({0.0,45.0}, {1080.0,1030.0}, Image::Type::rgb),
+            date_time ({1080,45},Image::Type::rgb,{255,255,255},{30,30,30},.8,0,1),
+            subject ({540,45},Image::Type::rgb,{255,255,255},{30,30,30},.8,0,1),
+            experiment ({540,45},Image::Type::rgb,{255,255,255},{30,30,30},.8,0,1),
+            episode ({540,45},Image::Type::rgb,{255,255,255},{30,30,30},.8,2,1),
+            frame ({540,45},Image::Type::rgb,{255,255,255},{30,30,30},.8,2,1){
+        subject = "  Subject :" + subject_name;
+        experiment = "  Experiment :" + experiment_identifier;
+        episode = "Episode :" + to_string(episode_number) + "  ";
+
+        add_place_holder(composite, {0,0});
+        add_place_holder(date_time, {0,1080});
+        add_place_holder(subject, {0,1035});
+        add_place_holder(experiment, {0,990});
+        add_place_holder(episode, {540,1035});
+        add_place_holder(frame, {540,990});
+    }
+    Content_crop composite;
+    Content_text date_time ;
+    Content_text subject ;
+    Content_text experiment;
+    Content_text episode;
+    Content_text frame;
+
+    Image get_frame(const Image &image, unsigned int frame_count) {
+        composite = image;
+        frame = "Frame :" + to_string(frame_count) + "  ";
+        json_cpp::Json_date d = json_cpp::Json_date::now();
+        date_time = "  " + d.to_json();
+        return get_image();
+    }
+};
+
+
+TEST_CASE("complex frame layout") {
+    Main_layout main("FPP1", "robot",1);
+    auto composite = Image::read("../../images/","composite.png").to_rgb();
+    main.get_frame(composite,588).save("../../images/","main_frame.png");
 }
