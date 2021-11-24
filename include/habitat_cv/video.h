@@ -4,13 +4,18 @@
 
 namespace habitat_cv {
     struct Video {
-        Video(const std::string &file_name, const cv::Size &size, Image::Type type);
+        Video(const cv::Size &size, Image::Type type);
         ~Video();
-        void add_frame(const Image &);
-        unsigned int frame_count;
+        bool new_video(const std::string &file_name);
+        bool close();
+        bool add_frame(const Image &);
+        bool is_open() const;
+        int frame_count;
+        cv::Size size;
         Image::Type type;
         int fourcc;
         cv::VideoWriter writer;
+        std::mutex write_mutex;
     };
 
 }
