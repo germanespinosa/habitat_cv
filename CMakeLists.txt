@@ -11,7 +11,6 @@ find_package( Dependencies )
 install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
 dependency_include (include)
 add_dependency_package (OpenCV)
-#find_package( OpenCV 4.0.1 REQUIRED )
 
 ###
 ### MAIN LIBRARY SETUP
