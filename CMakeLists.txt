@@ -6,9 +6,12 @@ project(habitat_cv
         VERSION 2019.1.0
         DESCRIPTION "Agent cell world simulation framework"
         LANGUAGES CXX)
+find_package( Dependencies )
 
-find_package( Cellworld REQUIRED )
-find_package( OpenCV 4.0.1 REQUIRED )
+install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
+dependency_include (include)
+add_dependency_package (OpenCV)
+#find_package( OpenCV 4.0.1 REQUIRED )
 
 ###
 ### MAIN LIBRARY SETUP
@@ -27,21 +30,11 @@ add_library(habitat_cv ${habitat_cv_files})
 target_link_libraries(habitat_cv ${OpenCV_LIBS})
 target_link_libraries(habitat_cv ${CELLWORLD_LIBRARIES})
 
-target_include_directories(habitat_cv
-        SYSTEM INTERFACE
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>)
-
-target_include_directories(habitat_cv
-        PRIVATE
-        include )
-
-
 ###
 ### TESTS
 ###
-find_package(CatchTests CONFIG QUIET)
-
+install_dependency ( https://github.com/germanespinosa/catch )
+test_library(habitat_cv)
 
 ###
 ### LIBRARY INSTALLATION
