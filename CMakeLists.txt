@@ -27,7 +27,7 @@ set( habitat_cv_files
 add_library(habitat_cv ${habitat_cv_files})
 
 target_link_libraries(habitat_cv ${OpenCV_LIBS})
-target_link_libraries(habitat_cv ${CELLWORLD_LIBRARIES})
+target_link_libraries(habitat_cv cellworld)
 
 ###
 ### TESTS
