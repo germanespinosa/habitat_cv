@@ -4,7 +4,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 project(habitat_cv
         VERSION 2019.1.0
-        DESCRIPTION "Agent cell world simulation framework"
+        DESCRIPTION "A very opinionated open cv implementation for research"
         LANGUAGES CXX)
 find_package( Dependencies )
 
@@ -26,8 +26,10 @@ set( habitat_cv_files
 
 add_library(habitat_cv ${habitat_cv_files})
 
-target_link_libraries(habitat_cv ${OpenCV_LIBS})
-target_link_libraries(habitat_cv cellworld)
+target_link_libraries(habitat_cv
+        LINK_PUBLIC
+        cellworld
+        ${OpenCV_LIBS})
 
 ###
 ### TESTS
