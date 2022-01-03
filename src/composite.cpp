@@ -18,21 +18,13 @@ namespace habitat_cv {
 
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
         size_large = cv::Size(wi.space.transformation.size * 2, wi.space.transformation.size * 2);
+
         composite = Image(size.height, size.width, Image::Type::gray);
         composite_large = Image(size.height * 2, size.width * 2, Image::Type::gray);
-        cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
-
-        //generates a large implementation to improve definition
-        auto wi_large = wi;
-        for (auto &location : wi_large.cell_locations) location = location * 2;
-        wi_large.cell_transformation.size *= 2;
-        wi_large.space.transformation.size *= 2;
-        wi_large.space.center = wi_large.space.center * 2;
 
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
-        cells_large = Polygon_list(wi_large.cell_locations, wc.cell_shape, wi_large.cell_transformation);
+
         world = World(wc, wi);
-        world_large = World(wc, wi_large);
 
         // generate mask
         Image mask_image(size.height, size.width, Image::Type::gray);
@@ -42,6 +34,16 @@ namespace habitat_cv {
         Polygon habitat_polygon(world.space.center, world.space.shape, t);
         mask_image.polygon(habitat_polygon,{255},true);
         mask = mask_image.threshold(0);
+
+        //generates a large implementation to improve definition
+        auto wi_large = wi;
+        for (auto &location : wi_large.cell_locations) location = location * 2;
+        wi_large.cell_transformation.size *= 2;
+        wi_large.space.transformation.size *= 2;
+        wi_large.space.center = wi_large.space.center * 2;
+
+        cells_large = Polygon_list(wi_large.cell_locations, wc.cell_shape, wi_large.cell_transformation);
+        world_large = World(wc, wi_large);
 
         // generate large mask
         Image mask_image_large(size_large.height, size_large.width, Image::Type::gray);
@@ -56,18 +58,20 @@ namespace habitat_cv {
         map = Map(world.create_cell_group());
         map_large = Map(world_large.create_cell_group());
 
+
+        //creates the crop rectangles for each camera
         cv::Size crop_size (size_large.width / configuration.order.cols(), size_large.height / configuration.order.rows());
         for (unsigned int c = 0; c < configuration.order.count(); c++) {
-            warped.emplace_back(size_large.height,size_large.width,Image::Type::gray);
+            warped.emplace_back(size_large.height, size_large.width,Image::Type::gray);
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
                                      camera_coordinates.y * crop_size.height);
-            crop_rectangles.emplace_back( crop_location, crop_size);
+            crop_rectangles.emplace_back(crop_location, crop_size);
             vector<cv::Point2f> src_cp;
             vector<cv::Point2f> dst_cp;
             for (auto &a:configuration.centroids[c]) {
                 src_cp.emplace_back(a.centroid.x,a.centroid.y);
-                dst_cp.emplace_back(composite.get_point(map.cells[map_large.find(a.cell_coordinates)].location));
+                dst_cp.emplace_back(composite_large.get_point(map.cells[map_large.find(a.cell_coordinates)].location));
             }
             homographies.push_back(findHomography(src_cp, dst_cp));
         }
