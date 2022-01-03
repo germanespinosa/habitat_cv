@@ -1,6 +1,5 @@
 #include <habitat_cv/composite.h>
 #include <cell_world.h>
-#include <math.h>
 
 using namespace json_cpp;
 using namespace std;
@@ -9,31 +8,55 @@ using namespace cell_world;
 namespace habitat_cv {
     Composite::Composite(const Camera_configuration &camera_configuration) :
     configuration(camera_configuration){
-        auto wc =  Resources::from("world_configuration")
+        auto wc = Resources::from("world_configuration")
                 .key("hexagonal")
                 .get_resource<World_configuration>();
-        auto wi =  Resources::from("world_implementation")
+        auto wi = Resources::from("world_implementation")
                 .key("hexagonal")
-                .key("cv").get_resource<World_implementation>();
+                .key("cv")
+                .get_resource<World_implementation>();
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
+        size_large = cv::Size(wi.space.transformation.size * 2, wi.space.transformation.size * 2);
         composite = Image(size.height, size.width, Image::Type::gray);
+        composite_large = Image(size.height * 2, size.width * 2, Image::Type::gray);
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
+
+        //generates a large implementation to improve definition
+        auto wi_large = wi;
+        for (auto &location : wi_large.cell_locations) location = location * 2;
+        wi_large.cell_transformation.size *= 2;
+        wi_large.space.transformation.size *= 2;
+
+        cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
+        cells_large = Polygon_list(wi_large.cell_locations, wc.cell_shape, wi_large.cell_transformation);
         world = World(wc, wi);
+        world_large = World(wc, wi_large);
 
         // generate mask
         Image mask_image(size.height, size.width, Image::Type::gray);
         mask_image.clear();
-        auto t =world.space.transformation;
+        auto t = world.space.transformation;
         t.size *= 1.05;
         Polygon habitat_polygon(world.space.center, world.space.shape, t);
         mask_image.polygon(habitat_polygon,{255},true);
         mask = mask_image.threshold(0);
 
+        // generate large mask
+        Image mask_image_large(size_large.height, size_large.width, Image::Type::gray);
+        mask_image_large.clear();
+        auto t_large = world_large.space.transformation;
+        t_large.size *= 1.05;
+        Polygon habitat_polygon_large(world_large.space.center, world_large.space.shape, t_large);
+        mask_image_large.polygon(habitat_polygon_large,{255},true);
+        mask_large = mask_image_large.threshold(0);
+
 
         map = Map(world.create_cell_group());
-        cv::Size crop_size (size.width / configuration.order.cols(), size.height / configuration.order.rows());
+        map_large = Map(world_large.create_cell_group());
+
+        cv::Size crop_size (size_large.width / configuration.order.cols(), size_large.height / configuration.order.rows());
         for (unsigned int c=0; c<configuration.order.count(); c++) {
-            warped.emplace_back(size.height,size.width,Image::Type::gray);
+            warped.emplace_back(size_large.height,size_large.width,Image::Type::gray);
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
                                      camera_coordinates.y * crop_size.height);
@@ -58,10 +81,11 @@ namespace habitat_cv {
         for (unsigned int c = 0; c < configuration.order.count(); c++){
             Image w;
             w.type = images[c].type;
-            cv::warpPerspective(images[c], w, homographies[c], size);
+            cv::warpPerspective(images[c], w, homographies[c], size_large);
             warped[c] = w.mask(mask);
-            warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
+            warped[c](crop_rectangles[c]).copyTo(composite_large(crop_rectangles[c]));
         }
+        resize(composite_large, composite, size, cv::INTER_LINEAR);
         return composite;
     }
 
