@@ -37,15 +37,15 @@ namespace habitat_cv {
 
         //generates a large implementation to improve definition
         auto wi_large = wi;
-        cout << "small:" << wi << endl;
         for (auto &location : wi_large.cell_locations) location = location * 2;
         wi_large.cell_transformation.size *= 2;
         wi_large.space.transformation.size *= 2;
         wi_large.space.center = wi_large.space.center * 2;
-        cout << "large:" << wi_large << endl;
-
         cells_large = Polygon_list(wi_large.cell_locations, wc.cell_shape, wi_large.cell_transformation);
         world_large = World(wc, wi_large);
+
+        cout << "small:" << world << endl;
+        cout << "large:" << world_large << endl;
 
         // generate large mask
         Image mask_image_large(size_large.height, size_large.width, Image::Type::gray);
