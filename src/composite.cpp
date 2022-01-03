@@ -15,6 +15,7 @@ namespace habitat_cv {
                 .key("hexagonal")
                 .key("cv")
                 .get_resource<World_implementation>();
+
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
         size_large = cv::Size(wi.space.transformation.size * 2, wi.space.transformation.size * 2);
         composite = Image(size.height, size.width, Image::Type::gray);
@@ -55,7 +56,7 @@ namespace habitat_cv {
         map_large = Map(world_large.create_cell_group());
 
         cv::Size crop_size (size_large.width / configuration.order.cols(), size_large.height / configuration.order.rows());
-        for (unsigned int c=0; c<configuration.order.count(); c++) {
+        for (unsigned int c = 0; c < configuration.order.count(); c++) {
             warped.emplace_back(size_large.height,size_large.width,Image::Type::gray);
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
@@ -65,7 +66,7 @@ namespace habitat_cv {
             vector<cv::Point2f> dst_cp;
             for (auto &a:configuration.centroids[c]) {
                 src_cp.emplace_back(a.centroid.x,a.centroid.y);
-                dst_cp.emplace_back(composite.get_point(map.cells[map.find(a.cell_coordinates)].location));
+                dst_cp.emplace_back(composite.get_point(map.cells[map_large.find(a.cell_coordinates)].location));
             }
             homographies.push_back(findHomography(src_cp, dst_cp));
         }
