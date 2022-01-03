@@ -43,9 +43,6 @@ namespace habitat_cv {
         wi_large.space.center = wi_large.space.center * resize_factor;
         world_large = World(wc, wi_large);
 
-        cout << "small:" << world << endl;
-        cout << "large:" << world_large << endl;
-
         // generate large mask
         Image mask_image_large(size_large.height, size_large.width, Image::Type::gray);
         mask_image_large.clear();
