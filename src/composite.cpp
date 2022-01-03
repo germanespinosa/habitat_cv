@@ -27,6 +27,7 @@ namespace habitat_cv {
         for (auto &location : wi_large.cell_locations) location = location * 2;
         wi_large.cell_transformation.size *= 2;
         wi_large.space.transformation.size *= 2;
+        wi_large.space.center = wi_large.space.center * 2;
 
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
         cells_large = Polygon_list(wi_large.cell_locations, wc.cell_shape, wi_large.cell_transformation);
