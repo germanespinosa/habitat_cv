@@ -11,7 +11,7 @@ find_package( Dependencies )
 install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
 dependency_include (include)
 add_dependency_package (OpenCV)
-
+dependency_include (${OpenCV_INCLUDE_DIRS})
 ###
 ### MAIN LIBRARY SETUP
 ###
