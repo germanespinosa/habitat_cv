@@ -23,7 +23,6 @@ namespace habitat_cv{
         cell_world::Map map;
         cell_world::Map map_large;
         cell_world::Polygon_list cells;
-        cell_world::Polygon_list cells_large;
         Camera_configuration configuration;
     };
 }
