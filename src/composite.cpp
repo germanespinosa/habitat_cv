@@ -15,12 +15,12 @@ namespace habitat_cv {
                 .key("hexagonal")
                 .key("cv")
                 .get_resource<World_implementation>();
-
+        float resize_factor = 4;
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
-        size_large = cv::Size(wi.space.transformation.size * 2, wi.space.transformation.size * 2);
+        size_large = cv::Size(wi.space.transformation.size * resize_factor, wi.space.transformation.size * resize_factor);
 
         composite = Image(size.height, size.width, Image::Type::gray);
-        composite_large = Image(size.height * 2, size.width * 2, Image::Type::gray);
+        composite_large = Image(size.height * resize_factor, size.width * resize_factor, Image::Type::gray);
 
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
 
@@ -37,10 +37,10 @@ namespace habitat_cv {
 
         //generates a large implementation to improve definition
         auto wi_large = wi;
-        for (auto &location : wi_large.cell_locations) location = location * 2;
-        wi_large.cell_transformation.size *= 2;
-        wi_large.space.transformation.size *= 2;
-        wi_large.space.center = wi_large.space.center * 2;
+        for (auto &location : wi_large.cell_locations) location = location * resize_factor;
+        wi_large.cell_transformation.size *= resize_factor;
+        wi_large.space.transformation.size *= resize_factor;
+        wi_large.space.center = wi_large.space.center * resize_factor;
         world_large = World(wc, wi_large);
 
         cout << "small:" << world << endl;
