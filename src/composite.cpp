@@ -82,7 +82,7 @@ namespace habitat_cv {
             Image w;
             w.type = images[c].type;
             cv::warpPerspective(images[c], w, homographies[c], size_large);
-            warped[c] = w.mask(mask);
+            warped[c] = w.mask(mask_large);
             warped[c](crop_rectangles[c]).copyTo(composite_large(crop_rectangles[c]));
         }
         resize(composite_large, composite, size, cv::INTER_LINEAR);
