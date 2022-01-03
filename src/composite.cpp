@@ -72,8 +72,8 @@ namespace habitat_cv {
             vector<cv::Point2f> src_cp;
             vector<cv::Point2f> dst_cp;
             for (auto &a:configuration.centroids[c]) {
-                src_cp.emplace_back(a.centroid.x * 2,a.centroid.y * 2);
-                dst_cp.emplace_back(composite_large.get_point(map.cells[map_large.find(a.cell_coordinates)].location));
+                src_cp.emplace_back(a.centroid.x,a.centroid.y );
+                dst_cp.emplace_back(composite_large.get_point(map_large.cells[map_large.find(a.cell_coordinates)].location));
             }
             homographies.push_back(findHomography(src_cp, dst_cp));
         }
