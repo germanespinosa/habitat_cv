@@ -5,7 +5,7 @@
 
 namespace habitat_cv{
     struct Composite {
-        Composite(const Camera_configuration &camera_configuration);
+        Composite(Camera_configuration camera_configuration, float resize_factor = 4);
         Image &get_composite (const Images &);
         cell_world::Polygon &get_polygon(const cell_world::Coordinates &);
         cell_world::Coordinates get_coordinates(const cell_world::Location &);
@@ -24,5 +24,6 @@ namespace habitat_cv{
         cell_world::Map map_large;
         cell_world::Polygon_list cells;
         Camera_configuration configuration;
+        float resize_factor;
     };
 }

@@ -1,13 +1,16 @@
 #include <habitat_cv/composite.h>
 #include <cell_world.h>
 
+#include <utility>
+
 using namespace json_cpp;
 using namespace std;
 using namespace cell_world;
 
 namespace habitat_cv {
-    Composite::Composite(const Camera_configuration &camera_configuration) :
-    configuration(camera_configuration){
+    Composite::Composite(Camera_configuration camera_configuration, float resize_factor) :
+    configuration(std::move(camera_configuration)),
+    resize_factor(resize_factor) {
         auto wc = Resources::from("world_configuration")
                 .key("hexagonal")
                 .get_resource<World_configuration>();
@@ -15,7 +18,6 @@ namespace habitat_cv {
                 .key("hexagonal")
                 .key("cv")
                 .get_resource<World_implementation>();
-        float resize_factor = 4;
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
         size_large = cv::Size(wi.space.transformation.size * resize_factor, wi.space.transformation.size * resize_factor);
 
