@@ -203,6 +203,10 @@ namespace habitat_cv{
 
     }
 
+    cell_world::Location Image::get_location(const cv::Point2f &p) const {
+        return {(float)p.x, (float)(size().height - p.y)};
+    }
+
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {
     }
 

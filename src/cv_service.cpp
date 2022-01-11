@@ -19,7 +19,7 @@ namespace habitat_cv {
 
     Camera_configuration camera_configuration = Resources::from("camera_configuration").key(
             "default").get_resource<Camera_configuration>();
-    Composite composite(camera_configuration, 1);
+    Composite composite(camera_configuration);
 
     auto led_profile = Resources::from("profile").key("led").get_resource<Profile>();
     auto mouse_profile = Resources::from("profile").key("mouse").get_resource<Profile>();
@@ -161,16 +161,18 @@ namespace habitat_cv {
         string screen_text;
         Screen_image screen_image = Screen_image::main;
         while (tracking_running) {
+            Timer exec;
+            cout << endl;
             cameras->capture();
+            cout << "CAPTURE :" << exec.to_seconds() * 1000 << endl;
             fr.new_frame();
             cout << fr.filtered_fps << "                   \r";
-            Timer p;
             auto composite_image_gray = composite.get_composite(cameras->images);
-            cout << "this is the time " << p.to_seconds() * 1000 << endl;
+            cout << "COMPOSITE :" << exec.to_seconds() * 1000 << endl;
             auto composite_image_rgb = composite_image_gray.to_rgb();
-
+            cout << "COMPOSITE RGB:" << exec.to_seconds() * 1000 << endl;
             auto diff = composite_image_gray.diff(background.composite);
-
+            cout << "DIFF GRAY :" << exec.to_seconds() * 1000 << endl;
             if (robot_best_cam == -1) {
                 new_robot_data = get_robot_step(composite_image_gray, robot);
             } else {
@@ -179,6 +181,7 @@ namespace habitat_cv {
                     new_robot_data = get_robot_step(composite_image_gray, robot);
                 }
             }
+            cout << "ROBOT :" << exec.to_seconds() * 1000 << endl;
             unsigned int frame_number = 0;
             if (main_video.is_open()) {
                 frame_number = main_video.frame_count;
@@ -212,6 +215,7 @@ namespace habitat_cv {
                 composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot);
 
                 robot_counter = 30;
+                cout << "ROBOT DATA:" << exec.to_seconds() * 1000 << endl;
             } else {
                 if (robot_counter) robot_counter--;
                 else robot.location = NOLOCATION;
@@ -229,23 +233,19 @@ namespace habitat_cv {
                 auto cell_polygon = composite.get_polygon(mouse.coordinates);
                 composite_image_rgb.polygon(cell_polygon, {255, 0, 0});
             }
+            cout << "MOUSE:" << exec.to_seconds() * 1000 << endl;
 
             auto main_frame = main_layout.get_frame(composite_image_rgb, frame_number);
 
             auto raw_frame = raw_layout.get_frame(cameras->images);
-            Location l1 = (mouse.location - Location(50, 50 )) * composite.resize_factor;
-            if (l1.x < 0) l1.x = 0;
-            if (l1.y < 0) l1.y = 0;
-            if (l1.x > 980 * composite.resize_factor) l1.x = 980 * composite.resize_factor;
-            if (l1.y > 980 * composite.resize_factor) l1.y = 980 * composite.resize_factor;
+            int camera_index = 0;
             Images mouse_cut;
-            for (auto &image: composite.warped) {
-                Content_crop cut(l1, l1 + Location(100 , 100) * composite.resize_factor, Image::Type::gray);
-                cut = image;
-                mouse_cut.emplace_back(cut);
+            for (auto &image: cameras->images) {
+                mouse_cut.emplace_back(Content_crop(image.get_location(composite.get_raw_point(camera_index,image.get_point(mouse.location))),100, image));
+                camera_index++;
             }
-
             auto mouse_frame = raw_layout.get_frame(mouse_cut);
+            cout << "MOUSE CAM:" << exec.to_seconds() * 1000 << endl;
             Image screen_frame;
             switch (screen_image) {
                 case Screen_image::main :
@@ -309,9 +309,10 @@ namespace habitat_cv {
                     screen_frame = screen_layout.get_frame(composite.composite, "composite");
                     break;
                 case Screen_image::large :
-                    screen_frame = screen_layout.get_frame(composite.composite_large, "large");
+                    screen_frame = screen_layout.get_frame(composite.composite, "large");
                     break;
             }
+            cout << "SCREEN CAM:" << exec.to_seconds() * 1000 << endl;
             if (main_video.is_open()) screen_frame.circle({20, 20}, 10, {0, 0, 255}, true);
             cv::imshow("Agent Tracking", screen_frame);
             auto key = cv::waitKey(1);
@@ -363,6 +364,7 @@ namespace habitat_cv {
                     cout << "change_screen_output to " << screen_image << endl;
                     break;
             }
+            cout << "KEY:" << exec.to_seconds() * 1000 << endl;
 
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
 
@@ -372,6 +374,7 @@ namespace habitat_cv {
                 mouse_video.add_frame(mouse_frame);
             });
             t.detach();
+            cout << "VIDEO:" << exec.to_seconds() * 1000 << endl;
             if (!main_video.is_open()) mouse.location = NOLOCATION;
             // write videos
         }

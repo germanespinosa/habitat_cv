@@ -1,6 +1,5 @@
 #include <habitat_cv/camera_array.h>
 #include <iostream>
-#include <future>
 #include <xcliball.h>
 
 using namespace std;
@@ -18,11 +17,15 @@ namespace habitat_cv {
     }
 
     void Camera_array::capture() {
-        vector<std::future<int>> futures;
+//        vector<thread> threads;
         for (unsigned int c = 0; c < camera_count; c++) {
-            int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
-            pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, images[c].data, frame_size, "Grey");
+            uchar *data=images[c].data;
+//            threads.push_back(thread([c](uchar *data, unsigned int frame_size) {
+                int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
+                pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, data, frame_size, "Grey");
+//            }, data, frame_size));
         }
+//        for (auto &t:threads) t.join();
     }
 
     void Camera_array::reset() {

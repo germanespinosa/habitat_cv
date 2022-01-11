@@ -1,5 +1,6 @@
 #include <habitat_cv/composite.h>
 #include <cell_world.h>
+#include <thread>
 
 #include <utility>
 
@@ -8,9 +9,8 @@ using namespace std;
 using namespace cell_world;
 
 namespace habitat_cv {
-    Composite::Composite(Camera_configuration camera_configuration, float resize_factor) :
-    configuration(std::move(camera_configuration)),
-    resize_factor(resize_factor) {
+    Composite::Composite(Camera_configuration camera_configuration) :
+    configuration(std::move(camera_configuration)){
         auto wc = Resources::from("world_configuration")
                 .key("hexagonal")
                 .get_resource<World_configuration>();
@@ -19,10 +19,8 @@ namespace habitat_cv {
                 .key("cv")
                 .get_resource<World_implementation>();
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
-        size_large = cv::Size(wi.space.transformation.size * resize_factor, wi.space.transformation.size * resize_factor);
 
         composite = Image(size.height, size.width, Image::Type::gray);
-        composite_large = Image(size.height * resize_factor, size.width * resize_factor, Image::Type::gray);
 
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
 
@@ -37,32 +35,12 @@ namespace habitat_cv {
         mask_image.polygon(habitat_polygon,{255},true);
         mask = mask_image.threshold(0);
 
-        //generates a large implementation to improve definition
-        auto wi_large = wi;
-        for (auto &location : wi_large.cell_locations) location = location * resize_factor;
-        wi_large.cell_transformation.size *= resize_factor;
-        wi_large.space.transformation.size *= resize_factor;
-        wi_large.space.center = wi_large.space.center * resize_factor;
-        world_large = World(wc, wi_large);
-
-        // generate large mask
-        Image mask_image_large(size_large.height, size_large.width, Image::Type::gray);
-        mask_image_large.clear();
-        auto t_large = world_large.space.transformation;
-        t_large.size *= 1.05;
-        Polygon habitat_polygon_large(world_large.space.center, world_large.space.shape, t_large);
-        mask_image_large.polygon(habitat_polygon_large,{255},true);
-        mask_large = mask_image_large.threshold(0);
-
-
         map = Map(world.create_cell_group());
-        map_large = Map(world_large.create_cell_group());
-
 
         //creates the crop rectangles for each camera
-        cv::Size crop_size (size_large.width / configuration.order.cols(), size_large.height / configuration.order.rows());
+        cv::Size crop_size (size.width / configuration.order.cols(), size.height / configuration.order.rows());
         for (unsigned int c = 0; c < configuration.order.count(); c++) {
-            warped.emplace_back(size_large.height, size_large.width,Image::Type::gray);
+            warped.emplace_back(size.height, size.width,Image::Type::gray);
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
                                      camera_coordinates.y * crop_size.height);
@@ -71,9 +49,9 @@ namespace habitat_cv {
             vector<cv::Point2f> dst_cp;
             for (auto &a:configuration.centroids[c]) {
                 src_cp.emplace_back(a.centroid.x,a.centroid.y );
-                dst_cp.emplace_back(composite_large.get_point(map_large.cells[map_large.find(a.cell_coordinates)].location));
+                dst_cp.emplace_back(composite.get_point(map.cells[map.find(a.cell_coordinates)].location));
             }
-            homographies.push_back(findHomography(src_cp, dst_cp));
+            inverted_homographies.emplace_back(homographies.emplace_back(findHomography(src_cp, dst_cp)).inv());
         }
     }
 
@@ -83,16 +61,21 @@ namespace habitat_cv {
     }
 
     Image &Composite::get_composite(const Images &images) {
-
         for (unsigned int c = 0; c < configuration.order.count(); c++){
-            Image w;
-            w.type = images[c].type;
-            cv::warpPerspective(images[c], w, homographies[c], size_large);
-            warped[c] = w.mask(mask_large);
-            warped[c](crop_rectangles[c]).copyTo(composite_large(crop_rectangles[c]));
+                Image w;
+                w.type = images[c].type;
+                cv::warpPerspective(images[c], w, homographies[c], size);
+                warped[c] = w.mask(mask);
+                warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
         }
-        resize(composite_large, composite, size, cv::INTER_LINEAR);
         return composite;
+    }
+
+    cv::Point2f Composite::get_raw_point(unsigned int camera_index, const cv::Point2f &composite_point){
+        cv::Matx33f warp = inverted_homographies[camera_index];
+        cv::Point2f warped_point(composite_point.x,composite_point.y);
+        cv::Point3f homogeneous = warp * warped_point;
+        return {homogeneous.x, homogeneous.y};
     }
 
     cell_world::Polygon &Composite::get_polygon(const Coordinates &coordinates) {

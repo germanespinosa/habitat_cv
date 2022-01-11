@@ -41,6 +41,7 @@ namespace habitat_cv {
         void clear();
         Image diff(const Image &) const;
         [[nodiscard]] cv::Point2f get_point(const cell_world::Location &) const;
+        cell_world::Location get_location(const cv::Point2f &) const;
         Image mask(const Binary_image &);
     };
 

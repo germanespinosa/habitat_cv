@@ -64,7 +64,7 @@ target_link_libraries(agent_tracker
 ### TESTS
 ###
 install_dependency ( https://github.com/germanespinosa/catch )
-test_library(habitat_cv)
+test_library(habitat_cv catchtests/camera_array.cpp)
 
 ###
 ### LIBRARY INSTALLATION

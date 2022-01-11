@@ -5,25 +5,21 @@
 
 namespace habitat_cv{
     struct Composite {
-        Composite(Camera_configuration camera_configuration, float resize_factor = 4);
+        Composite(Camera_configuration camera_configuration);
         Image &get_composite (const Images &);
         cell_world::Polygon &get_polygon(const cell_world::Coordinates &);
         cell_world::Coordinates get_coordinates(const cell_world::Location &);
+        cv::Point2f get_raw_point(unsigned int camera_index, const cv::Point2f &);
         Image composite;
-        Image composite_large;
         Binary_image mask;
-        Binary_image mask_large;
         cv::Size size;
-        cv::Size size_large;
         std::vector<cv::Mat> homographies;
+        std::vector<cv::Mat> inverted_homographies;
         Images warped;
         std::vector<cv::Rect> crop_rectangles;
         cell_world::World world;
-        cell_world::World world_large;
         cell_world::Map map;
-        cell_world::Map map_large;
         cell_world::Polygon_list cells;
         Camera_configuration configuration;
-        float resize_factor;
     };
 }
