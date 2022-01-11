@@ -3,6 +3,8 @@
 
 namespace habitat_cv {
 
+    unsigned int fps = 30;
+
     Video::Video(const cv::Size &size, Image::Type type):
     size(size),
     type(type),
@@ -30,7 +32,7 @@ namespace habitat_cv {
     }
 
     bool Video::new_video(const std::string &file_name) {
-        writer = cv::VideoWriter(file_name, fourcc, 20, size, type == Image::Type::rgb);
+        writer = cv::VideoWriter(file_name, fourcc, fps, size, type == Image::Type::rgb);
         frame_count = 0;
         return false;
     }
@@ -49,5 +51,13 @@ namespace habitat_cv {
 
     bool Video::is_open() const {
         return frame_count >= 0;
+    }
+
+    void Video::set_fps(unsigned int new_fps) {
+        fps = new_fps;
+    }
+
+    unsigned int Video::get_fps() {
+        return fps;
     }
 }

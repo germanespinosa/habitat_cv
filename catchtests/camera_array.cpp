@@ -11,26 +11,32 @@ TEST_CASE("capture") {
     Camera_array cameras(cam_file, 4);
     cameras.capture();
     Timer t;
-    cameras.capture();
+    auto &images = cameras.capture();
     cout << "CAPTURE TIME: " << t.to_seconds() * 1000 << endl;
-    cameras.images.save(".", {"raw_0.png", "raw_1.png", "raw_2.png", "raw_3.png"});
-    Camera_configuration camera_configuration = Resources::from("camera_configuration").key(
-            "default").get_resource<Camera_configuration>();
-    Composite large(camera_configuration);
+    images.save(".", {"raw_0.png", "raw_1.png", "raw_2.png", "raw_3.png"});
     t.reset();
-    large.get_composite(cameras.images);
-    cout << "COMPOSITE TIME: " << t.to_seconds() * 1000 << endl;
-    large.composite.save(".","composite.png");
-    Images mouse_cut;
-    for (unsigned int i = 0; i < 4; i++) {
-        auto &image = cameras.images[i];
-        t.reset();
-        auto raw_point = large.get_raw_point(i, {440, 198});
-        auto raw_location = image.get_location(raw_point);
-        cout << "RAW LOCATION " << i << ": " << raw_location << " TIME: " << t.to_seconds() * 1000 << endl;
-        Content_crop cut(raw_location - Location(100, 100), raw_location + Location(100, 100), Image::Type::gray);
-        cut = image;
-        mouse_cut.emplace_back(cut);
-    }
-    mouse_cut.save(".", {"mraw_0.png", "mraw_1.png", "mraw_2.png", "mraw_3.png"});
+    auto &images2 = cameras.capture();
+    cout << "CAPTURE  2 TIME: " << t.to_seconds() * 1000 << endl;
+
+//    Camera_configuration camera_configuration = Resources::from("camera_configuration").key(
+//            "default").get_resource<Camera_configuration>();
+//
+//
+//    Composite large(camera_configuration);
+//    t.reset();
+//    large.get_composite(images);
+//    cout << "COMPOSITE TIME: " << t.to_seconds() * 1000 << endl;
+//    large.composite.save(".","composite.png");
+//    Images mouse_cut;
+//    for (unsigned int i = 0; i < 4; i++) {
+//        auto &image = images[i];
+//        t.reset();
+//        auto raw_point = large.get_raw_point(i, {440, 198});
+//        auto raw_location = image.get_location(raw_point);
+//        cout << "RAW LOCATION " << i << ": " << raw_location << " TIME: " << t.to_seconds() * 1000 << endl;
+//        Content_crop cut(raw_location - Location(100, 100), raw_location + Location(100, 100), Image::Type::gray);
+//        cut = image;
+//        mouse_cut.emplace_back(cut);
+//    }
+//    mouse_cut.save(".", {"mraw_0.png", "mraw_1.png", "mraw_2.png", "mraw_3.png"});
 }
