@@ -38,12 +38,6 @@ namespace habitat_cv {
 
     unsigned int robot_threshold = 240;
 
-    bool Cv_service::new_experiment(const std::string &occlusions) {
-        cout << "new_experiment" << endl;
-        send_update(Message("new_experiment", New_experiment_message{occlusions}));
-        return true;
-    }
-
     bool Cv_service::new_episode(New_episode_message nem) {
         cout << "new_episode" << endl;
         if (main_video.is_open()) end_episode();
@@ -61,12 +55,6 @@ namespace habitat_cv {
         main_video.close();
         mouse_video.close();
         raw_video.close();
-        return true;
-    }
-
-    bool Cv_service::update_puff() {
-        cout << "update_puff" << endl;
-        puff_state = PUFF_DURATION;
         return true;
     }
 
@@ -117,11 +105,6 @@ namespace habitat_cv {
         return true;
     }
 
-    void Cv_service::initialize_background() {
-        auto &images = cameras->capture();
-        auto composite_image = composite.get_composite(images);
-        background.update(composite_image, composite.warped);
-    }
 
 #define NOLOCATION Location(-1000,-1000)
     enum Screen_image {
@@ -160,17 +143,14 @@ namespace habitat_cv {
         string screen_text;
         Screen_image screen_image = Screen_image::main;
         double fps = Video::get_fps();
-        double time_out = 1.0 / fps;
+        double time_out = 1.0 / fps * .999;
         cout << "time_out: " << time_out << endl;
         Timer frame_timer(time_out);
-        double acum_error = 0;
-        double i_term = .000000001;
         Frame_rate fr;
         while (tracking_running) {
             auto images = cameras->capture();
             auto composite_image_gray = composite.get_composite(images);
             auto composite_image_rgb = composite_image_gray.to_rgb();
-            auto diff = composite_image_gray.diff(background.composite);
             if (robot_best_cam == -1) {
                 new_robot_data = get_robot_step(composite_image_gray, robot);
             } else {
@@ -203,7 +183,7 @@ namespace habitat_cv {
                     robot.coordinates = composite.map.cells[cell_id].coordinates;
                     robot.time_stamp = ts.to_seconds();
                     robot.frame = frame_number;
-                    Service::send_step(robot);
+                    Cv_service::send_step(robot);
                 }, reference_wrapper(robot), reference_wrapper(composite), reference_wrapper(ts)).detach();
 
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
@@ -216,13 +196,14 @@ namespace habitat_cv {
                 if (robot_counter) robot_counter--;
                 else robot.location = NOLOCATION;
             }
+            auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
                 thread([frame_number](Step &mouse, Composite &composite, Timer &ts){
                     auto cell_id = composite.map.cells.find(mouse.location);
                     mouse.coordinates = composite.map.cells[cell_id].coordinates;
                     mouse.time_stamp = ts.to_seconds();
                     mouse.frame = frame_number;
-                    Service::send_step(mouse);
+                    Cv_service::send_step(mouse);
                 }, reference_wrapper(mouse), reference_wrapper(composite), reference_wrapper(ts)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
@@ -328,7 +309,7 @@ namespace habitat_cv {
                     screen_image = main;
                     break;
                 case 'R':
-                    reset_cameras();
+                    cameras->reset();
                     break;
                 case '[':
                     robot_threshold++;
@@ -339,7 +320,7 @@ namespace habitat_cv {
                     cout << "robot threshold set to " << robot_threshold << endl;
                     break;
                 case 'U':
-                    initialize_background();
+                    background.update(composite.composite, composite.warped);
                     break;
                 case '\t':
                     if (screen_image == Screen_image::large)
@@ -358,8 +339,6 @@ namespace habitat_cv {
             }
             while (!frame_timer.time_out());
             fr.new_frame();
-            acum_error += (fr.current_fps - fps);
-            frame_timer.time += acum_error * i_term;
             frame_timer.reset();
             cout << fr.filtered_fps << "                   \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
@@ -382,18 +361,5 @@ namespace habitat_cv {
             composite.get_composite(images);
             background.update(composite.composite, composite.warped);
         }
-    }
-
-    void Cv_service::reset_cameras() {
-        cameras->reset();
-    }
-
-    void Cv_service::set_occlusions(const string &occlusions_name) {
-        occlusions.clear();
-        try {
-            occlusions = composite.world.create_cell_group(
-                    Resources::from("cell_group").key("hexagonal").key(occlusions_name).key(
-                            "occlusions").get_resource<Cell_group_builder>());
-        } catch (...) {}
     }
 }

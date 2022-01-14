@@ -16,9 +16,9 @@ namespace habitat_cv {
     }
 
     Coordinates Camera_order::get_camera_coordinates(unsigned int camera) const {
-        for (int r = 0; r < rows(); r++)
-            for (int c = 0; c < (*this).size(); c++)
-                if ((*this)[r][c] == camera) return Coordinates{c, r};
+        for (unsigned int r = 0; r < rows(); r++)
+            for (unsigned int c = 0; c < (*this).size(); c++)
+                if ((*this)[r][c] == camera) return Coordinates{(int)c, (int)r};
         return Coordinates{-1, -1};
     }
 

@@ -9,20 +9,8 @@ namespace habitat_cv {
 
     Camera_array::Camera_array(const std::string &config_file_path, unsigned int camera_count) :
             camera_count(camera_count), config_file(config_file_path), active_buffer(0), ready_buffer(0) {
-        open();
         running = false;
-        unfinished_capture = thread([this](){
-            running = true;
-            while(running){
-                while(active_buffer != ready_buffer);
-                for (unsigned int c = 0; c < this->camera_count; c++) {
-                    uchar *data = buffers[active_buffer][c].data;
-                    int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
-                    pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, data, frame_size, "Grey");
-                }
-                ready_buffer= (ready_buffer + 1) % 2;
-            }
-        });
+        open();
         while (!running);
     }
 
@@ -54,7 +42,21 @@ namespace habitat_cv {
                 images.emplace_back(size.height, size.width, Image::Type::gray);
             }
         }
+        active_buffer = 0;
+        ready_buffer = 0;
         frame_size = size.width * size.height;
+        unfinished_capture = thread([this](){
+            running = true;
+            while(running){
+                while(active_buffer != ready_buffer && running);
+                for (unsigned int c = 0; c < this->camera_count && running; c++) {
+                    uchar *data = buffers[active_buffer][c].data;
+                    int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
+                    pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, data, frame_size, "Grey");
+                }
+                ready_buffer= (ready_buffer + 1) % 2;
+            }
+        });
     }
 
     void Camera_array::close() {
