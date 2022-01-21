@@ -89,8 +89,8 @@ namespace habitat_cv {
         bottom_left = center - Location(square_size/2, square_size/2);
         if (bottom_left.x < 0) bottom_left.x = 0;
         if (bottom_left.y < 0) bottom_left.y = 0;
-        if (bottom_left.x + square_size > image.size[0]) bottom_left.x = image.size[0] - square_size;
-        if (bottom_left.y + square_size > image.size[1]) bottom_left.y = image.size[1] - square_size;
+        if (bottom_left.x + square_size > image.size[0]) bottom_left.x = image.size[0] - square_size - 1;
+        if (bottom_left.y + square_size > image.size[1]) bottom_left.y = image.size[1] - square_size - 1;
         top_right = bottom_left + Location(square_size, square_size);
         *this = image;
     }

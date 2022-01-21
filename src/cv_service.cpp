@@ -216,7 +216,10 @@ namespace habitat_cv {
             int camera_index = 0;
             Images mouse_cut;
             for (auto &image: images) {
-                mouse_cut.emplace_back(Content_crop(image.get_location(composite.get_raw_point(camera_index,image.get_point(mouse.location))),100, image));
+                auto mouse_point = composite_image_gray.get_point(mouse.location);
+                auto mouse_raw_point = composite.get_raw_point(camera_index,mouse_point);
+                auto mouse_raw_location = image.get_location(mouse_raw_point);
+                mouse_cut.emplace_back(Content_crop(mouse_raw_location,100, image));
                 camera_index++;
             }
             auto mouse_frame = raw_layout.get_frame(mouse_cut);
