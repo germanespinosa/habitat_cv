@@ -6,10 +6,10 @@ namespace habitat_cv {
     unsigned int fps = 30;
 
     Video::Video(const cv::Size &size, Image::Type type):
+    frame_count(-1),
     size(size),
     type(type),
-    fourcc(cv::VideoWriter::fourcc('m', 'p','4','v')),
-    frame_count(-1)
+    fourcc(cv::VideoWriter::fourcc('m', 'p','4','v'))
     {
     }
 

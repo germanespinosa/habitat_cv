@@ -28,7 +28,7 @@ namespace habitat_cv{
 
     void Images::save(const string &path, const vector<std::string> &file_names) {
         assert(file_names.size()==size());
-        for (int i=0; i<size(); i++)
+        for (unsigned int i=0; i<size(); i++)
             (*this)[i].save(path, file_names[i]);
     }
 
@@ -122,7 +122,6 @@ namespace habitat_cv{
     }
 
     void Image::polygon(const cell_world::Polygon &polygon, const cv::Scalar &color, bool filled) {
-        int n=0;
         vector<vector<cv::Point>> points;
         auto &vertices = points.emplace_back();
         for (auto &v: polygon.vertices) vertices.push_back(get_point(v));
@@ -177,17 +176,20 @@ namespace habitat_cv{
             int baseline = 0;
             auto s = cv::getTextSize(t, cv::FONT_HERSHEY_DUPLEX, size, 1, &baseline);
 
-            if (valign)
-                if (valign == 2)
+            if (valign) {
+                if (valign == 2) {
                     point.y += s.height;
-                else
+                } else {
                     point.y += s.height / 2;
-
-            if (halign)
-                if (halign == 2)
+                }
+            }
+            if (halign) {
+                if (halign == 2) {
                     point.x -= s.width;
-                else
+                } else {
                     point.x -= s.width / 2;
+                }
+            }
         }
         cv::putText(*this,
                     t.c_str(),

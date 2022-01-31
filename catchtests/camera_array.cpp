@@ -17,6 +17,7 @@ TEST_CASE("capture") {
     t.reset();
     auto &images2 = cameras.capture();
     cout << "CAPTURE  2 TIME: " << t.to_seconds() * 1000 << endl;
+    cout << images2.size() << endl;
 
 //    Camera_configuration camera_configuration = Resources::from("camera_configuration").key(
 //            "default").get_resource<Camera_configuration>();
