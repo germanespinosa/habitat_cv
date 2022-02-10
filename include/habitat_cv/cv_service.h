@@ -1,5 +1,4 @@
 #pragma once
-#include <agent_tracking/message.h>
 #include <agent_tracking/tracking_service.h>
 
 namespace habitat_cv{
@@ -7,7 +6,7 @@ namespace habitat_cv{
         static void set_camera_file(const std::string &);
         static void set_background_path(const std::string &);
         static void tracking_process();
-        bool new_episode(agent_tracking::New_episode_message nem);
-        bool end_episode();
+        static bool new_episode(const std::string &subject, const std::string &experiment, int episode, const std::string &occlusions, const std::string &destination_folder);
+        static bool end_episode();
     };
 }
