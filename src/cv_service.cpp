@@ -2,6 +2,9 @@
 #include <agent_tracking.h>
 #include <habitat_cv.h>
 #include <cell_world/timer.h>
+#include <filesystem>
+#include <habitat_cv/cv_service.h>
+
 
 #define SAFETY_MARGIN 75
 #define PUFF_DURATION 15
@@ -38,14 +41,15 @@ namespace habitat_cv {
 
     unsigned int robot_threshold = 240;
 
-    bool Cv_service::new_episode(New_episode_message nem) {
+    bool Cv_service::new_episode(const string &subject, const string &experiment, int episode, const string &occlusions, const string &destination_folder) {
         cout << "new_episode" << endl;
         if (main_video.is_open()) end_episode();
-        cout << "Video destination folder: " + nem.destination_folder << endl;
-        main_layout.new_episode(nem.subject, nem.experiment, nem.episode, nem.occlusions);
-        main_video.new_video(nem.destination_folder + "/main.mp4");
-        raw_video.new_video(nem.destination_folder + "/raw.mp4");
-        mouse_video.new_video(nem.destination_folder + "/mouse.mp4");
+        std::filesystem::create_directories(destination_folder);
+        cout << "Video destination folder: " + destination_folder << endl;
+        main_layout.new_episode(subject, experiment, episode, occlusions);
+        main_video.new_video(destination_folder + "/main.mp4");
+        raw_video.new_video(destination_folder + "/raw.mp4");
+        mouse_video.new_video(destination_folder + "/mouse.mp4");
         ts.reset();
         return true;
     }
