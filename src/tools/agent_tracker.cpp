@@ -38,7 +38,7 @@ int main(int argc, char **argv){
     experiment_client.connect("127.0.0.1");
     experiment_client.subscribe();
 
-    easy_tcp::Server<Cv_service> server;
+    Tracking_server server;
     string cam_config = argv[1];
     string bg_path = "/habitat/habitat_cv/backgrounds/" + cam_config + "/";
     string cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
@@ -51,7 +51,7 @@ int main(int argc, char **argv){
     Cv_service::set_camera_file(cam_file);
     Cv_service::set_background_path(bg_path);
     server.start(Cv_service::get_port());
-    Cv_service::tracking_process();
+    Cv_service::tracking_process(server);
     experiment_client.disconnect();
     exit(0);
 }

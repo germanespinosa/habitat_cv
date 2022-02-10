@@ -27,6 +27,9 @@ namespace habitat_cv {
     auto led_profile = Resources::from("profile").key("led").get_resource<Profile>();
     auto mouse_profile = Resources::from("profile").key("mouse").get_resource<Profile>();
 
+    auto canonical_space = Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>().space;
+    auto cv_space = Resources::from("world_implementation").key("hexagonal").key("cv").get_resource<World_implementation>().space;
+
     atomic<int> puff_state;
     Cell_group occlusions;
 
@@ -133,7 +136,7 @@ namespace habitat_cv {
         large
     };
 
-    void Cv_service::tracking_process() {
+    void Cv_service::tracking_process(Tracking_server &server) {
         tracking_running = true;
         puff_state = false;
         Step mouse;
@@ -182,13 +185,13 @@ namespace habitat_cv {
                 } else {
                     robot.data = "";
                 }
-                thread([frame_number](Step &robot, Composite &composite, Timer &ts){
+                thread([frame_number](Step &robot, Composite &composite, Timer &ts, Tracking_server& server){
                     auto cell_id = composite.map.cells.find(robot.location);
                     robot.coordinates = composite.map.cells[cell_id].coordinates;
                     robot.time_stamp = ts.to_seconds();
                     robot.frame = frame_number;
-                    Cv_service::send_step(robot);
-                }, reference_wrapper(robot), reference_wrapper(composite), reference_wrapper(ts)).detach();
+                    server.send_step(robot.convert(cv_space,canonical_space));
+                }, reference_wrapper(robot), reference_wrapper(composite), reference_wrapper(ts), reference_wrapper(server)).detach();
 
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
                 auto cell_polygon = composite.get_polygon(robot.coordinates);
@@ -202,13 +205,13 @@ namespace habitat_cv {
             }
             auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
-                thread([frame_number](Step &mouse, Composite &composite, Timer &ts){
+                thread([frame_number](Step &mouse, Composite &composite, Timer &ts, Tracking_server& server){
                     auto cell_id = composite.map.cells.find(mouse.location);
                     mouse.coordinates = composite.map.cells[cell_id].coordinates;
                     mouse.time_stamp = ts.to_seconds();
                     mouse.frame = frame_number;
-                    Cv_service::send_step(mouse);
-                }, reference_wrapper(mouse), reference_wrapper(composite), reference_wrapper(ts)).detach();
+                    server.send_step(mouse.convert(cv_space,canonical_space));
+                }, reference_wrapper(mouse), reference_wrapper(composite), reference_wrapper(ts), reference_wrapper(server)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
                 auto cell_polygon = composite.get_polygon(mouse.coordinates);
