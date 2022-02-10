@@ -15,6 +15,9 @@ find_package( Dependencies )
 install_dependency( https://github.com/germanespinosa/agent_tracking Agent_tracking )
 
 install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
+
+install_dependency ( https://github.com/germanespinosa/experiment_service Experiment_service )
+
 dependency_include (include)
 add_dependency_package (OpenCV)
 dependency_include (${OpenCV_INCLUDE_DIRS})
@@ -57,7 +60,8 @@ target_link_libraries(agent_tracker
         /usr/local/xclib/lib/pxipl_x86_64.a
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread
         agent_tracking
-        habitat_cv)
+        habitat_cv
+        experiment_service)
 
 
 ###
