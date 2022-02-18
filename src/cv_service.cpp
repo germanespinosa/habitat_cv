@@ -186,15 +186,16 @@ namespace habitat_cv {
                     robot.data = "";
                 }
                 thread([frame_number](Step &robot, Composite &composite, Timer &ts, Tracking_server& server){
-                    auto cell_id = composite.map.cells.find(robot.location);
-                    robot.coordinates = composite.map.cells[cell_id].coordinates;
                     robot.time_stamp = ts.to_seconds();
                     robot.frame = frame_number;
                     server.send_step(robot.convert(cv_space,canonical_space));
                 }, reference_wrapper(robot), reference_wrapper(composite), reference_wrapper(ts), reference_wrapper(server)).detach();
 
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
-                auto cell_polygon = composite.get_polygon(robot.coordinates);
+                auto robot_cell_id = composite.map.cells.find(robot.location);
+                auto robot_cell_coordinates = composite.map.cells[robot_cell_id].coordinates;
+
+                auto cell_polygon = composite.get_polygon(robot_cell_coordinates);
                 composite_image_rgb.polygon(cell_polygon, color_robot);
                 composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot);
 
@@ -206,15 +207,15 @@ namespace habitat_cv {
             auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
                 thread([frame_number](Step &mouse, Composite &composite, Timer &ts, Tracking_server& server){
-                    auto cell_id = composite.map.cells.find(mouse.location);
-                    mouse.coordinates = composite.map.cells[cell_id].coordinates;
                     mouse.time_stamp = ts.to_seconds();
                     mouse.frame = frame_number;
                     server.send_step(mouse.convert(cv_space,canonical_space));
                 }, reference_wrapper(mouse), reference_wrapper(composite), reference_wrapper(ts), reference_wrapper(server)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
-                auto cell_polygon = composite.get_polygon(mouse.coordinates);
+                auto mouse_cell_id = composite.map.cells.find(mouse.location);
+                auto mouse_cell_coordinates = composite.map.cells[mouse_cell_id].coordinates;
+                auto cell_polygon = composite.get_polygon(mouse_cell_coordinates);
                 composite_image_rgb.polygon(cell_polygon, {255, 0, 0});
             }
             auto main_frame = main_layout.get_frame(composite_image_rgb, frame_number);
