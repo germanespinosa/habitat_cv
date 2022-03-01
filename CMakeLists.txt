@@ -18,6 +18,10 @@ install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
 
 install_dependency ( https://github.com/germanespinosa/experiment_service Experiment_service )
 
+install_dependency ( https://github.com/germanespinosa/cellworld_controller Controller )
+
+install_dependency ( https://github.com/germanespinosa/robot_library Robot_lib )
+
 dependency_include (include)
 add_dependency_package (OpenCV)
 dependency_include (${OpenCV_INCLUDE_DIRS})
@@ -49,7 +53,8 @@ target_link_libraries(habitat_cv
         ${OpenCV_LIBS}
         /usr/local/xclib/lib/pxipl_x86_64.a
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread
-        agent_tracking )
+        agent_tracking
+        robot_lib)
 
 add_executable(agent_tracker
         src/tools/agent_tracker.cpp)

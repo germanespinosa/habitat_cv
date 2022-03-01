@@ -4,7 +4,11 @@
 #include <experiment/experiment_client.h>
 #include <sstream>
 #include <iomanip>
+#include <controller.h>
+#include <robot_lib.h>
+#include <experiment/experiment_service.h>
 
+using namespace controller;
 using namespace cell_world;
 using namespace std;
 using namespace json_cpp;
@@ -34,9 +38,27 @@ int main(int argc, char **argv){
         cerr << "missing camera configuration parameter." << endl;
         exit(1);
     }
-    My_client experiment_client;
-    experiment_client.connect("127.0.0.1");
+
+    controller::Agent_operational_limits limits;
+    limits.load("../config/robot_operational_limits.json"); // robot, ghost
+
+    auto configuration = Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
+    auto implementation = Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>(); // mice, vr, canonical
+    auto capture_parameters = Resources::from("capture_parameters").key("default").get_resource<Capture_parameters>();
+    auto peeking_parameters = Resources::from("peeking_parameters").key("default").get_resource<Peeking_parameters>();
+
+    auto world = World(configuration, implementation);
+    auto cells = world.create_cell_group();
+    Location_visibility visibility(cells, configuration.cell_shape, implementation.cell_transformation);
+    Capture capture(capture_parameters, world);
+    Peeking peeking(peeking_parameters, world);
+
+
+    experiment::Experiment_server experiment_server;
+
+    auto &experiment_client = experiment_server.create_local_client<My_client>();
     experiment_client.subscribe();
+
 
     Tracking_server server;
     string cam_config = argv[1];
@@ -44,10 +66,28 @@ int main(int argc, char **argv){
     string cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
     World_info wi;
     wi.world_configuration = "hexagonal";
-    wi.world_implementation = "cv";
+    wi.world_implementation = "mice";
     wi.occlusions = "00_00";
 
-    Cv_service::set_world(wi);
+    auto &controller_tracking_client = server.create_local_client<Controller_server::Controller_tracking_client>(
+            visibility,
+            float(90),
+            capture,
+            peeking,
+            "predator",
+            "prey");
+    controller_tracking_client.subscribe();
+
+    auto &controller_experiment_client =experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
+    controller_experiment_client.subscribe();
+
+
+    robot::Robot_agent robot(limits);
+    robot.connect("192.168.137.155");
+    Controller_server controller("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
+    controller.start(Controller_service::get_port());
+
+    //Cv_service::set_world(wi);
     Cv_service::set_camera_file(cam_file);
     Cv_service::set_background_path(bg_path);
     server.start(Cv_service::get_port());

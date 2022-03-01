@@ -185,11 +185,11 @@ namespace habitat_cv {
                 } else {
                     robot.data = "";
                 }
-                thread([frame_number](Step &robot, Composite &composite, Timer &ts, Tracking_server& server){
+                thread([frame_number](Step &robot, Timer &ts, Tracking_server& server){
                     robot.time_stamp = ts.to_seconds();
                     robot.frame = frame_number;
                     server.send_step(robot.convert(cv_space,canonical_space));
-                }, reference_wrapper(robot), reference_wrapper(composite), reference_wrapper(ts), reference_wrapper(server)).detach();
+                }, reference_wrapper(robot), reference_wrapper(ts), reference_wrapper(server)).detach();
 
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
                 auto robot_cell_id = composite.map.cells.find(robot.location);
@@ -206,11 +206,11 @@ namespace habitat_cv {
             }
             auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
-                thread([frame_number](Step &mouse, Composite &composite, Timer &ts, Tracking_server& server){
+                thread([frame_number](Step &mouse, Timer &ts, Tracking_server& server){
                     mouse.time_stamp = ts.to_seconds();
                     mouse.frame = frame_number;
                     server.send_step(mouse.convert(cv_space,canonical_space));
-                }, reference_wrapper(mouse), reference_wrapper(composite), reference_wrapper(ts), reference_wrapper(server)).detach();
+                }, reference_wrapper(mouse), reference_wrapper(ts), reference_wrapper(server)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
                 auto mouse_cell_id = composite.map.cells.find(mouse.location);
@@ -351,7 +351,7 @@ namespace habitat_cv {
             while (!frame_timer.time_out());
             fr.new_frame();
             frame_timer.reset();
-            cout << fr.filtered_fps << "                   \r";
+            //cout << fr.filtered_fps << "                   \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
             thread t([main_frame, raw_frame, mouse_frame]() {
                 main_video.add_frame(main_frame);
