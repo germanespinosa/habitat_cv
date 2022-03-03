@@ -16,6 +16,7 @@ using namespace agent_tracking;
 using namespace habitat_cv;
 using namespace experiment;
 
+// something wrong with experiment name?
 struct My_client : Experiment_client{
     void on_episode_started(const string &experiment_name) override{
         thread t([this](const string &experiment_name){
@@ -23,7 +24,7 @@ struct My_client : Experiment_client{
             std::stringstream ss;
             ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
             string destination_folder = ss.str();
-            Cv_service::new_episode(experiment.subject_name, experiment_name, experiment.episode_count,"", destination_folder);
+            Cv_service::new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
         }, experiment_name);
         t.detach();
     }
@@ -53,8 +54,9 @@ int main(int argc, char **argv){
     Capture capture(capture_parameters, world);
     Peeking peeking(peeking_parameters, world);
 
-
     experiment::Experiment_server experiment_server;
+    Experiment_service::set_logs_folder("experiment/");
+    experiment_server.start(Experiment_service::get_port()); // added by gabbie // 4540
 
     auto &experiment_client = experiment_server.create_local_client<My_client>();
     experiment_client.subscribe();
@@ -68,6 +70,8 @@ int main(int argc, char **argv){
     wi.world_configuration = "hexagonal";
     wi.world_implementation = "mice";
     wi.occlusions = "00_00";
+
+
 
     auto &controller_tracking_client = server.create_local_client<Controller_server::Controller_tracking_client>(
             visibility,
@@ -85,6 +89,7 @@ int main(int argc, char **argv){
     robot::Robot_agent robot(limits);
     robot.connect("192.168.137.155");
     Controller_server controller("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
+    Controller_service::set_logs_folder("controller/");
     controller.start(Controller_service::get_port());
 
     //Cv_service::set_world(wi);
