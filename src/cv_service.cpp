@@ -1,7 +1,4 @@
 #include <thread>
-#include <agent_tracking.h>
-#include <habitat_cv.h>
-#include <cell_world/timer.h>
 #include <filesystem>
 #include <habitat_cv/cv_service.h>
 
@@ -16,61 +13,33 @@ using namespace std;
 using namespace tcp_messages;
 
 namespace habitat_cv {
-    Timer ts;
-    std::atomic<bool> tracking_running = false;
-    Camera_array *cameras = nullptr;
 
-    Camera_configuration camera_configuration = Resources::from("camera_configuration").key(
-            "default").get_resource<Camera_configuration>();
-    Composite composite(camera_configuration);
-
-    auto led_profile = Resources::from("profile").key("led").get_resource<Profile>();
-    auto mouse_profile = Resources::from("profile").key("mouse").get_resource<Profile>();
-
-    auto canonical_space = Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>().space;
-    auto cv_space = Resources::from("world_implementation").key("hexagonal").key("cv").get_resource<World_implementation>().space;
-
-    atomic<int> puff_state;
-    Cell_group occlusions;
-
-    Background background;
-    Screen_layout screen_layout;
-    Main_layout main_layout;
-    Raw_layout raw_layout;
-
-    Video main_video(main_layout.size(), Image::rgb);
-    Video raw_video(raw_layout.size(), Image::gray);
-    Video mouse_video(raw_layout.size(), Image::gray);
-
-    unsigned int robot_threshold = 240;
-
-    bool Cv_service::new_episode(const string &subject, const string &experiment, int episode, const string &occlusions, const string &destination_folder) {
+    bool Cv_server::new_episode(const string &subject, const string &experiment, int episode, const string &occlusions, const string &destination_folder) {
         cout << "new_episode" << endl;
         if (main_video.is_open()) end_episode();
         std::filesystem::create_directories(destination_folder);
         cout << "Video destination folder: " + destination_folder << endl;
         main_layout.new_episode(subject, experiment, episode, occlusions);
-        main_video.new_video(destination_folder + "/main.mp4");
-        raw_video.new_video(destination_folder + "/raw.mp4");
-        mouse_video.new_video(destination_folder + "/mouse.mp4");
+        main_video.new_video(destination_folder + "/main_" + experiment + ".mp4");
+        raw_video.new_video(destination_folder + "/raw_" + experiment + ".mp4");
+        for (int i=0; i<4; i++) {
+            mouse_videos[i]->new_video(destination_folder + "/mouse" + to_string(i) + "_" + experiment + ".mp4");
+        }
         ts.reset();
         return true;
     }
 
-    bool Cv_service::end_episode() {
+    bool Cv_server::end_episode() {
         cout << "end_episode" << endl;
         main_video.close();
-        mouse_video.close();
+        for (auto &mouse_video:mouse_videos) {
+            mouse_video->close();
+        }
         raw_video.close();
         return true;
     }
 
-    void Cv_service::set_camera_file(const std::string &file_path) {
-        if (cameras) delete cameras;
-        cameras = new Camera_array(file_path, camera_configuration.order.count());
-    }
-
-    bool get_mouse_step(const Image &diff, Step &step, const Location &robot_location) {
+    bool Cv_server::get_mouse_step(const Image &diff, Step &step, const Location &robot_location) {
         auto mouse_candidates = Detection_list::get_detections(diff, 55, 2).filter(mouse_profile);
         for (auto &mouse: mouse_candidates) {
             if (mouse.location.dist(robot_location) < SAFETY_MARGIN) continue;
@@ -81,7 +50,7 @@ namespace habitat_cv {
         return false;
     }
 
-    bool get_robot_step(const Image &image, Step &step) {
+    bool Cv_server::get_robot_step(const Image &image, Step &step) {
         auto leds = Detection_list::get_detections(image, robot_threshold, 0).filter(led_profile);
         if (leds.size() != 3) return false;
         double d1 = leds[0].location.dist(leds[1].location);
@@ -136,7 +105,7 @@ namespace habitat_cv {
         large
     };
 
-    void Cv_service::tracking_process(Tracking_server &server) {
+    void Cv_server::tracking_process() {
         tracking_running = true;
         puff_state = false;
         Step mouse;
@@ -155,7 +124,7 @@ namespace habitat_cv {
         Timer frame_timer(time_out);
         Frame_rate fr;
         while (tracking_running) {
-            auto images = cameras->capture();
+            auto images = cameras.capture();
             auto composite_image_gray = composite.get_composite(images);
             auto composite_image_rgb = composite_image_gray.to_rgb();
             if (robot_best_cam == -1) {
@@ -185,11 +154,11 @@ namespace habitat_cv {
                 } else {
                     robot.data = "";
                 }
-                thread([frame_number](Step &robot, Timer &ts, Tracking_server& server){
+                thread([this, frame_number](Step &robot, Timer &ts, Tracking_server& tracking_server){
                     robot.time_stamp = ts.to_seconds();
                     robot.frame = frame_number;
-                    server.send_step(robot.convert(cv_space,canonical_space));
-                }, reference_wrapper(robot), reference_wrapper(ts), reference_wrapper(server)).detach();
+                    tracking_server.send_step(robot.convert(cv_space,canonical_space));
+                }, reference_wrapper(robot), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
 
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
                 auto robot_cell_id = composite.map.cells.find(robot.location);
@@ -206,11 +175,11 @@ namespace habitat_cv {
             }
             auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
-                thread([frame_number](Step &mouse, Timer &ts, Tracking_server& server){
+                thread([this, frame_number](Step &mouse, Timer &ts, Tracking_server& tracking_server){
                     mouse.time_stamp = ts.to_seconds();
                     mouse.frame = frame_number;
-                    server.send_step(mouse.convert(cv_space,canonical_space));
-                }, reference_wrapper(mouse), reference_wrapper(ts), reference_wrapper(server)).detach();
+                    tracking_server.send_step(mouse.convert(cv_space,canonical_space));
+                }, reference_wrapper(mouse), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
                 auto mouse_cell_id = composite.map.cells.find(mouse.location);
@@ -227,7 +196,7 @@ namespace habitat_cv {
                 auto mouse_point = composite_image_gray.get_point(mouse.location);
                 auto mouse_raw_point = composite.get_raw_point(camera_index,mouse_point);
                 auto mouse_raw_location = image.get_location(mouse_raw_point);
-                mouse_cut.emplace_back(Content_crop(mouse_raw_location,100, image));
+                mouse_cut.emplace_back(Content_crop(mouse_raw_location,150, image));
                 camera_index++;
             }
             auto mouse_frame = raw_layout.get_frame(mouse_cut);
@@ -305,12 +274,16 @@ namespace habitat_cv {
                     // start video recording
                     main_video.new_video("main.mp4");
                     raw_video.new_video("raw.mp4");
-                    mouse_video.new_video("mouse.mp4");
+                    for (int i=0; i<4; i++) {
+                        mouse_videos[i]->new_video("mouse" + to_string(i) + ".mp4");
+                    }
                     break;
                 case 'B':
                     // end video recording
                     main_video.close();
-                    mouse_video.close();
+                    for (auto &mouse_video:mouse_videos) {
+                        mouse_video->close();
+                    }
                     raw_video.close();
                     break;
                 case 'Q':
@@ -320,7 +293,7 @@ namespace habitat_cv {
                     screen_image = main;
                     break;
                 case 'R':
-                    cameras->reset();
+                    cameras.reset();
                     break;
                 case '[':
                     robot_threshold++;
@@ -353,10 +326,12 @@ namespace habitat_cv {
             frame_timer.reset();
             //cout << fr.filtered_fps << "                   \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
-            thread t([main_frame, raw_frame, mouse_frame]() {
+            thread t([this, main_frame, raw_frame, mouse_cut]() {
                 main_video.add_frame(main_frame);
                 raw_video.add_frame(raw_frame);
-                mouse_video.add_frame(mouse_frame);
+                for (int i=0;i<4;i++) {
+                    mouse_videos[i]->add_frame(mouse_cut[i]);
+                }
             });
             t.detach();
             if (!main_video.is_open()) mouse.location = NOLOCATION;
@@ -365,12 +340,29 @@ namespace habitat_cv {
 
     }
 
-    void Cv_service::set_background_path(const std::string &path) {
-        background.set_path(path);
+    Cv_server::Cv_server(const std::string &camera_configuration_file,
+                         const std::string &background_path,
+                         agent_tracking::Tracking_server &tracking_server):
+        tracking_server(tracking_server),
+        canonical_space(World_implementation::get_from_parameters_name("hexagonal","canonical").space),
+        cv_space(World_implementation::get_from_parameters_name("hexagonal","cv").space),
+        camera_configuration(Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>()),
+        cameras(camera_configuration_file, camera_configuration.order.count()),
+        composite(camera_configuration),
+        main_video(main_layout.size(), Image::rgb),
+        raw_video(raw_layout.size(), Image::gray),
+        led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
+        mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>())
+{
+        for (int i = 0; i < 4; i++) {
+            mouse_videos.push_back(new Video(mouse_layout.size(), Image::gray));
+        }
+        background.set_path(background_path);
         if (!background.load()) {
-            auto &images =cameras->capture();
+            auto &images = cameras.capture();
             composite.get_composite(images);
             background.update(composite.composite, composite.warped);
         }
-    }
+
+}
 }

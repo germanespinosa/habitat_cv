@@ -86,4 +86,15 @@ namespace habitat_cv {
         screen_text = text;
         return get_image();
     }
+
+    Mouse_layout::Mouse_layout():
+    Layout(300,300, Image::gray),
+    mouse({300,300}, Image::gray){
+
+    }
+
+    habitat_cv::Image Mouse_layout::get_frame(const Image &mouse_image) {
+        mouse = mouse_image.to_gray();
+        return get_image();
+    }
 }

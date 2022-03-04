@@ -22,10 +22,12 @@ install_dependency ( https://github.com/germanespinosa/cellworld_controller Cont
 
 install_dependency ( https://github.com/germanespinosa/robot_library Robot_lib )
 
-dependency_include (include)
-add_dependency_package (OpenCV)
-dependency_include (${OpenCV_INCLUDE_DIRS})
 
+dependency_include (include)
+
+add_dependency_package (OpenCV)
+
+dependency_include (${OpenCV_INCLUDE_DIRS})
 dependency_include (/usr/local/xclib/inc/)
 
 ###

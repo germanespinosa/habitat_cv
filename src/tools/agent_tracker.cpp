@@ -18,19 +18,22 @@ using namespace experiment;
 
 // something wrong with experiment name?
 struct My_client : Experiment_client{
+    explicit My_client(Cv_server *cv_server):
+    cv_server(cv_server){};
+    Cv_server *cv_server;
     void on_episode_started(const string &experiment_name) override{
         thread t([this](const string &experiment_name){
             auto experiment = this->get_experiment(experiment_name);
             std::stringstream ss;
             ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
             string destination_folder = ss.str();
-            Cv_service::new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
+            cv_server->new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
         }, experiment_name);
         t.detach();
     }
 
     void on_episode_finished() override {
-        Cv_service::end_episode();
+        cv_server->end_episode();
     }
 };
 
@@ -58,22 +61,25 @@ int main(int argc, char **argv){
     Experiment_service::set_logs_folder("experiment/");
     experiment_server.start(Experiment_service::get_port()); // added by gabbie // 4540
 
-    auto &experiment_client = experiment_server.create_local_client<My_client>();
-    experiment_client.subscribe();
-
-
-    Tracking_server server;
+    Tracking_server tracking_server;
     string cam_config = argv[1];
     string bg_path = "/habitat/habitat_cv/backgrounds/" + cam_config + "/";
     string cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
+    Cv_server cv_server(cam_file, bg_path, tracking_server);
+
+    auto &experiment_client = experiment_server.create_local_client<My_client>(&cv_server);
+    experiment_client.subscribe();
+
+
+    experiment_server.set_tracking_client(tracking_server.create_local_client<Experiment_tracking_client>());
+
     World_info wi;
     wi.world_configuration = "hexagonal";
     wi.world_implementation = "mice";
     wi.occlusions = "00_00";
 
 
-
-    auto &controller_tracking_client = server.create_local_client<Controller_server::Controller_tracking_client>(
+    auto &controller_tracking_client = tracking_server.create_local_client<Controller_server::Controller_tracking_client>(
             visibility,
             float(90),
             capture,
@@ -82,21 +88,23 @@ int main(int argc, char **argv){
             "prey");
     controller_tracking_client.subscribe();
 
-    auto &controller_experiment_client =experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
+    auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
     controller_experiment_client.subscribe();
-
 
     robot::Robot_agent robot(limits);
     robot.connect("192.168.137.155");
-    Controller_server controller("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
-    Controller_service::set_logs_folder("controller/");
-    controller.start(Controller_service::get_port());
 
-    //Cv_service::set_world(wi);
-    Cv_service::set_camera_file(cam_file);
-    Cv_service::set_background_path(bg_path);
-    server.start(Cv_service::get_port());
-    Cv_service::tracking_process(server);
+    Controller_service::set_logs_folder("controller/");
+    Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
+
+    if (!controller_server.start(Controller_service::get_port())) {
+        cout << "failed to start controller" << endl;
+        exit(1);
+    }
+    tracking_server.start(Tracking_service::get_port());
+
+    cv_server.tracking_process();
+    tracking_server.stop();
     experiment_client.disconnect();
     exit(0);
 }
