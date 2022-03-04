@@ -1,7 +1,7 @@
 #pragma once
+#include <habitat_cv/image.h>
 #include <cell_world.h>
 #include <habitat_cv/camera_configuration.h>
-#include <habitat_cv/image.h>
 
 namespace habitat_cv{
     struct Composite {

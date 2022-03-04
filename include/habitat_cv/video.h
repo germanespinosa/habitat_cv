@@ -1,6 +1,6 @@
 #pragma once
 #include "opencv2/video.hpp"
-#include "image.h"
+#include <habitat_cv/image.h>
 
 namespace habitat_cv {
     struct Video {

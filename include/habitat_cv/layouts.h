@@ -1,5 +1,5 @@
 #pragma once
-#include <habitat_cv.h>
+#include <habitat_cv/layout.h>
 
 namespace habitat_cv {
     struct Main_layout : habitat_cv::Layout {
@@ -28,6 +28,14 @@ namespace habitat_cv {
         habitat_cv::Content_resize panel3;
 
         habitat_cv::Image get_frame(const habitat_cv::Images &);
+    };
+
+    struct Mouse_layout : habitat_cv::Layout {
+        Mouse_layout();
+
+        habitat_cv::Content_resize mouse;
+
+        habitat_cv::Image get_frame(const habitat_cv::Image &);
     };
 
     struct Screen_layout : habitat_cv::Layout {

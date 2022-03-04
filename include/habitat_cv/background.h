@@ -1,5 +1,5 @@
 #pragma once
-#include <habitat_cv.h>
+#include <habitat_cv/image.h>
 
 namespace habitat_cv {
     struct Background {

@@ -1,12 +1,11 @@
 #pragma once
-#include <habitat_cv.h>
+#include <habitat_cv/image.h>
 #include <thread>
 namespace habitat_cv {
     struct Camera_array {
         Camera_array(const std::string &, unsigned int);
         Images &capture();
         void reset();
-        std::thread start_capture();
         unsigned int camera_count;
         std::vector<Images> buffers;
         ~Camera_array();
