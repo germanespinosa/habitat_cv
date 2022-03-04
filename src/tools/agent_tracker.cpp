@@ -22,14 +22,11 @@ struct My_client : Experiment_client{
     cv_server(cv_server){};
     Cv_server *cv_server;
     void on_episode_started(const string &experiment_name) override{
-        thread t([this](const string &experiment_name){
-            auto experiment = this->get_experiment(experiment_name);
-            std::stringstream ss;
-            ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
-            string destination_folder = ss.str();
-            cv_server->new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
-        }, experiment_name);
-        t.detach();
+        auto experiment = this->get_experiment(experiment_name);
+        std::stringstream ss;
+        ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
+        string destination_folder = ss.str();
+        cv_server->new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
     }
 
     void on_episode_finished() override {
@@ -78,7 +75,6 @@ int main(int argc, char **argv){
     wi.world_implementation = "mice";
     wi.occlusions = "00_00";
 
-
     auto &controller_tracking_client = tracking_server.create_local_client<Controller_server::Controller_tracking_client>(
             visibility,
             float(90),
@@ -92,7 +88,11 @@ int main(int argc, char **argv){
     controller_experiment_client.subscribe();
 
     robot::Robot_agent robot(limits);
-    robot.connect("192.168.137.155");
+
+    if (!robot.connect("192.168.137.155")){
+        cout << "Failed to connect to robot" << endl;
+        exit(1);
+    }
 
     Controller_service::set_logs_folder("controller/");
     Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
