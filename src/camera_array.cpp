@@ -31,7 +31,8 @@ namespace habitat_cv {
 
     void Camera_array::open() {
         pxd_PIXCIopen("", "", config_file.c_str());
-        if (pxd_goLive(15, 1)) {
+        //        if (pxd_goLive(15, 1)) {
+        if (pxd_goLive(7, 1)) {
             cerr << "Failed to initialize frame grabbers" << endl;
             exit(1);
         }
@@ -39,7 +40,8 @@ namespace habitat_cv {
         for (unsigned int b = 0; b < 2; b++) {
             auto &images=buffers.emplace_back();
             for (unsigned int c = 0; c < camera_count; c++) {
-                images.emplace_back(size.height, size.width, Image::Type::gray);
+                auto &image = images.emplace_back(size.height, size.width, Image::Type::gray);
+                image.file_name = "camera_" + to_string(c) + ".png";
             }
         }
         active_buffer = 0;

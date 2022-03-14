@@ -125,6 +125,8 @@ namespace habitat_cv {
         Frame_rate fr;
         while (tracking_running) {
             auto images = cameras.capture();
+            //added to copy 3th camera into a 4th buffer (broken camera fix)
+            images.emplace_back(images[2].clone(),"camera_3.png");
             auto composite_image_gray = composite.get_composite(images);
             auto composite_image_rgb = composite_image_gray.to_rgb();
             if (robot_best_cam == -1) {
@@ -270,6 +272,10 @@ namespace habitat_cv {
             cv::imshow("Agent Tracking", screen_frame);
             auto key = cv::waitKey(1);
             switch (key) {
+                case 'C':
+                    // start video recording
+                    images.save(".");
+                    break;
                 case 'V':
                     // start video recording
                     main_video.new_video("main.mp4");
@@ -347,7 +353,8 @@ namespace habitat_cv {
         canonical_space(World_implementation::get_from_parameters_name("hexagonal","canonical").space),
         cv_space(World_implementation::get_from_parameters_name("hexagonal","cv").space),
         camera_configuration(Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>()),
-        cameras(camera_configuration_file, camera_configuration.order.count()),
+        //cameras(camera_configuration_file, camera_configuration.order.count()),
+        cameras(camera_configuration_file, 3),
         composite(camera_configuration),
         main_video(main_layout.size(), Image::rgb),
         raw_video(raw_layout.size(), Image::gray),
@@ -360,6 +367,7 @@ namespace habitat_cv {
         background.set_path(background_path);
         if (!background.load()) {
             auto &images = cameras.capture();
+            images.push_back(images[2]);
             composite.get_composite(images);
             background.update(composite.composite, composite.warped);
         }

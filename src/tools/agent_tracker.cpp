@@ -16,7 +16,7 @@ using namespace agent_tracking;
 using namespace habitat_cv;
 using namespace experiment;
 
-// something wrong with experiment name?
+
 struct My_client : Experiment_client{
     explicit My_client(Cv_server *cv_server):
     cv_server(cv_server){};
@@ -88,6 +88,7 @@ int main(int argc, char **argv){
     controller_experiment_client.subscribe();
 
     robot::Robot_agent robot(limits);
+
 
     if (!robot.connect("192.168.137.155")){
         cout << "Failed to connect to robot" << endl;
