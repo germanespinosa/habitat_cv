@@ -7,7 +7,7 @@ namespace habitat_cv {
         Images &capture();
         void reset();
         unsigned int camera_count;
-        Images buffers;
+        std::vector<Images> buffers;
         ~Camera_array();
 
     private:
@@ -15,6 +15,9 @@ namespace habitat_cv {
         void open();
         void close();
         unsigned int frame_size;
-        long last = -1;
+        std::thread unfinished_capture;
+        std::atomic<unsigned int> active_buffer;
+        std::atomic<unsigned int> ready_buffer;
+        std::atomic<bool> running;
     };
 }

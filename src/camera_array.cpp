@@ -8,8 +8,10 @@ using namespace habitat_cv;
 namespace habitat_cv {
 
     Camera_array::Camera_array(const std::string &config_file_path, unsigned int camera_count) :
-            camera_count(camera_count), config_file(config_file_path) {
+            camera_count(camera_count), config_file(config_file_path), active_buffer(0), ready_buffer(0) {
+        running = false;
         open();
+        while (!running);
     }
 
     Camera_array::~Camera_array() {
@@ -17,14 +19,9 @@ namespace habitat_cv {
     }
 
     Images &Camera_array::capture() {
-        while (pxd_capturedBuffer(0x1) == last);  // nothing new captured yet
-        last = pxd_capturedBuffer(0x1);
-        for (unsigned int c = 0; c < this->camera_count; c++) {
-            uchar *data = buffers[c].data;
-            int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
-            pxd_readuchar(grabber_bit_map, last, 0, 0, -1, -1, data, frame_size, "Grey");
-        }
-        return buffers;
+        while(active_buffer==ready_buffer);
+        active_buffer=( active_buffer + 1 ) % 2;
+        return buffers[ready_buffer];
     }
 
     void Camera_array::reset() {
@@ -35,21 +32,38 @@ namespace habitat_cv {
     void Camera_array::open() {
         pxd_PIXCIopen("", "", config_file.c_str());
         //        if (pxd_goLive(15, 1)) {
-        auto err = pxd_goLivePair(7, 1, 2);
-        if (err) {
+        if (pxd_goLive(7, 1)) {
             cerr << "Failed to initialize frame grabbers" << endl;
             exit(1);
         }
         cv::Size size = {pxd_imageXdim(), pxd_imageYdim()};
-
-        for (unsigned int c = 0; c < camera_count; c++) {
-            auto &image = buffers.emplace_back(size.height, size.width, Image::Type::gray);
-            image.file_name = "camera_" + to_string(c) + ".png";
+        for (unsigned int b = 0; b < 2; b++) {
+            auto &images=buffers.emplace_back();
+            for (unsigned int c = 0; c < camera_count; c++) {
+                auto &image = images.emplace_back(size.height, size.width, Image::Type::gray);
+                image.file_name = "camera_" + to_string(c) + ".png";
+            }
         }
+        active_buffer = 0;
+        ready_buffer = 0;
         frame_size = size.width * size.height;
+        unfinished_capture = thread([this](){
+            running = true;
+            while(running){
+                while(active_buffer != ready_buffer && running);
+                for (unsigned int c = 0; c < this->camera_count && running; c++) {
+                    uchar *data = buffers[active_buffer][c].data;
+                    int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
+                    pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, data, frame_size, "Grey");
+                }
+                ready_buffer= (ready_buffer + 1) % 2;
+            }
+        });
     }
 
     void Camera_array::close() {
+        running = false;
+        if (unfinished_capture.joinable()) unfinished_capture.join();
         pxd_PIXCIclose();
     }
 }
