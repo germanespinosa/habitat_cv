@@ -123,12 +123,17 @@ namespace habitat_cv {
         cout << "time_out: " << time_out << endl;
         Timer frame_timer(time_out);
         Frame_rate fr;
+        fr.filter = .99999;
         while (tracking_running) {
+            //Timer capture_timer;
             auto images = cameras.capture();
+            //cout << capture_timer.to_seconds() * 1000 << " " ;
+            //capture_timer.reset();
             //added to copy 3th camera into a 4th buffer (broken camera fix)
-            images.emplace_back(images[2].clone(),"camera_3.png");
+            images.emplace_back(images[2],"camera_3.png");
             auto composite_image_gray = composite.get_composite(images);
             auto composite_image_rgb = composite_image_gray.to_rgb();
+            //cout << capture_timer.to_seconds() * 1000 << endl ;
             if (robot_best_cam == -1) {
                 new_robot_data = get_robot_step(composite_image_gray, robot);
             } else {
@@ -327,12 +332,12 @@ namespace habitat_cv {
                     cout << "change_screen_output to " << screen_image << endl;
                     break;
             }
-            while (!frame_timer.time_out());
+            //while (!frame_timer.time_out());
             fr.new_frame();
             frame_timer.reset();
-            //cout << fr.filtered_fps << "                   \r";
+            cout << fr.filtered_fps<< "                   \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
-            thread t([this, main_frame, raw_frame, mouse_cut]() {
+            thread t([this, main_frame, mouse_cut, raw_frame]() {
                 main_video.add_frame(main_frame);
                 raw_video.add_frame(raw_frame);
                 for (int i=0;i<4;i++) {

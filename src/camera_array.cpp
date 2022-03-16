@@ -32,10 +32,10 @@ namespace habitat_cv {
     void Camera_array::open() {
         pxd_PIXCIopen("", "", config_file.c_str());
         //        if (pxd_goLive(15, 1)) {
-        if (pxd_goLive(7, 1)) {
-            cerr << "Failed to initialize frame grabbers" << endl;
-            exit(1);
-        }
+//        if (pxd_goSnapPair(7, 1,2)) {
+//            cerr << "Failed to initialize frame grabbers" << endl;
+//            exit(1);
+//        }
         cv::Size size = {pxd_imageXdim(), pxd_imageYdim()};
         for (unsigned int b = 0; b < 2; b++) {
             auto &images=buffers.emplace_back();
@@ -49,14 +49,34 @@ namespace habitat_cv {
         frame_size = size.width * size.height;
         unfinished_capture = thread([this](){
             running = true;
+            for (unsigned int c = 0; c < camera_count && running; c++) {
+                int grabber_bit_map = 1 << c;
+                pxd_goSnap(grabber_bit_map, 1);
+            }
+            cell_world::Timer t(.02);
             while(running){
-                while(active_buffer != ready_buffer && running);
-                for (unsigned int c = 0; c < this->camera_count && running; c++) {
-                    uchar *data = buffers[active_buffer][c].data;
-                    int grabber_bit_map = 1 << c; // frame grabber identifier is 4 bits with a 1 on the device number.
-                    pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, data, frame_size, "Grey");
+                //cell_world::Timer t;
+                while(active_buffer != 0 && running);
+                while (!t.time_out());
+                for (unsigned int c = 0; c < camera_count && running; c++){
+                    int grabber_bit_map = 1 << c;
+                    while(pxd_capturedBuffer(grabber_bit_map)!=1);
+                    pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, buffers[0][c].data, frame_size, "Grey");
+                    pxd_goSnap(grabber_bit_map, 2);
                 }
-                ready_buffer= (ready_buffer + 1) % 2;
+                t.reset();
+                //cout << t.to_seconds() * 1000 << endl;
+                ready_buffer = 1;
+                while(active_buffer != 1 && running );
+                while (!t.time_out());
+                for (unsigned int c = 0; c < camera_count && running; c++){
+                    int grabber_bit_map = 1 << c;
+                    while(pxd_capturedBuffer(grabber_bit_map)!=2);
+                    pxd_readuchar(grabber_bit_map, 2, 0, 0, -1, -1, buffers[1][c].data, frame_size, "Grey");
+                    pxd_goSnap(grabber_bit_map, 1);
+                }
+                t.reset();
+                ready_buffer = 0;
             }
         });
     }
