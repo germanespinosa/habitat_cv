@@ -31,11 +31,6 @@ namespace habitat_cv {
 
     void Camera_array::open() {
         pxd_PIXCIopen("", "", config_file.c_str());
-        //        if (pxd_goLive(15, 1)) {
-//        if (pxd_goSnapPair(7, 1,2)) {
-//            cerr << "Failed to initialize frame grabbers" << endl;
-//            exit(1);
-//        }
         cv::Size size = {pxd_imageXdim(), pxd_imageYdim()};
         for (unsigned int b = 0; b < 2; b++) {
             auto &images=buffers.emplace_back();
@@ -55,23 +50,21 @@ namespace habitat_cv {
             }
             cell_world::Timer t(.02);
             while(running){
-                //cell_world::Timer t;
                 while(active_buffer != 0 && running);
                 while (!t.time_out());
                 for (unsigned int c = 0; c < camera_count && running; c++){
                     int grabber_bit_map = 1 << c;
-                    while(pxd_capturedBuffer(grabber_bit_map)!=1);
+                    while(pxd_capturedBuffer(grabber_bit_map)!=1 && running );
                     pxd_readuchar(grabber_bit_map, 1, 0, 0, -1, -1, buffers[0][c].data, frame_size, "Grey");
                     pxd_goSnap(grabber_bit_map, 2);
                 }
                 t.reset();
-                //cout << t.to_seconds() * 1000 << endl;
                 ready_buffer = 1;
                 while(active_buffer != 1 && running );
                 while (!t.time_out());
                 for (unsigned int c = 0; c < camera_count && running; c++){
                     int grabber_bit_map = 1 << c;
-                    while(pxd_capturedBuffer(grabber_bit_map)!=2);
+                    while(pxd_capturedBuffer(grabber_bit_map)!=2 && running );
                     pxd_readuchar(grabber_bit_map, 2, 0, 0, -1, -1, buffers[1][c].data, frame_size, "Grey");
                     pxd_goSnap(grabber_bit_map, 1);
                 }

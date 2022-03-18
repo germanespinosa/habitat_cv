@@ -16,24 +16,6 @@ using namespace agent_tracking;
 using namespace habitat_cv;
 using namespace experiment;
 
-
-struct My_client : Experiment_client{
-    explicit My_client(Cv_server *cv_server):
-    cv_server(cv_server){};
-    Cv_server *cv_server;
-    void on_episode_started(const string &experiment_name) override{
-        auto experiment = this->get_experiment(experiment_name);
-        std::stringstream ss;
-        ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
-        string destination_folder = ss.str();
-        cv_server->new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
-    }
-
-    void on_episode_finished() override {
-        cv_server->end_episode();
-    }
-};
-
 int main(int argc, char **argv){
     if (argc==1){
         cerr << "missing camera configuration parameter." << endl;
@@ -62,11 +44,11 @@ int main(int argc, char **argv){
     string cam_config = argv[1];
     string bg_path = "/habitat/habitat_cv/backgrounds/" + cam_config + "/";
     string cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
-    Cv_server cv_server(cam_file, bg_path, tracking_server);
 
-    auto &experiment_client = experiment_server.create_local_client<My_client>(&cv_server);
+    auto &experiment_client = experiment_server.create_local_client<Cv_server_experiment_client>();
     experiment_client.subscribe();
 
+    Cv_server cv_server(cam_file, bg_path, tracking_server, experiment_client);
 
     experiment_server.set_tracking_client(tracking_server.create_local_client<Experiment_tracking_client>());
 

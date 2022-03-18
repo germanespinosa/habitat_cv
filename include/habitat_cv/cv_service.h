@@ -9,11 +9,21 @@
 #include <habitat_cv/detection.h>
 #include <habitat_cv/frame_rate.h>
 #include <agent_tracking/tracking_service.h>
+#include <experiment/experiment_client.h>
 
 
 namespace habitat_cv{
+    struct Cv_server;
+
+    struct Cv_server_experiment_client : experiment::Experiment_client{
+        explicit Cv_server_experiment_client();
+        void on_episode_started(const std::string &experiment_name) override;
+        void on_episode_finished() override;
+        Cv_server *cv_server;
+    };
+
     struct Cv_server {
-        explicit Cv_server(const std::string &camera_configuration_file, const std::string &background_path, agent_tracking::Tracking_server &);
+        explicit Cv_server(const std::string &camera_configuration_file, const std::string &background_path, agent_tracking::Tracking_server &, Cv_server_experiment_client &);
         void tracking_process();
         bool new_episode(const std::string &subject, const std::string &experiment, int episode, const std::string &occlusions, const std::string &destination_folder);
         bool get_mouse_step(const Image &diff, cell_world::Step &step, const cell_world::Location &robot_location);
@@ -21,6 +31,7 @@ namespace habitat_cv{
         bool end_episode();
 
         agent_tracking::Tracking_server &tracking_server;
+        Cv_server_experiment_client &experiment_client;
 
         unsigned int robot_threshold = 240;
 
@@ -32,7 +43,7 @@ namespace habitat_cv{
         std::atomic<int> puff_state = false;
         cell_world::Cell_group occlusions;
 
-
+        bool waiting_for_prey;
         Camera_configuration camera_configuration;
         Camera_array cameras;
         Composite composite;

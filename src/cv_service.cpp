@@ -12,6 +12,10 @@ using namespace easy_tcp;
 using namespace std;
 using namespace tcp_messages;
 
+
+#define ENTRANCE Location(0,.5)
+#define  ENTRANCE_DISTANCE .05
+
 namespace habitat_cv {
 
     bool Cv_server::new_episode(const string &subject, const string &experiment, int episode, const string &occlusions, const string &destination_folder) {
@@ -26,6 +30,7 @@ namespace habitat_cv {
             mouse_videos[i]->new_video(destination_folder + "/mouse" + to_string(i) + "_" + experiment + ".mp4");
         }
         ts.reset();
+        waiting_for_prey = true;
         return true;
     }
 
@@ -182,10 +187,15 @@ namespace habitat_cv {
             }
             auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
-                thread([this, frame_number](Step &mouse, Timer &ts, Tracking_server& tracking_server){
-                    mouse.time_stamp = ts.to_seconds();
-                    mouse.frame = frame_number;
-                    tracking_server.send_step(mouse.convert(cv_space,canonical_space));
+                auto canonical_step = mouse.convert(cv_space,canonical_space);
+                if (waiting_for_prey && canonical_step.location.dist(ENTRANCE)>ENTRANCE_DISTANCE) {
+                    waiting_for_prey = false;
+                    experiment_client.prey_enter_arena();
+                }
+                thread([this, frame_number](Step &canonical_step, Timer &ts, Tracking_server& tracking_server){
+                    canonical_step.time_stamp = ts.to_seconds();
+                    canonical_step.frame = frame_number;
+                    tracking_server.send_step(canonical_step);
                 }, reference_wrapper(mouse), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
@@ -353,8 +363,10 @@ namespace habitat_cv {
 
     Cv_server::Cv_server(const std::string &camera_configuration_file,
                          const std::string &background_path,
-                         agent_tracking::Tracking_server &tracking_server):
+                         agent_tracking::Tracking_server &tracking_server,
+                         Cv_server_experiment_client &experiment_client):
         tracking_server(tracking_server),
+        experiment_client(experiment_client),
         canonical_space(World_implementation::get_from_parameters_name("hexagonal","canonical").space),
         cv_space(World_implementation::get_from_parameters_name("hexagonal","cv").space),
         camera_configuration(Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>()),
@@ -366,6 +378,7 @@ namespace habitat_cv {
         led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
         mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>())
 {
+        experiment_client.cv_server = this;
         for (int i = 0; i < 4; i++) {
             mouse_videos.push_back(new Video(mouse_layout.size(), Image::gray));
         }
@@ -378,4 +391,18 @@ namespace habitat_cv {
         }
 
 }
+
+    void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
+        auto experiment = this->get_experiment(experiment_name);
+        std::stringstream ss;
+        ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
+        std::string destination_folder = ss.str();
+        cv_server->new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
+    }
+
+    void Cv_server_experiment_client::on_episode_finished() {
+        cv_server->end_episode();
+    }
+
+    Cv_server_experiment_client::Cv_server_experiment_client() {}
 }
