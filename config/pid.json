@@ -2,9 +2,9 @@
   "P_pursue" : 0.007,
   "I_pursue" : 0.0003,
   "D_pursue" : 0.047,
-  "pursue_speed" : 0,
-  "P_explore" : 0.0017,
+  "pursue_speed" : 0.2,
+  "P_explore" : 0.0075,
   "I_explore" : 0.0,
-  "D_explore" : 0.075,
-  "explore_speed"  : 0.08
+  "D_explore" : 0.065,
+  "explore_speed"  : 0.05
 }
