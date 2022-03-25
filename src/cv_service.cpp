@@ -196,7 +196,7 @@ namespace habitat_cv {
                     canonical_step.time_stamp = ts.to_seconds();
                     canonical_step.frame = frame_number;
                     tracking_server.send_step(canonical_step);
-                }, reference_wrapper(mouse), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
+                }, reference_wrapper(canonical_step), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
 
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
                 auto mouse_cell_id = composite.map.cells.find(mouse.location);
@@ -380,7 +380,7 @@ namespace habitat_cv {
 {
         experiment_client.cv_server = this;
         for (int i = 0; i < 4; i++) {
-            mouse_videos.push_back(new Video(mouse_layout.size(), Image::gray));
+            mouse_videos.push_back(new Video(cv::Size(150,150), Image::gray));
         }
         background.set_path(background_path);
         if (!background.load()) {
