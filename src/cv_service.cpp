@@ -131,6 +131,8 @@ namespace habitat_cv {
         fr.filter = .99999;
         while (tracking_running) {
             //Timer capture_timer;
+            while (!frame_timer.time_out());
+            frame_timer.reset();
             auto images = cameras.capture();
             //cout << capture_timer.to_seconds() * 1000 << " " ;
             //capture_timer.reset();
@@ -342,19 +344,17 @@ namespace habitat_cv {
                     cout << "change_screen_output to " << screen_image << endl;
                     break;
             }
-            //while (!frame_timer.time_out());
             fr.new_frame();
-            frame_timer.reset();
             cout << fr.filtered_fps<< "                   \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
-            thread t([this, main_frame, mouse_cut, raw_frame]() {
+            //thread t([this, main_frame, mouse_cut, raw_frame]() {
                 main_video.add_frame(main_frame);
                 raw_video.add_frame(raw_frame);
                 for (int i=0;i<4;i++) {
                     mouse_videos[i]->add_frame(mouse_cut[i]);
                 }
-            });
-            t.detach();
+            //});
+            //t.detach();
             if (!main_video.is_open()) mouse.location = NOLOCATION;
             // write videos
         }
@@ -384,7 +384,7 @@ namespace habitat_cv {
         }
         background.set_path(background_path);
         if (!background.load()) {
-            auto &images = cameras.capture();
+            auto images = cameras.capture();
             images.push_back(images[2]);
             composite.get_composite(images);
             background.update(composite.composite, composite.warped);

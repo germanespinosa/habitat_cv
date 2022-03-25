@@ -41,11 +41,12 @@ set( habitat_cv_files
         src/image.cpp
         src/video.cpp
         src/layout.cpp
+        src/camera.cpp
         src/camera_array.cpp
         src/frame_rate.cpp
         src/layouts.cpp
         src/background.cpp
-        src/cv_service.cpp)
+        src/cv_service.cpp include/habitat_cv/camera.h src/camera.cpp)
 
 add_library(habitat_cv ${habitat_cv_files})
 

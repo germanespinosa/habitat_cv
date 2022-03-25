@@ -11,11 +11,11 @@ TEST_CASE("capture") {
     Camera_array cameras(cam_file, 4);
     cameras.capture();
     Timer t;
-    auto &images = cameras.capture();
+    auto images = cameras.capture();
     cout << "CAPTURE TIME: " << t.to_seconds() * 1000 << endl;
     images.save(".", {"raw_0.png", "raw_1.png", "raw_2.png", "raw_3.png"});
     t.reset();
-    auto &images2 = cameras.capture();
+    auto images2 = cameras.capture();
     cout << "CAPTURE  2 TIME: " << t.to_seconds() * 1000 << endl;
     cout << images2.size() << endl;
 
