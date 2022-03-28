@@ -126,6 +126,23 @@ namespace habitat_cv {
         double fps = Video::get_fps();
         double time_out = 1.0 / fps * .999;
         cout << "time_out: " << time_out << endl;
+        float camera_height = 205;
+        float robot_height = 12;
+        float height_ratio = robot_height / camera_height;
+        vector<Location> camera_zero;
+        {
+            int i = 0;
+            auto zero_point = cv::Point2f(Camera::frame_size.width / 2, Camera::frame_size.height / 2);
+            auto images = cameras.capture();
+            images.emplace_back(images[2],"camera_3.png");
+            auto composite_image = composite.get_composite(images);
+            for (auto &camera: cameras.cameras) {
+                auto camera_zero_point = composite.get_warped_point(i++, zero_point);
+                auto camera_zero_location = composite_image.get_location(camera_zero_point);
+                camera_zero.push_back(camera_zero_location);
+            }
+            camera_zero.push_back(camera_zero[2]);
+        }
         Timer frame_timer(time_out);
         Frame_rate fr;
         fr.filter = .99999;
@@ -160,6 +177,9 @@ namespace habitat_cv {
                     int cam_col = robot.location.x > 540 ? 1 : 0;
                     robot_best_cam = camera_configuration.order[cam_row][cam_col];
                 }
+                auto perspective_offset = robot.location - camera_zero[robot_best_cam];
+                auto perspective_adjustment = perspective_offset * height_ratio;
+                robot.location += (-perspective_adjustment);
                 auto color_robot = cv::Scalar({255, 0, 255});
                 if (puff_state) {
                     robot.data = "puff";

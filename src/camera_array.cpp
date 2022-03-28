@@ -21,8 +21,11 @@ namespace habitat_cv {
 
     Images Camera_array::capture() {
         Images images;
-        for (auto &camera:cameras)
-            images.emplace_back(camera->get_current_frame());
+        int i=0;
+        for (auto &camera:cameras) {
+            auto &image = images.emplace_back(camera->get_current_frame());
+            image.file_name = "camera_" + to_string(i++) + ".png";
+        }
         return images;
     }
 

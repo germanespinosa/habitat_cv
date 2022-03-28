@@ -81,4 +81,11 @@ namespace habitat_cv {
     cell_world::Polygon &Composite::get_polygon(const Coordinates &coordinates) {
         return cells[map.find(coordinates)];
     }
+
+    cv::Point2f Composite::get_warped_point(unsigned int camera_index, const cv::Point2f &camera_point) {
+        cv::Matx33f warp = homographies[camera_index];
+        cv::Point2f homogeneous_point(camera_point.x,camera_point.y);
+        cv::Point3f warped = warp * homogeneous_point;
+        return {warped.x, warped.y};
+    }
 }

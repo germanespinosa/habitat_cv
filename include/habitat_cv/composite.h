@@ -10,6 +10,8 @@ namespace habitat_cv{
         cell_world::Polygon &get_polygon(const cell_world::Coordinates &);
         cell_world::Coordinates get_coordinates(const cell_world::Location &);
         cv::Point2f get_raw_point(unsigned int camera_index, const cv::Point2f &);
+        cv::Point2f get_warped_point(unsigned int camera_index, const cv::Point2f &);
+
         Image composite;
         Binary_image mask;
         cv::Size size;
