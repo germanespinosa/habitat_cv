@@ -22,7 +22,7 @@ namespace habitat_cv {
 
         composite = Image(size.height, size.width, Image::Type::gray);
 
-        cells = Polygon_list(wi.cell_locations, wc.cell_shape, wi.cell_transformation);
+        cells = Polygon_list(wi.cell_locations, wc.cell_shape, Transformation(wi.cell_transformation.size , wi.cell_transformation.rotation + wi.space.transformation.rotation));
 
         world = World(wc, wi);
 
