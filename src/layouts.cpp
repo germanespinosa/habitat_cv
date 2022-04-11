@@ -11,16 +11,16 @@ namespace habitat_cv {
             date_time({540, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 0, 1),
             occlusions({540, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 2, 1),
             subject({540, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 0, 1),
-            experiment({540, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 0, 1),
+            experiment({800, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 0, 1),
             episode({540, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 2, 1),
-            frame({540, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 2, 1) {
+            frame({280, 45}, Image::Type::rgb, {255, 255, 255}, {30, 30, 30}, .8, 2, 1) {
         add_place_holder(composite, {0, 0});
         add_place_holder(date_time, {0, 1080});
         add_place_holder(subject, {0, 1035});
         add_place_holder(experiment, {0, 990});
         add_place_holder(occlusions, {540, 1080});
         add_place_holder(episode, {540, 1035});
-        add_place_holder(frame, {540, 990});
+        add_place_holder(frame, {800, 990});
     }
 
     string get_time(double time_stamp) {
