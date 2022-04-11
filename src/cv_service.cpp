@@ -453,7 +453,7 @@ namespace habitat_cv {
         std::stringstream ss;
         ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
         std::string destination_folder = ss.str();
-        cv_server->new_episode(experiment.subject_name, experiment_name, experiment.episode_count, "", destination_folder);
+        cv_server->new_episode(experiment.subject_name, experiment.experiment_name, experiment.episode_count, experiment.world_info.occlusions, destination_folder);
     }
 
     void Cv_server_experiment_client::on_episode_finished() {
@@ -465,4 +465,5 @@ namespace habitat_cv {
     void Cv_server_experiment_client::on_capture(int frame) {
         cv_server->puff_state =  PUFF_DURATION;
     }
+
 }
