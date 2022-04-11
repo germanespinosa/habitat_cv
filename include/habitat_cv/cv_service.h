@@ -18,6 +18,7 @@ namespace habitat_cv{
     struct Cv_server_experiment_client : experiment::Experiment_client{
         explicit Cv_server_experiment_client();
         void on_episode_started(const std::string &experiment_name) override;
+        void on_capture(int frame) override;
         void on_episode_finished() override;
         Cv_server *cv_server;
     };
@@ -40,7 +41,7 @@ namespace habitat_cv{
 
         cell_world::Timer ts;
         std::atomic<bool> tracking_running = false;
-        std::atomic<int> puff_state = false;
+        std::atomic<int> puff_state = 0;
         cell_world::Cell_group occlusions;
 
         bool waiting_for_prey;

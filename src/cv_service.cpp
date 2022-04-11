@@ -106,6 +106,14 @@ namespace habitat_cv {
         warped1,
         warped2,
         warped3,
+        warped_video0,
+        warped_video1,
+        warped_video2,
+        warped_video3,
+        warped_detection0,
+        warped_detection1,
+        warped_detection2,
+        warped_detection3,
         composite_image,
         large
     };
@@ -155,13 +163,14 @@ namespace habitat_cv {
             //capture_timer.reset();
             //added to copy 3th camera into a 4th buffer (broken camera fix)
             images.emplace_back(images[2],"camera_3.png");
-            auto composite_image_gray = composite.get_composite(images);
-            auto composite_image_rgb = composite_image_gray.to_rgb();
+            composite.get_composite(images);
+            auto composite_image_gray = composite.composite_detection;
+            auto composite_image_rgb = composite.composite_video.to_rgb();
             //cout << capture_timer.to_seconds() * 1000 << endl ;
             if (robot_best_cam == -1) {
                 new_robot_data = get_robot_step(composite_image_gray, robot);
             } else {
-                new_robot_data = get_robot_step(composite.warped[robot_best_cam], robot);
+                new_robot_data = get_robot_step(composite.warped_detection[robot_best_cam], robot);
                 if (!new_robot_data) {
                     new_robot_data = get_robot_step(composite_image_gray, robot);
                 }
@@ -207,10 +216,13 @@ namespace habitat_cv {
                 if (robot_counter) robot_counter--;
                 else robot.location = NOLOCATION;
             }
+            //for (auto &i : images)
+                //cout << i.time_stamp.to_seconds() * 1000 << ", ";
+            //cout << endl;
             auto diff = composite_image_gray.diff(background.composite);
             if (get_mouse_step(diff, mouse, robot.location)) {
                 auto canonical_step = mouse.convert(cv_space,canonical_space);
-                if (waiting_for_prey && canonical_step.location.dist(ENTRANCE)>ENTRANCE_DISTANCE) {
+                if (waiting_for_prey && canonical_step.location.dist(ENTRANCE) > ENTRANCE_DISTANCE) {
                     waiting_for_prey = false;
                     experiment_client.prey_enter_arena();
                 }
@@ -254,19 +266,19 @@ namespace habitat_cv {
                     if (robot_best_cam == -1)
                         screen_frame = screen_layout.get_frame(Image(cv::Mat(composite_image_gray > robot_threshold),""), "LEDs");
                     else
-                        screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped[robot_best_cam] > robot_threshold),""), "LEDs");
+                        screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[robot_best_cam] > robot_threshold),""), "LEDs");
                     break;
                 case Screen_image::led0 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped[0] > robot_threshold),""), "LED0");
+                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[0] > robot_threshold),""), "LED0");
                     break;
                 case Screen_image::led1 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped[1] > robot_threshold),""), "LED1");
+                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[1] > robot_threshold),""), "LED1");
                     break;
                 case Screen_image::led2 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped[2] > robot_threshold),""), "LED2");
+                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[2] > robot_threshold),""), "LED2");
                     break;
                 case Screen_image::led3 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped[3] > robot_threshold),""), "LED3");
+                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[3] > robot_threshold),""), "LED3");
                     break;
                 case Screen_image::mouse :
                     screen_frame = screen_layout.get_frame(mouse_frame, "mouse");
@@ -298,11 +310,35 @@ namespace habitat_cv {
                 case Screen_image::warped3 :
                     screen_frame = screen_layout.get_frame(composite.warped[3], "warped3");
                     break;
+                case Screen_image::warped_video0 :
+                    screen_frame = screen_layout.get_frame(composite.warped_video[0], "warped_video0");
+                    break;
+                case Screen_image::warped_video1 :
+                    screen_frame = screen_layout.get_frame(composite.warped_video[1], "warped_video1");
+                    break;
+                case Screen_image::warped_video2 :
+                    screen_frame = screen_layout.get_frame(composite.warped_video[2], "warped_video2");
+                    break;
+                case Screen_image::warped_video3 :
+                    screen_frame = screen_layout.get_frame(composite.warped_video[3], "warped_video3");
+                    break;
+                case Screen_image::warped_detection0 :
+                    screen_frame = screen_layout.get_frame(composite.warped_detection[0], "warped_detection0");
+                    break;
+                case Screen_image::warped_detection1 :
+                    screen_frame = screen_layout.get_frame(composite.warped_detection[1], "warped_detection1");
+                    break;
+                case Screen_image::warped_detection2 :
+                    screen_frame = screen_layout.get_frame(composite.warped_detection[2], "warped_detection2");
+                    break;
+                case Screen_image::warped_detection3 :
+                    screen_frame = screen_layout.get_frame(composite.warped_detection[3], "warped_detection3");
+                    break;
                 case Screen_image::composite_image :
-                    screen_frame = screen_layout.get_frame(composite.composite, "composite");
+                    screen_frame = screen_layout.get_frame(composite.composite_video, "composite");
                     break;
                 case Screen_image::large :
-                    screen_frame = screen_layout.get_frame(composite.composite, "large");
+                    screen_frame = screen_layout.get_frame(composite.composite_video, "large");
                     break;
             }
             if (main_video.is_open()) screen_frame.circle({20, 20}, 10, {0, 0, 255}, true);
@@ -347,7 +383,7 @@ namespace habitat_cv {
                     cout << "robot threshold set to " << robot_threshold << endl;
                     break;
                 case 'U':
-                    background.update(composite.composite, composite.warped);
+                    background.update(composite.composite_detection, composite.warped_detection);
                     break;
                 case '\t':
                     if (screen_image == Screen_image::large)
@@ -365,7 +401,7 @@ namespace habitat_cv {
                     break;
             }
             fr.new_frame();
-            cout << fr.filtered_fps<< "                   \r";
+            //cout << fr.filtered_fps<< "                   \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
             //thread t([this, main_frame, mouse_cut, raw_frame]() {
                 main_video.add_frame(main_frame);
@@ -407,7 +443,7 @@ namespace habitat_cv {
             auto images = cameras.capture();
             images.push_back(images[2]);
             composite.get_composite(images);
-            background.update(composite.composite, composite.warped);
+            background.update(composite.composite_detection, composite.warped_detection);
         }
 
 }
@@ -425,4 +461,8 @@ namespace habitat_cv {
     }
 
     Cv_server_experiment_client::Cv_server_experiment_client() {}
+
+    void Cv_server_experiment_client::on_capture(int frame) {
+        cv_server->puff_state =  PUFF_DURATION;
+    }
 }

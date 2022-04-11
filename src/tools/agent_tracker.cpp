@@ -49,8 +49,9 @@ int main(int argc, char **argv){
     experiment_client.subscribe();
 
     Cv_server cv_server(cam_file, bg_path, tracking_server, experiment_client);
-
-    experiment_server.set_tracking_client(tracking_server.create_local_client<Experiment_tracking_client>());
+    auto &experiment_tracking_client = tracking_server.create_local_client<Experiment_tracking_client>();
+    experiment_tracking_client.subscribe();
+    experiment_server.set_tracking_client(experiment_tracking_client);
 
     World_info wi;
     wi.world_configuration = "hexagonal";

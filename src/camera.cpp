@@ -18,13 +18,15 @@ namespace habitat_cv{
             while(pxd_capturedBuffer(camera->grabber_bit_map)==prev && camera->running );
             prev = pxd_capturedBuffer(camera->grabber_bit_map);
             pxd_readuchar(camera->grabber_bit_map, prev, 0, 0, -1, -1, camera->buffer[destination].data, size, "Grey");
+            camera->buffer[destination].time_stamp.reset();
             camera->current_frame = destination;
         }
     }
 
     Camera::Camera(int grabber_bit_map, int buffer_size) : grabber_bit_map(grabber_bit_map){
-        for (int i=0; i<buffer_size; i++)
+        for (int i=0; i<buffer_size; i++) {
             buffer.emplace_back(frame_size.height, frame_size.width, Image::Type::gray);
+        }
         current_frame = -1;
         capture_thread = std::thread(capture_process,this);
         while (current_frame == -1);

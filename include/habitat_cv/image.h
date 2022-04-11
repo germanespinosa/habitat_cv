@@ -28,6 +28,7 @@ namespace habitat_cv {
         [[nodiscard]] Binary_image threshold(unsigned char) const;
         std::string file_name;
         Type type;
+        cell_world::Timer time_stamp;
         void save(const std::string &);
         void save(const std::string &, const std::string &);
         static Image read(const std::string &, const std::string &);

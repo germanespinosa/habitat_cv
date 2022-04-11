@@ -12,12 +12,16 @@ namespace habitat_cv{
         cv::Point2f get_raw_point(unsigned int camera_index, const cv::Point2f &);
         cv::Point2f get_warped_point(unsigned int camera_index, const cv::Point2f &);
 
-        Image composite;
-        Binary_image mask;
+        Image composite_detection;
+        Image composite_video;
+        Binary_image mask_detection;
+        Binary_image mask_video;
         cv::Size size;
         std::vector<cv::Mat> homographies;
         std::vector<cv::Mat> inverted_homographies;
         Images warped;
+        Images warped_detection;
+        Images warped_video;
         std::vector<cv::Rect> crop_rectangles;
         cell_world::World world;
         cell_world::Map map;
