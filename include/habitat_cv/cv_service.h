@@ -20,6 +20,7 @@ namespace habitat_cv{
         void on_episode_started(const std::string &experiment_name) override;
         void on_capture(int frame) override;
         void on_episode_finished() override;
+        void on_experiment_started(const experiment::Start_experiment_response &) override;
         Cv_server *cv_server;
     };
 

@@ -142,7 +142,7 @@ namespace habitat_cv {
             int i = 0;
             auto zero_point = cv::Point2f(Camera::frame_size.width / 2, Camera::frame_size.height / 2);
             auto images = cameras.capture();
-            images.emplace_back(images[2],"camera_3.png");
+            //images.emplace_back(images[2],"camera_3.png");
             auto composite_image = composite.get_composite(images);
             for (auto &camera: cameras.cameras) {
                 auto camera_zero_point = composite.get_warped_point(i++, zero_point);
@@ -154,6 +154,7 @@ namespace habitat_cv {
         Timer frame_timer(time_out);
         Frame_rate fr;
         fr.filter = .99999;
+        bool show_occlusions = false;
         while (tracking_running) {
             //Timer capture_timer;
             while (!frame_timer.time_out());
@@ -162,7 +163,7 @@ namespace habitat_cv {
             //cout << capture_timer.to_seconds() * 1000 << " " ;
             //capture_timer.reset();
             //added to copy 3th camera into a 4th buffer (broken camera fix)
-            images.emplace_back(images[2],"camera_3.png");
+            //images.emplace_back(images[2],"camera_3.png");
             composite.get_composite(images);
             auto composite_image_gray = composite.composite_detection;
             auto composite_image_rgb = composite.composite_video.to_rgb();
@@ -254,8 +255,10 @@ namespace habitat_cv {
             Image screen_frame;
             switch (screen_image) {
                 case Screen_image::main :
-                    for (auto &occlusion: occlusions) {
-                        composite_image_rgb.circle(occlusion.get().location, 10, {0, 255, 0}, true);
+                    if (show_occlusions) {
+                        for (auto &occlusion: occlusions) {
+                            composite_image_rgb.circle(occlusion.get().location, 20, {255, 0, 0}, true);
+                        }
                     }
                     screen_frame = screen_layout.get_frame(composite_image_rgb, "main");
                     break;
@@ -385,6 +388,9 @@ namespace habitat_cv {
                 case 'U':
                     background.update(composite.composite_detection, composite.warped_detection);
                     break;
+                case 'O':
+                    show_occlusions = !show_occlusions;
+                    break;
                 case '\t':
                     if (screen_image == Screen_image::large)
                         screen_image = Screen_image::main;
@@ -401,7 +407,7 @@ namespace habitat_cv {
                     break;
             }
             fr.new_frame();
-            //cout << fr.filtered_fps<< "                   \r";
+            cout << fr.filtered_fps<< "  fps                 \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
             //thread t([this, main_frame, mouse_cut, raw_frame]() {
                 main_video.add_frame(main_frame);
@@ -427,7 +433,7 @@ namespace habitat_cv {
         cv_space(World_implementation::get_from_parameters_name("hexagonal","cv").space),
         camera_configuration(Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>()),
         //cameras(camera_configuration_file, camera_configuration.order.count()),
-        cameras(camera_configuration_file, 3),
+        cameras(camera_configuration_file, 4),
         composite(camera_configuration),
         main_video(main_layout.size(), Image::rgb),
         raw_video(raw_layout.size(), Image::gray),
@@ -464,6 +470,10 @@ namespace habitat_cv {
 
     void Cv_server_experiment_client::on_capture(int frame) {
         cv_server->puff_state =  PUFF_DURATION;
+    }
+
+    void Cv_server_experiment_client::on_experiment_started(const experiment::Start_experiment_response &experiment) {
+        cv_server->occlusions = World::get_from_parameters_name(experiment.world.world_configuration,"cv",experiment.world.occlusions).create_cell_group().occluded_cells();
     }
 
 }
