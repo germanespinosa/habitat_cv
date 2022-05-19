@@ -17,11 +17,6 @@ using namespace habitat_cv;
 using namespace experiment;
 
 int main(int argc, char **argv){
-    if (argc==1){
-        cerr << "missing camera configuration parameter." << endl;
-        exit(1);
-    }
-
     controller::Agent_operational_limits limits;
     limits.load("../config/robot_operational_limits.json"); // robot, ghost
 
@@ -37,13 +32,18 @@ int main(int argc, char **argv){
     Peeking peeking(peeking_parameters, world);
 
     experiment::Experiment_server experiment_server;
-    Experiment_service::set_logs_folder("experiment/");
+    Experiment_service::set_logs_folder("/habitat/logsV2/");
     experiment_server.start(Experiment_service::get_port()); // added by gabbie // 4540
 
     Tracking_server tracking_server;
     string cam_config = argv[1];
     string bg_path = "/habitat/habitat_cv/backgrounds/" + cam_config + "/";
-    string cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
+    string cam_file;
+    if (argc==1){
+        cam_file = "/usr/local/xcap/settings/xcvidset.fmt";
+    } else {
+        cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
+    }
 
     auto &experiment_client = experiment_server.create_local_client<Cv_server_experiment_client>();
     experiment_client.subscribe();
@@ -60,7 +60,7 @@ int main(int argc, char **argv){
 
     auto &controller_tracking_client = tracking_server.create_local_client<Controller_server::Controller_tracking_client>(
             visibility,
-            float(90),
+            float(90), //180 degrees each side -- sounds good?
             capture,
             peeking,
             "predator",
