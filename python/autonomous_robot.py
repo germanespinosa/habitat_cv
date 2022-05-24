@@ -253,6 +253,7 @@ def on_keypress(event):
         running = False
     if event.key == "m":
         print("auto")
+        controller_state = 1
         controller.resume()                                     # change controller state to Playing
         controller_timer = Timer(5.0)                           # set initial destination and timer
         current_predator_destination = hidden_location()        # assign new destination
