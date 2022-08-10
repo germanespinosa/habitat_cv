@@ -1,3 +1,5 @@
+// Note:
+// 1. specify what robot to connect to sim or real
 #include <mutex>
 #include <habitat_cv/cv_service.h>
 #include <easy_tcp.h>
@@ -7,6 +9,7 @@
 #include <controller.h>
 #include <robot_lib.h>
 #include <experiment/experiment_service.h>
+#include <robot_lib/robot_agent.h>
 
 using namespace controller;
 using namespace cell_world;
@@ -15,10 +18,11 @@ using namespace json_cpp;
 using namespace agent_tracking;
 using namespace habitat_cv;
 using namespace experiment;
+using namespace robot;
 
 int main(int argc, char **argv){
-    controller::Agent_operational_limits limits;
-    limits.load("../config/robot_operational_limits.json"); // robot, ghost
+//    controller::Agent_operational_limits limits;
+//    limits.load("../config/robot_operational_limits.json"); // robot, ghost
 
     auto configuration = Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
     auto implementation = Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>(); // mice, vr, canonical
@@ -70,16 +74,14 @@ int main(int argc, char **argv){
     auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
     controller_experiment_client.subscribe();
 
-    robot::Robot_agent robot(limits);
-
-
-    if (!robot.connect("192.168.137.155")){
+    Robot_agent robot_agent;
+    if (!robot_agent.connect("192.168.137.155")){
         cout << "Failed to connect to robot" << endl;
         exit(1);
     }
 
     Controller_service::set_logs_folder("controller/");
-    Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
+    Controller_server controller_server("../config/pid.json", robot_agent, controller_tracking_client, controller_experiment_client);
 
     if (!controller_server.start(Controller_service::get_port())) {
         cout << "failed to start controller" << endl;

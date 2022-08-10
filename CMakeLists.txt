@@ -13,14 +13,10 @@ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 find_package( Dependencies )
 
 install_dependency( https://github.com/germanespinosa/agent_tracking Agent_tracking )
-
 install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
-
 install_dependency ( https://github.com/germanespinosa/experiment_service Experiment_service )
-
-install_dependency ( https://github.com/germanespinosa/cellworld_controller Controller )
-
-install_dependency ( https://github.com/germanespinosa/robot_library Robot_lib )
+install_dependency ( https://github.com/germanespinosa/cellworld_controller|tick-controller Controller )
+install_dependency ( https://github.com/germanespinosa/robot_library|tick-controller Robot_lib )
 
 
 dependency_include (include)
