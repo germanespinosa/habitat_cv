@@ -10,6 +10,7 @@
 #include <robot_lib.h>
 #include <experiment/experiment_service.h>
 #include <robot_lib/robot_agent.h>
+#include <params_cpp.h>
 
 using namespace controller;
 using namespace cell_world;
@@ -19,15 +20,22 @@ using namespace agent_tracking;
 using namespace habitat_cv;
 using namespace experiment;
 using namespace robot;
+using namespace params_cpp;
 
 int main(int argc, char **argv){
 //    controller::Agent_operational_limits limits;
 //    limits.load("../config/robot_operational_limits.json"); // robot, ghost
 
+    Key robot_task_key{"-t", "--task"};
+    Parser p(argc, argv);
+    bool task = p.contains(robot_task_key);
+
+
     auto configuration = Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
     auto implementation = Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>(); // mice, vr, canonical
     auto capture_parameters = Resources::from("capture_parameters").key("default").get_resource<Capture_parameters>();
     auto peeking_parameters = Resources::from("peeking_parameters").key("default").get_resource<Peeking_parameters>();
+
 
     auto world = World(configuration, implementation);
     auto cells = world.create_cell_group();
@@ -62,31 +70,40 @@ int main(int argc, char **argv){
     wi.world_implementation = "mice";
     wi.occlusions = "00_00";
 
-    auto &controller_tracking_client = tracking_server.create_local_client<Controller_server::Controller_tracking_client>(
-            visibility,
-            float(90), //180 degrees each side -- sounds good?
-            capture,
-            peeking,
-            "predator",
-            "prey");
-    controller_tracking_client.subscribe();
-
-    auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
-    controller_experiment_client.subscribe();
-
     Robot_agent robot_agent;
     if (!robot_agent.connect("192.168.137.155")){
         cout << "Failed to connect to robot" << endl;
         exit(1);
     }
 
-    Controller_service::set_logs_folder("controller/");
-    Controller_server controller_server("../config/pid.json", robot_agent, controller_tracking_client, controller_experiment_client);
+    Controller_server *controller_server;
 
-    if (!controller_server.start(Controller_service::get_port())) {
-        cout << "failed to start controller" << endl;
-        exit(1);
+    if (task) {
+        cout << "Start Controller Server" << endl;
+        auto &controller_tracking_client = tracking_server.create_local_client<Controller_server::Controller_tracking_client>(
+                visibility,
+                float(90), //180 degrees each side -- sounds good?
+                capture,
+                peeking,
+                "predator",
+                "prey");
+        controller_tracking_client.subscribe();
+
+        auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
+        controller_experiment_client.subscribe();
+
+        Controller_service::set_logs_folder("controller/");
+        controller_server = new Controller_server("../config/pid.json", robot_agent, controller_tracking_client,
+                                            controller_experiment_client);
+
+        if (!controller_server->start(Controller_service::get_port())) {
+            cout << "failed to start controller" << endl;
+            exit(1);
+        }
     }
+
+
+
     tracking_server.start(Tracking_service::get_port());
 
     cv_server.tracking_process();
