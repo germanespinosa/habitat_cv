@@ -23,8 +23,6 @@ using namespace robot;
 using namespace params_cpp;
 
 int main(int argc, char **argv){
-//    controller::Agent_operational_limits limits;
-//    limits.load("../config/robot_operational_limits.json"); // robot, ghost
 
     Key robot_task_key{"-t", "--task"};
     Parser p(argc, argv);
@@ -70,7 +68,16 @@ int main(int argc, char **argv){
     wi.world_implementation = "mice";
     wi.occlusions = "00_00";
 
-    Robot_agent robot_agent;
+    struct : Robot_agent {
+        void move_finished(int move_number) override {
+            if (controller_server)
+                cout << "MOVE NUMBER PRE" << move_number << endl;
+                controller_server->broadcast_subscribed(tcp_messages::Message("move_finished", move_number));
+                cout << "MOVE NUMBER" << move_number << endl;
+        };
+        Controller_server *controller_server = nullptr;
+    } robot_agent;
+
     if (!robot_agent.connect("192.168.137.155")){
         cout << "Failed to connect to robot" << endl;
         exit(1);
@@ -96,6 +103,7 @@ int main(int argc, char **argv){
         controller_server = new Controller_server("../config/pid.json", robot_agent, controller_tracking_client,
                                             controller_experiment_client);
 
+        robot_agent.controller_server = controller_server;
         if (!controller_server->start(Controller_service::get_port())) {
             cout << "failed to start controller" << endl;
             exit(1);
