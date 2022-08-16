@@ -71,9 +71,7 @@ int main(int argc, char **argv){
     struct : Robot_agent {
         void move_finished(int move_number) override {
             if (controller_server)
-                cout << "MOVE NUMBER PRE" << move_number << endl;
                 controller_server->broadcast_subscribed(tcp_messages::Message("move_finished", move_number));
-                cout << "MOVE NUMBER" << move_number << endl;
         };
         Controller_server *controller_server = nullptr;
     } robot_agent;
@@ -117,5 +115,6 @@ int main(int argc, char **argv){
     cv_server.tracking_process();
     tracking_server.stop();
     experiment_client.disconnect();
+    robot_agent.disconnect();
     exit(0);
 }
