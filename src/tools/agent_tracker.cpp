@@ -69,6 +69,7 @@ int main(int argc, char **argv){
     wi.occlusions = "00_00";
 
     struct : Robot_agent {
+        // this is move finished function see robot_agent to find move_number passed
         void move_finished(int move_number) override {
             if (controller_server)
                 controller_server->broadcast_subscribed(tcp_messages::Message("move_finished", move_number));
@@ -76,6 +77,7 @@ int main(int argc, char **argv){
         Controller_server *controller_server = nullptr;
     } robot_agent;
 
+    // 192.168.137.155
     if (!robot_agent.connect("192.168.137.155")){
         cout << "Failed to connect to robot" << endl;
         exit(1);

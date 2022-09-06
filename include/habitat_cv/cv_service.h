@@ -31,6 +31,7 @@ namespace habitat_cv{
         bool get_mouse_step(const Image &diff, cell_world::Step &step, const cell_world::Location &robot_location);
         bool get_robot_step(const Image &image, cell_world::Step &step);
         bool end_episode();
+        float get_prey_robot_orientation(Image &);
 
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
@@ -64,5 +65,6 @@ namespace habitat_cv{
 
         Profile led_profile;
         Profile mouse_profile;
+        Profile prey_robot_head_profile;
     };
 }
