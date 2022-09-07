@@ -34,12 +34,17 @@ namespace habitat_cv {
         return oss.str();
     }
 
+    using namespace std::chrono_literals;
+    using namespace std::chrono;
 
     habitat_cv::Image Main_layout::get_frame(const Image &image, unsigned int frame_count) {
         composite = image;
         frame = "Frame: " + to_string(frame_count) + "  ";
-        json_cpp::Json_date d = json_cpp::Json_date::now();
-        auto dt = d.to_json();
+        json_cpp::Json_date jd;
+        date::sys_time<std::chrono::milliseconds> &d = jd;
+        d = round<milliseconds>(system_clock::now()) - 5h;
+
+        auto dt = jd.to_json();
         dt = dt.substr(1, dt.size() - 2);
         date_time = "  " + dt;
         return get_image();
@@ -74,11 +79,13 @@ namespace habitat_cv {
     }
 
     Screen_layout::Screen_layout() :
-            Layout(830, 800, Image::rgb),
+            Layout(860, 800, Image::rgb),
             screen({800, 800}, Image::rgb),
-            screen_text({800, 30}, Image::rgb, {255, 255, 255}, {30, 30, 30}, 1, 1, 1) {
-        add_place_holder(screen, {0, 0});
-        add_place_holder(screen_text, {0, 800});
+            screen_text({800, 30}, Image::rgb, {255, 255, 255}, {30, 30, 30}, 1, 1, 1),
+            fps_text({800, 30}, Image::rgb, {255, 255, 255}, {30, 30, 30}, 1, 0, 1) {
+        add_place_holder(fps_text, {0, 0});
+        add_place_holder(screen, {0, 30});
+        add_place_holder(screen_text, {0, 830});
     }
 
     habitat_cv::Image Screen_layout::get_frame(const Image &image, const string &text) {

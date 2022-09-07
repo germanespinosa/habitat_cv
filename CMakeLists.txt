@@ -46,7 +46,8 @@ set( habitat_cv_files
         src/frame_rate.cpp
         src/layouts.cpp
         src/background.cpp
-        src/cv_service.cpp include/habitat_cv/camera.h src/camera.cpp)
+        src/cv_service.cpp
+        src/camera.cpp)
 
 add_library(habitat_cv ${habitat_cv_files})
 
@@ -60,7 +61,11 @@ target_link_libraries(habitat_cv
         robot_lib)
 
 add_executable(agent_tracker
-        src/tools/agent_tracker.cpp)
+        src/tools/agent_tracker.cpp )
+
+add_executable(camera_test
+        src/tools/camera_test.cpp )
+
 
 target_link_libraries(agent_tracker
         cellworld
@@ -71,6 +76,11 @@ target_link_libraries(agent_tracker
         habitat_cv
         experiment_service)
 
+target_link_libraries(camera_test
+        cellworld
+        ${OpenCV_LIBS}
+        /usr/local/xclib/lib/pxipl_x86_64.a
+        /usr/local/xclib/lib/xclib_x86_64.a m -pthread)
 
 ###
 ### TESTS

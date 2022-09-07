@@ -60,7 +60,7 @@ int main(int argc, char **argv){
 
     auto &controller_tracking_client = tracking_server.create_local_client<Controller_server::Controller_tracking_client>(
             visibility,
-            float(90), //180 degrees each side -- sounds good?
+            float(360), //180 degrees each side -- sounds good?
             capture,
             peeking,
             "predator",

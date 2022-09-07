@@ -1,4 +1,5 @@
 #include <habitat_cv/image.h>
+#include <habitat_cv/frame_rate.h>
 #include <thread>
 namespace habitat_cv {
     struct Camera {
@@ -14,5 +15,6 @@ namespace habitat_cv {
         std::atomic<bool> running;
         std::thread capture_thread;
         ~Camera();
+        Frame_rate frame_rate;
     };
 }

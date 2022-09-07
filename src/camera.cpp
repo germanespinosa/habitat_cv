@@ -17,7 +17,12 @@ namespace habitat_cv{
             int destination = (camera->current_frame + 1) % (int)camera->buffer.size();
             while(pxd_capturedBuffer(camera->grabber_bit_map)==prev && camera->running );
             prev = pxd_capturedBuffer(camera->grabber_bit_map);
-            pxd_readuchar(camera->grabber_bit_map, prev, 0, 0, -1, -1, camera->buffer[destination].data, size, "Grey");
+            camera->frame_rate.new_frame();
+//            thread([camera](long prev, int destination, int size){
+//4177920
+                pxd_readuchar(camera->grabber_bit_map, prev, 0, 0, -1, -1, camera->buffer[destination].data, size, "Grey");
+//            }, prev, destination, size).detach();
+//            t.wait(.02);
             camera->buffer[destination].time_stamp.reset();
             camera->current_frame = destination;
         }

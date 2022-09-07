@@ -43,7 +43,7 @@ namespace habitat_cv {
 
         habitat_cv::Content_resize screen;
         habitat_cv::Content_text screen_text;
-
+        habitat_cv::Content_text fps_text;
         habitat_cv::Image get_frame(const habitat_cv::Image &, const std::string &);
     };
 }
