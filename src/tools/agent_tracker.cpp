@@ -67,16 +67,36 @@ int main(int argc, char **argv){
             "prey");
     controller_tracking_client.subscribe();
 
+    auto &prey_controller_tracking_client = tracking_server.create_local_client<Prey_controller_server::Controller_tracking_client>(
+            visibility,
+            float(360), //180 degrees each side -- sounds good?
+            capture,
+            peeking,
+            "predator",
+            "prey");
+    prey_controller_tracking_client.subscribe();
+
+
     auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
     controller_experiment_client.subscribe();
 
+    auto &prey_controller_experiment_client = experiment_server.create_local_client<Prey_controller_server::Controller_experiment_client>();
+    prey_controller_experiment_client.subscribe();
+
     robot::Robot_agent robot(limits);
 
-
     if (!robot.connect("192.168.137.155")){
-        cout << "Failed to connect to robot" << endl;
+        cout << "Failed to connect to predator robot" << endl;
         exit(1);
     }
+
+    robot::Tick_robot_agent prey_robot;
+
+    if (!prey_robot.connect("192.168.137.154")){
+        cout << "Failed to connect to prey robot" << endl;
+        exit(1);
+    }
+
 
     Controller_service::set_logs_folder("controller/");
     Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
@@ -85,6 +105,16 @@ int main(int argc, char **argv){
         cout << "failed to start controller" << endl;
         exit(1);
     }
+
+
+    Prey_controller_service::set_logs_folder("controller/");
+    Prey_controller_server prey_controller_server(prey_robot, prey_controller_tracking_client, prey_controller_experiment_client);
+
+    if (!prey_controller_server.start(Prey_controller_service::get_port())) {
+        cout << "failed to start controller" << endl;
+        exit(1);
+    }
+
     tracking_server.start(Tracking_service::get_port());
 
     cv_server.tracking_process();

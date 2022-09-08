@@ -42,7 +42,7 @@ void camera_capture(int camera, int rows, int cols){
 
 using namespace std::chrono_literals;
 
-int main(int argc, char **argv) {
+int main() {
     json_cpp::Json_date jd;
     date::sys_time<std::chrono::milliseconds> &d = jd;
     d = round<milliseconds>(system_clock::now()) - 5h;

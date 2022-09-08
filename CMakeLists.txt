@@ -47,7 +47,7 @@ set( habitat_cv_files
         src/layouts.cpp
         src/background.cpp
         src/cv_service.cpp
-        src/camera.cpp)
+        src/camera.cpp cmake-dependencies/cellworld_controller/include/controller/tick_controller.h cmake-dependencies/cellworld_controller/src/tick_controller.cpp)
 
 add_library(habitat_cv ${habitat_cv_files})
 
