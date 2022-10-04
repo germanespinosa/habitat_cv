@@ -12,23 +12,12 @@ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 
 find_package( Dependencies )
 
-install_dependency( https://github.com/germanespinosa/agent_tracking Agent_tracking )
+include_directories (include)
 
-install_dependency ( https://github.com/germanespinosa/cellworld Cellworld )
+find_package (OpenCV)
 
-install_dependency ( https://github.com/germanespinosa/experiment_service Experiment_service )
-
-install_dependency ( https://github.com/germanespinosa/cellworld_controller Controller )
-
-install_dependency ( https://github.com/germanespinosa/robot_library Robot_lib )
-
-
-dependency_include (include)
-
-add_dependency_package (OpenCV)
-
-dependency_include (${OpenCV_INCLUDE_DIRS})
-dependency_include (/usr/local/xclib/inc/)
+include_directories (${OpenCV_INCLUDE_DIRS})
+include_directories (/usr/local/xclib/inc/)
 
 ###
 ### MAIN LIBRARY SETUP
@@ -47,12 +36,35 @@ set( habitat_cv_files
         src/layouts.cpp
         src/background.cpp
         src/cv_service.cpp
-        src/camera.cpp cmake-dependencies/cellworld_controller/include/controller/tick_controller.h cmake-dependencies/cellworld_controller/src/tick_controller.cpp)
+        src/camera.cpp)
 
 add_library(habitat_cv ${habitat_cv_files})
 
+install_git_dependency ( Controller
+        https://github.com/germanespinosa/cellworld_controller
+        CMAKE_PROJECT
+        IMPORT_TARGETS
+        controller
+        CONNECTED)
+
+install_git_dependency ( Robot_lib
+        https://github.com/germanespinosa/robot_library
+        CMAKE_PROJECT
+        IMPORT_TARGETS
+        gamepad_lib
+        cellworld
+        requests
+        json-cpp
+        params-cpp
+        easy-tcp
+        tcp_messages
+        agent_tracking
+        experiment_service
+        robot_lib
+        CONNECTED)
+
 target_link_libraries(habitat_cv
-        LINK_PUBLIC
+        PRIVATE
         cellworld
         ${OpenCV_LIBS}
         /usr/local/xclib/lib/pxipl_x86_64.a
@@ -67,14 +79,7 @@ add_executable(camera_test
         src/tools/camera_test.cpp )
 
 
-target_link_libraries(agent_tracker
-        cellworld
-        ${OpenCV_LIBS}
-        /usr/local/xclib/lib/pxipl_x86_64.a
-        /usr/local/xclib/lib/xclib_x86_64.a m -pthread
-        agent_tracking
-        habitat_cv
-        experiment_service)
+target_link_libraries(agent_tracker habitat_cv )
 
 target_link_libraries(camera_test
         cellworld
@@ -85,8 +90,8 @@ target_link_libraries(camera_test
 ###
 ### TESTS
 ###
-install_dependency ( https://github.com/germanespinosa/catch )
-test_library(habitat_cv catchtests/camera_array.cpp)
+#install_dependency ( https://github.com/germanespinosa/catch )
+#test_library(habitat_cv catchtests/camera_array.cpp)
 
 ###
 ### LIBRARY INSTALLATION
