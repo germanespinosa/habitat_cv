@@ -14,7 +14,9 @@ namespace habitat_cv{
             Detection detection;
             int area = stats.at<int>(i,4);
             detection.area = area;
-            auto point = image.get_point({centroids.at<double>(i, 0), centroids.at<double>(i, 1)});
+            auto x = centroids.at<double>(i, 0);
+            auto y = centroids.at<double>(i, 1);
+            auto point = image.get_point({ (float)x, (float)y});
             detection.location.x = point.x;
             detection.location.y = point.y;
             detections.push_back(detection);
