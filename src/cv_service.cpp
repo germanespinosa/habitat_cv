@@ -15,7 +15,6 @@ using namespace tcp_messages;
 
 #define ENTRANCE Location(0,.5)
 #define  ENTRANCE_DISTANCE .05
-#define MOUSE_VIDEO_SIZE 200
 
 namespace habitat_cv {
 
@@ -46,7 +45,8 @@ namespace habitat_cv {
     }
 
     bool Cv_server::get_mouse_step(const Image &diff, Step &step, const Location &robot_location) {
-        auto mouse_candidates = Detection_list::get_detections(diff, 55, 2).filter(mouse_profile);
+        auto detections = Detection_list::get_detections(diff, 55, 2);
+        auto mouse_candidates = detections.filter(mouse_profile);
         for (auto &mouse: mouse_candidates) {
             if (mouse.location.dist(robot_location) < SAFETY_MARGIN) continue;
             step.agent_name = "prey";
@@ -87,6 +87,14 @@ namespace habitat_cv {
         return true;
     }
 
+    float Cv_server::get_prey_robot_orientation(Image &prey_robot_cam) {
+        auto detections = Detection_list::get_detections(prey_robot_cam, 50, 1);
+        auto robot_center = detections.filter(mouse_profile);
+        if (robot_center.empty()) return 0;
+        auto robot_head = detections.filter(prey_robot_head_profile);
+        if (robot_head.empty()) return 0;
+        return robot_center[0].location.atan(robot_head[0].location);
+    }
 
 #define NOLOCATION Location(-1000,-1000)
     enum Screen_image {
@@ -99,6 +107,7 @@ namespace habitat_cv {
         led3,
         raw,
         mouse,
+        best_mouse,
         cam0,
         cam1,
         cam2,
@@ -129,15 +138,17 @@ namespace habitat_cv {
         int robot_counter = 0;
         ts.reset();
         int robot_best_cam = -1;
+        int mouse_best_cam = 0;
         bool new_robot_data;
         string screen_text;
         Screen_image screen_image = Screen_image::main;
         double fps = Video::get_fps();
         double time_out = 1.0 / fps * .999;
-        cout << "time_out: " << time_out << endl;
+//        cout << "time_out: " << time_out << endl;
         float camera_height = 205;
-        float robot_height = 12;
+        float robot_height = 9;
         float height_ratio = robot_height / camera_height;
+        Step canonical_step;
         vector<Location> camera_zero;
         {
             int i = 0;
@@ -145,7 +156,7 @@ namespace habitat_cv {
             auto images = cameras.capture();
             //images.emplace_back(images[2],"camera_3.png");
             auto composite_image = composite.get_composite(images);
-            for (auto &camera: cameras.cameras) {
+            for (unsigned int c=0; c < cameras.cameras.size(); c++) {
                 auto camera_zero_point = composite.get_warped_point(i++, zero_point);
                 auto camera_zero_location = composite_image.get_location(camera_zero_point);
                 camera_zero.push_back(camera_zero_location);
@@ -157,7 +168,7 @@ namespace habitat_cv {
         fr.filter = .99999;
         bool show_occlusions = false;
         while (tracking_running) {
-            Timer capture_timer;
+            //Timer capture_timer;
             while (!frame_timer.time_out());
             frame_timer.reset();
             auto images = cameras.capture();
@@ -199,19 +210,18 @@ namespace habitat_cv {
                 } else {
                     robot.data = "";
                 }
-                robot.time_stamp = ts.to_seconds();
-                robot.frame = frame_number;
-                thread([this, frame_number](Step robot,Tracking_server& tracking_server){
-                    auto canonical_step = robot.convert(cv_space,canonical_space);
-                    tracking_server.send_step(canonical_step);
-                }, robot, reference_wrapper(tracking_server)).detach();
+                thread([this, frame_number](Step &robot, Timer &ts, Tracking_server &tracking_server) {
+                    robot.time_stamp = ts.to_seconds();
+                    robot.frame = frame_number;
+                    tracking_server.send_step(robot.convert(cv_space, canonical_space));
+                }, reference_wrapper(robot), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
 
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
-//                auto robot_cell_id = composite.map.cells.find(robot.location);
-//                auto robot_cell_coordinates = composite.map.cells[robot_cell_id].coordinates;
-//
-//                auto cell_polygon = composite.get_polygon(robot_cell_coordinates);
-//                composite_image_rgb.polygon(cell_polygon, color_robot);
+                auto robot_cell_id = composite.map.cells.find(robot.location);
+                auto robot_cell_coordinates = composite.map.cells[robot_cell_id].coordinates;
+
+                auto cell_polygon = composite.get_polygon(robot_cell_coordinates);
+                composite_image_rgb.polygon(cell_polygon, color_robot);
                 composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot);
 
                 robot_counter = 30;
@@ -220,26 +230,25 @@ namespace habitat_cv {
                 else robot.location = NOLOCATION;
             }
             //for (auto &i : images)
-                //cout << i.time_stamp.to_seconds() * 1000 << ", ";
+            //cout << i.time_stamp.to_seconds() * 1000 << ", ";
             //cout << endl;
             auto diff = composite_image_gray.diff(background.composite);
+            auto send_prey_step = false;
             if (get_mouse_step(diff, mouse, robot.location)) {
-                auto canonical_step = mouse.convert(cv_space,canonical_space);
-                canonical_step.time_stamp = ts.to_seconds();
-                canonical_step.frame = frame_number;
+                int cam_row = mouse.location.y > 540 ? 0 : 1;
+                int cam_col = mouse.location.x > 540 ? 1 : 0;
+                mouse_best_cam = camera_configuration.order[cam_row][cam_col];
+                canonical_step = mouse.convert(cv_space, canonical_space);
                 if (waiting_for_prey && canonical_step.location.dist(ENTRANCE) > ENTRANCE_DISTANCE) {
                     waiting_for_prey = false;
                     experiment_client.prey_enter_arena();
                 }
-                thread([this, frame_number](Step canonical_step, Tracking_server& tracking_server){
-                    tracking_server.send_step(canonical_step);
-                }, canonical_step, reference_wrapper(tracking_server)).detach();
-
+                send_prey_step = true;
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
-//                auto mouse_cell_id = composite.map.cells.find(mouse.location);
-//                auto mouse_cell_coordinates = composite.map.cells[mouse_cell_id].coordinates;
-//                auto cell_polygon = composite.get_polygon(mouse_cell_coordinates);
-//                composite_image_rgb.polygon(cell_polygon, {255, 0, 0});
+                auto mouse_cell_id = composite.map.cells.find(mouse.location);
+                auto mouse_cell_coordinates = composite.map.cells[mouse_cell_id].coordinates;
+                auto cell_polygon = composite.get_polygon(mouse_cell_coordinates);
+                composite_image_rgb.polygon(cell_polygon, {255, 0, 0});
             }
             auto main_frame = main_layout.get_frame(composite_image_rgb, frame_number);
 
@@ -248,10 +257,20 @@ namespace habitat_cv {
             Images mouse_cut;
             for (auto &image: images) {
                 auto mouse_point = composite_image_gray.get_point(mouse.location);
-                auto mouse_raw_point = composite.get_raw_point(camera_index,mouse_point);
+                auto mouse_raw_point = composite.get_raw_point(camera_index, mouse_point);
                 auto mouse_raw_location = image.get_location(mouse_raw_point);
-                mouse_cut.emplace_back(Content_crop(mouse_raw_location,MOUSE_VIDEO_SIZE, image));
+                mouse_cut.emplace_back(Content_crop(mouse_raw_location, 150, image));
                 camera_index++;
+            }
+            if (send_prey_step) {
+                auto prey_robot_theta = get_prey_robot_orientation(mouse_cut[mouse_best_cam]);
+                thread([this, frame_number,prey_robot_theta](Step &canonical_step, Timer &ts, Tracking_server &tracking_server) {
+                    canonical_step.time_stamp = ts.to_seconds();
+                    canonical_step.frame = frame_number;
+                    canonical_step.rotation = to_degrees(prey_robot_theta);
+                    tracking_server.send_step(canonical_step);
+                }, reference_wrapper(canonical_step), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
+                composite_image_rgb.arrow(mouse.location, prey_robot_theta, 50, {255, 0, 0});
             }
             auto mouse_frame = raw_layout.get_frame(mouse_cut);
             Image screen_frame;
@@ -287,6 +306,9 @@ namespace habitat_cv {
                     break;
                 case Screen_image::mouse :
                     screen_frame = screen_layout.get_frame(mouse_frame, "mouse");
+                    break;
+                case Screen_image::best_mouse :
+                    screen_frame =  screen_layout.get_frame(Image(mouse_cut[mouse_best_cam].threshold(50).dilate(2).erode(2),""),"best mouse:" + to_string(mouse_best_cam) );
                     break;
                 case Screen_image::raw :
                     screen_frame = screen_layout.get_frame(raw_frame, "raw");
@@ -409,25 +431,16 @@ namespace habitat_cv {
                     break;
             }
             fr.new_frame();
-            screen_layout.fps_text = "fps: " + to_string(fr.filtered_fps);
-
-            // camera fps
-
-//            for (auto &camera:cameras.cameras){
-//                cout << camera->frame_rate.filtered_fps << " ";
-//            }
-//            cout << endl;
-
-
+//            cout << fr.filtered_fps<< "  fps                 \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
-            thread t([this, main_frame, mouse_cut, raw_frame]() {
-                main_video.add_frame(main_frame);
-                raw_video.add_frame(raw_frame);
-                for (int i=0;i<4;i++) {
-                    mouse_videos[i]->add_frame(mouse_cut[i]);
-                }
-            });
-            t.detach();
+            //thread t([this, main_frame, mouse_cut, raw_frame]() {
+            main_video.add_frame(main_frame);
+            raw_video.add_frame(raw_frame);
+            for (int i=0;i<4;i++) {
+                mouse_videos[i]->add_frame(mouse_cut[i]);
+            }
+            //});
+            //t.detach();
             if (!main_video.is_open()) mouse.location = NOLOCATION;
             // write videos
         }
@@ -438,22 +451,23 @@ namespace habitat_cv {
                          const std::string &background_path,
                          agent_tracking::Tracking_server &tracking_server,
                          Cv_server_experiment_client &experiment_client):
-        tracking_server(tracking_server),
-        experiment_client(experiment_client),
-        canonical_space(World_implementation::get_from_parameters_name("hexagonal","canonical").space),
-        cv_space(World_implementation::get_from_parameters_name("hexagonal","cv").space),
-        camera_configuration(Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>()),
-        //cameras(camera_configuration_file, camera_configuration.order.count()),
-        cameras(camera_configuration_file, 4),
-        composite(camera_configuration),
-        main_video(main_layout.size(), Image::rgb),
-        raw_video(raw_layout.size(), Image::gray),
-        led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
-        mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>())
-{
+            tracking_server(tracking_server),
+            experiment_client(experiment_client),
+            canonical_space(World_implementation::get_from_parameters_name("hexagonal","canonical").space),
+            cv_space(World_implementation::get_from_parameters_name("hexagonal","cv").space),
+            camera_configuration(Resources::from("camera_configuration").key("default").get_resource<Camera_configuration>()),
+            //cameras(camera_configuration_file, camera_configuration.order.count()),
+            cameras(camera_configuration_file, 4),
+            composite(camera_configuration),
+            main_video(main_layout.size(), Image::rgb),
+            raw_video(raw_layout.size(), Image::gray),
+            led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
+            mouse_profile(Resources::from("profile").key("prey_robot").get_resource<Profile>()),
+            prey_robot_head_profile(Resources::from("profile").key("prey_robot_head").get_resource<Profile>())
+    {
         experiment_client.cv_server = this;
         for (int i = 0; i < 4; i++) {
-            mouse_videos.push_back(new Video(cv::Size(MOUSE_VIDEO_SIZE,MOUSE_VIDEO_SIZE), Image::gray));
+            mouse_videos.push_back(new Video(cv::Size(150,150), Image::gray));
         }
         background.set_path(background_path);
         if (!background.load()) {
@@ -463,7 +477,7 @@ namespace habitat_cv {
             background.update(composite.composite_detection, composite.warped_detection);
         }
 
-}
+    }
 
     void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
         auto experiment = this->get_experiment(experiment_name);
@@ -479,7 +493,7 @@ namespace habitat_cv {
 
     Cv_server_experiment_client::Cv_server_experiment_client() {}
 
-    void Cv_server_experiment_client::on_capture(int frame) {
+    void Cv_server_experiment_client::on_capture(int) {
         cv_server->puff_state =  PUFF_DURATION;
     }
 

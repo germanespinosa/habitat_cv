@@ -27,6 +27,7 @@ int main(int argc, char **argv){
 
     auto world = World(configuration, implementation);
     auto cells = world.create_cell_group();
+    Map map(cells);
     Location_visibility visibility(cells, configuration.cell_shape, implementation.cell_transformation);
     Capture capture(capture_parameters, world);
     Peeking peeking(peeking_parameters, world);
@@ -67,36 +68,28 @@ int main(int argc, char **argv){
             "prey");
     controller_tracking_client.subscribe();
 
-    auto &prey_controller_tracking_client = tracking_server.create_local_client<Prey_controller_server::Controller_tracking_client>(
-            visibility,
-            float(360), //180 degrees each side -- sounds good?
-            capture,
-            peeking,
-            "predator",
-            "prey");
-    prey_controller_tracking_client.subscribe();
-
 
     auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
     controller_experiment_client.subscribe();
 
-    auto &prey_controller_experiment_client = experiment_server.create_local_client<Prey_controller_server::Controller_experiment_client>();
-    prey_controller_experiment_client.subscribe();
-
     robot::Robot_agent robot(limits);
 
-    if (!robot.connect("192.168.137.155")){
-        cout << "Failed to connect to predator robot" << endl;
-        exit(1);
-    }
+//    if (!robot.connect("192.168.137.155")){
+//        cout << "Failed to connect to predator robot" << endl;
+//        exit(1);
+//    }
 
-    robot::Tick_robot_agent prey_robot;
+    Tick_agent_moves tick_moves;
+    tick_moves.load("../config/tick_robot_moves.json");
+
+    auto &prey_tracking_client = tracking_server.create_local_client<Tracking_client>();
+    prey_tracking_client.subscribe();
+    robot::Tick_robot_agent prey_robot(tick_moves,map, prey_tracking_client);
 
     if (!prey_robot.connect("192.168.137.154")){
         cout << "Failed to connect to prey robot" << endl;
         exit(1);
     }
-
 
     Controller_service::set_logs_folder("controller/");
     Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
@@ -107,18 +100,63 @@ int main(int argc, char **argv){
     }
 
 
-    Prey_controller_service::set_logs_folder("controller/");
-    Prey_controller_server prey_controller_server(prey_robot, prey_controller_tracking_client, prey_controller_experiment_client);
+    // PATH EXECUTION TEST
+    bool prey_running = true;
+    thread prey_wtf([&prey_robot, &prey_running]( ){
+        unsigned int i = 0;
+        int input;
 
-    if (!prey_controller_server.start(Prey_controller_service::get_port())) {
-        cout << "failed to start controller" << endl;
-        exit(1);
-    }
+        // LIST MOVES HERE
+        Move_list moves;
+        moves.emplace_back(2,0);
+        moves.emplace_back(1,1);
+        moves.emplace_back(-1,1);
+        moves.emplace_back(-2,0);
+        moves.emplace_back(-1,-1);
+        moves.emplace_back(1,-1);
+
+
+
+
+
+        // input -1 = exit
+        // input 20 = sequence of moves
+        while (prey_running) {
+//            if (prey_robot.completed_move == prey_robot.move_counter - 2 && i < moves.size()) {
+            cout << "Enter move request: " << endl;
+            cin >> input;
+            if (input == 20){
+                while (i <= moves.size()){
+                    auto move = moves[i];
+                    prey_robot.execute_move(move);
+                    i++;
+                }
+            } else {
+                auto move = moves[input];
+                prey_robot.execute_move(move);
+            }
+
+            if (input == -1) {
+                prey_running = false;
+                //cout << "Completed: " << prey_robot.completed_move << "Counter: " << prey_robot.move_counter << endl;
+            }
+        }
+    });
+
 
     tracking_server.start(Tracking_service::get_port());
-
     cv_server.tracking_process();
     tracking_server.stop();
     experiment_client.disconnect();
+    prey_running = false;
+    if (prey_wtf.joinable()) prey_wtf.join();
     exit(0);
 }
+
+// 2. check current tick values - can do this in a test file - or with old code
+// 3. tune closed loop
+// how to initialize
+// get next move
+// astar revamp
+// autorobot rewrite
+// 1. check message communication
