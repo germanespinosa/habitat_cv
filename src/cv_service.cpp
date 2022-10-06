@@ -1,6 +1,7 @@
 #include <thread>
 #include <filesystem>
 #include <habitat_cv/cv_service.h>
+#include <performance.h>
 
 
 #define SAFETY_MARGIN 75
@@ -167,19 +168,24 @@ namespace habitat_cv {
         Frame_rate fr;
         fr.filter = .99999;
         bool show_occlusions = false;
+        int input_counter=0;
         while (tracking_running) {
             //Timer capture_timer;
+            PERF_START("WAIT");
             while (!frame_timer.time_out());
+            PERF_STOP("WAIT");
             frame_timer.reset();
+            PERF_START("CAPTURE");
             auto images = cameras.capture();
-            //cout << capture_timer.to_seconds() * 1000 << " " ;
-            //capture_timer.reset();
-            //added to copy 3th camera into a 4th buffer (broken camera fix)
-            //images.emplace_back(images[2],"camera_3.png");
+            PERF_STOP("CAPTURE");
+            PERF_START("COMPOSITE");
             composite.get_composite(images);
+            PERF_STOP("COMPOSITE");
+            PERF_START("COLOR CONVERSION");
             auto composite_image_gray = composite.composite_detection;
             auto composite_image_rgb = composite.composite_video.to_rgb();
-            //cout << capture_timer.to_seconds() * 1000 << endl ;
+            PERF_STOP("COLOR CONVERSION");
+            PERF_SCOPE("REST");
             if (robot_best_cam == -1) {
                 new_robot_data = get_robot_step(composite_image_gray, robot);
             } else {
@@ -229,9 +235,6 @@ namespace habitat_cv {
                 if (robot_counter) robot_counter--;
                 else robot.location = NOLOCATION;
             }
-            //for (auto &i : images)
-            //cout << i.time_stamp.to_seconds() * 1000 << ", ";
-            //cout << endl;
             auto diff = composite_image_gray.diff(background.composite);
             auto send_prey_step = false;
             if (get_mouse_step(diff, mouse, robot.location)) {
@@ -370,68 +373,73 @@ namespace habitat_cv {
             }
             if (main_video.is_open()) screen_frame.circle({20, 20}, 10, {0, 0, 255}, true);
             cv::imshow("Agent Tracking", screen_frame);
-            auto key = cv::waitKey(1);
-            switch (key) {
-                case 'C':
-                    // start video recording
-                    images.save(".");
-                    break;
-                case 'V':
-                    // start video recording
-                    main_video.new_video("main.mp4");
-                    raw_video.new_video("raw.mp4");
-                    for (int i=0; i<4; i++) {
-                        mouse_videos[i]->new_video("mouse" + to_string(i) + ".mp4");
-                    }
-                    break;
-                case 'B':
-                    // end video recording
-                    main_video.close();
-                    for (auto &mouse_video:mouse_videos) {
-                        mouse_video->close();
-                    }
-                    raw_video.close();
-                    break;
-                case 'Q':
-                    tracking_running = false;
-                    break;
-                case 'M':
-                    screen_image = main;
-                    break;
-                case 'R':
-                    cameras.reset();
-                    break;
-                case '[':
-                    robot_threshold++;
-                    cout << "robot threshold set to " << robot_threshold << endl;
-                    break;
-                case ']':
-                    robot_threshold--;
-                    cout << "robot threshold set to " << robot_threshold << endl;
-                    break;
-                case 'U':
-                    background.update(composite.composite_detection, composite.warped_detection);
-                    break;
-                case 'O':
-                    show_occlusions = !show_occlusions;
-                    break;
-                case '\t':
-                    if (screen_image == Screen_image::large)
-                        screen_image = Screen_image::main;
-                    else
-                        screen_image = static_cast<Screen_image>(screen_image + 1);
-                    cout << "change_screen_output to " << screen_image << endl;
-                    break;
-                case ' ':
-                    if (screen_image == Screen_image::main)
-                        screen_image = Screen_image::large;
-                    else
-                        screen_image = static_cast<Screen_image>(screen_image - 1);
-                    cout << "change_screen_output to " << screen_image << endl;
-                    break;
+            if (!input_counter) {
+                input_counter = 10;
+                auto key = cv::waitKey(1);
+                switch (key) {
+                    case 'C':
+                        // start video recording
+                        images.save(".");
+                        break;
+                    case 'V':
+                        // start video recording
+                        main_video.new_video("main.mp4");
+                        raw_video.new_video("raw.mp4");
+                        for (int i = 0; i < 4; i++) {
+                            mouse_videos[i]->new_video("mouse" + to_string(i) + ".mp4");
+                        }
+                        break;
+                    case 'B':
+                        // end video recording
+                        main_video.close();
+                        for (auto &mouse_video: mouse_videos) {
+                            mouse_video->close();
+                        }
+                        raw_video.close();
+                        break;
+                    case 'Q':
+                        tracking_running = false;
+                        break;
+                    case 'M':
+                        screen_image = main;
+                        break;
+                    case 'R':
+                        cameras.reset();
+                        break;
+                    case '[':
+                        robot_threshold++;
+                        cout << "robot threshold set to " << robot_threshold << endl;
+                        break;
+                    case ']':
+                        robot_threshold--;
+                        cout << "robot threshold set to " << robot_threshold << endl;
+                        break;
+                    case 'U':
+                        background.update(composite.composite_detection, composite.warped_detection);
+                        break;
+                    case 'O':
+                        show_occlusions = !show_occlusions;
+                        break;
+                    case '\t':
+                        if (screen_image == Screen_image::large)
+                            screen_image = Screen_image::main;
+                        else
+                            screen_image = static_cast<Screen_image>(screen_image + 1);
+                        cout << "change_screen_output to " << screen_image << endl;
+                        break;
+                    case ' ':
+                        if (screen_image == Screen_image::main)
+                            screen_image = Screen_image::large;
+                        else
+                            screen_image = static_cast<Screen_image>(screen_image - 1);
+                        cout << "change_screen_output to " << screen_image << endl;
+                        break;
+                }
+            } else {
+                input_counter--;
             }
             fr.new_frame();
-//            cout << fr.filtered_fps<< "  fps                 \r";
+            //cout << fr.filtered_fps<< "  fps                 \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
             //thread t([this, main_frame, mouse_cut, raw_frame]() {
             main_video.add_frame(main_frame);

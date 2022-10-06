@@ -30,7 +30,8 @@ endif()
 
 include_directories (include)
 
-find_package (OpenCV)
+find_package (OpenCV REQUIRED)
+find_package(CUDA REQUIRED)
 
 include_directories (${OpenCV_INCLUDE_DIRS})
 include_directories (/usr/local/xclib/inc/)
@@ -63,6 +64,12 @@ install_git_dependency ( Controller
         controller
         CONNECTED)
 
+install_git_dependency( Perf-analysis
+        https://github.com/germanespinosa/perf-analysis
+        CMAKE_PROJECT
+        IMPORT_TARGETS perf-analysis
+        INCLUDE_DIRECTORIES include)
+
 install_git_dependency ( Robot_lib
         https://github.com/germanespinosa/robot_library
         CMAKE_PROJECT
@@ -86,7 +93,8 @@ target_link_libraries(habitat_cv
         /usr/local/xclib/lib/pxipl_x86_64.a
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread
         agent_tracking
-        robot_lib)
+        robot_lib
+        perf-analysis)
 
 add_executable(agent_tracker
         src/tools/agent_tracker.cpp )

@@ -74,10 +74,10 @@ int main(int argc, char **argv){
 
     robot::Robot_agent robot(limits);
 
-//    if (!robot.connect("192.168.137.155")){
-//        cout << "Failed to connect to predator robot" << endl;
-//        exit(1);
-//    }
+    if (!robot.connect("192.168.137.155")){
+        cout << "Failed to connect to predator robot" << endl;
+        //exit(1);
+    }
 
     Tick_agent_moves tick_moves;
     tick_moves.load("../config/tick_robot_moves.json");
@@ -88,7 +88,7 @@ int main(int argc, char **argv){
 
     if (!prey_robot.connect("192.168.137.154")){
         cout << "Failed to connect to prey robot" << endl;
-        exit(1);
+        //exit(1);
     }
 
     Controller_service::set_logs_folder("controller/");
