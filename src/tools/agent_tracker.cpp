@@ -32,7 +32,7 @@ struct Agent_tracker_configuration : Json_object {
 int main(int argc, char **argv){
 
     Agent_tracker_configuration config;
-    config.load("../config/agent_tracker_config");
+    config.load("../config/agent_tracker_config.json");
 
     controller::Agent_operational_limits limits;
     limits.load("../config/robot_operational_limits.json"); // robot, ghost
