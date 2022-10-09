@@ -9,8 +9,7 @@ namespace habitat_cv {
             config_file_path(config_file_path),camera_count(camera_count){
         Camera::init(config_file_path);
         for (unsigned int i=0;i<camera_count;i++){
-            int grabber_bit_map = 1 << i;
-            cameras.emplace_back(new Camera(grabber_bit_map, 5));
+            cameras.emplace_back(new Camera(i, 5));
         }
     }
 
