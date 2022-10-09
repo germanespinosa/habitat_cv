@@ -16,7 +16,24 @@ using namespace agent_tracking;
 using namespace habitat_cv;
 using namespace experiment;
 
+struct Agent_tracker_configuration : Json_object {
+    Json_object_members(
+            Add_member(logs_folder);
+            Add_member(videos_folder);
+            Add_member(backgrounds_folder);
+            Add_member(config_folder);
+            )
+    string logs_folder;
+    string videos_folder;
+    string backgrounds_folder;
+    string config_folder;
+};
+
 int main(int argc, char **argv){
+
+    Agent_tracker_configuration config;
+    config.load("../config/agent_tracker_config");
+
     controller::Agent_operational_limits limits;
     limits.load("../config/robot_operational_limits.json"); // robot, ghost
 
@@ -33,17 +50,17 @@ int main(int argc, char **argv){
     Peeking peeking(peeking_parameters, world);
 
     experiment::Experiment_server experiment_server;
-    Experiment_service::set_logs_folder("/habitat/logsV2/");
+    Experiment_service::set_logs_folder(config.logs_folder);
     experiment_server.start(Experiment_service::get_port()); // added by gabbie // 4540
 
     Tracking_server tracking_server;
     string cam_config = argv[1];
-    string bg_path = "/habitat/habitat_cv/backgrounds/" + cam_config + "/";
+    string bg_path = config.backgrounds_folder + cam_config + "/";
     string cam_file;
     if (argc==1){
         cam_file = "/usr/local/xcap/settings/xcvidset.fmt";
     } else {
-        cam_file = "/habitat/habitat_cv/config/EPIX_" + cam_config + ".fmt";
+        cam_file = config.config_folder + "/EPIX_" + cam_config + ".fmt";
     }
 
     auto &experiment_client = experiment_server.create_local_client<Cv_server_experiment_client>();
