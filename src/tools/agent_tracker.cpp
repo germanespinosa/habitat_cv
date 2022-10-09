@@ -103,8 +103,14 @@ int main(int argc, char **argv){
     // PATH EXECUTION TEST
     bool prey_running = true;
     thread prey_wtf([&prey_robot, &prey_running]( ){
-        unsigned int i = 0;
+        //unsigned int i = 0;
         int input;
+        int step;
+
+
+        // path to execute
+        vector<int> path0 = {0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0,
+                             0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0}; // x correct analysis
 
         // LIST MOVES HERE
         Move_list moves;
@@ -116,9 +122,6 @@ int main(int argc, char **argv){
         moves.emplace_back(1,1);
 
 
-
-
-
         // input -1 = exit
         // input 20 = sequence of moves
 
@@ -128,10 +131,11 @@ int main(int argc, char **argv){
             cout << "Enter move request: " << endl;
             cin >> input;
             if (input == 20){
-                while (i <= moves.size()){
-                    auto move = moves[i];
+                for (unsigned int j = 0; j < path0.size(); j++)
+                {
+                    step = path0[j];
+                    auto move = moves[step];
                     prey_robot.execute_move(move);
-                    i++;
                 }
             } else {
                 auto move = moves[input];
@@ -162,3 +166,5 @@ int main(int argc, char **argv){
 // astar revamp
 // autorobot rewrite
 // 1. check message communication
+
+// TODO: check to make sure angle readings from track are accurate
