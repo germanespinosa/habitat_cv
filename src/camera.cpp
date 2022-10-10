@@ -28,7 +28,7 @@ namespace habitat_cv{
         }
     }
 
-    Camera::Camera(int grabber_bit_map, int buffer_size) : grabber_bit_map(grabber_bit_map){
+    Camera::Camera(int camera_number, int buffer_size) : grabber_bit_map(1 << camera_number){
         for (int i=0; i<buffer_size; i++) {
             buffer.emplace_back(frame_size.height, frame_size.width, Image::Type::gray);
         }

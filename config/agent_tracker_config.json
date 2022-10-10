@@ -1,0 +1,6 @@
+{
+  "logs_folder": "/habitat/logsV2/",
+  "videos_folder": "",
+  "backgrounds_folder": "/habitat/habitat_cv/backgrounds/",
+  "config_folder": "/habitat/habitat_cv/config/"
+}

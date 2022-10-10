@@ -11,6 +11,12 @@ string(APPEND CMAKE_CXX_FLAGS " -DC_GNU64=400 -DOS_LINUX -no-pie -Wall -Wextra -
 string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 
 ####
+#### OPTIONS
+####
+
+option(USE_FAKE_CAMERA OFF)
+
+####
 #### DEPENDENCIES
 ####
 
@@ -34,11 +40,20 @@ find_package (OpenCV REQUIRED)
 find_package(CUDA REQUIRED)
 
 include_directories (${OpenCV_INCLUDE_DIRS})
-include_directories (/usr/local/xclib/inc/)
 
 ###
 ### MAIN LIBRARY SETUP
 ###
+
+if (${USE_FAKE_CAMERA})
+    message (STATUS "Using fake cameras")
+    set( habitat_cv_camera_file src/fake_camera.cpp)
+else()
+    message (STATUS "Using real cameras")
+    include_directories (/usr/local/xclib/inc/)
+    set( habitat_cv_camera_file src/camera.cpp)
+endif()
+
 
 set( habitat_cv_files
         src/detection.cpp
@@ -47,13 +62,12 @@ set( habitat_cv_files
         src/image.cpp
         src/video.cpp
         src/layout.cpp
-        src/camera.cpp
         src/camera_array.cpp
         src/frame_rate.cpp
         src/layouts.cpp
         src/background.cpp
         src/cv_service.cpp
-        src/camera.cpp)
+        ${habitat_cv_camera_file})
 
 add_library(habitat_cv ${habitat_cv_files})
 
@@ -90,8 +104,6 @@ target_link_libraries(habitat_cv
         PRIVATE
         cellworld
         ${OpenCV_LIBS}
-        /usr/local/xclib/lib/pxipl_x86_64.a
-        /usr/local/xclib/lib/xclib_x86_64.a m -pthread
         agent_tracking
         robot_lib
         perf-analysis)
@@ -99,18 +111,27 @@ target_link_libraries(habitat_cv
 add_executable(agent_tracker
         src/tools/agent_tracker.cpp )
 
-add_executable(camera_test
-        src/tools/camera_test.cpp )
-
-
 target_link_libraries(agent_tracker habitat_cv )
 
-target_link_libraries(camera_test
-        cellworld
-        ${OpenCV_LIBS}
+if (NOT ${USE_FAKE_CAMERA})
+
+    add_executable(camera_test
+            src/tools/camera_test.cpp )
+
+    target_link_libraries(camera_test
+            cellworld
+            ${OpenCV_LIBS} )
+
+    message (STATUS "Linking PIXCI libraries")
+    target_link_libraries(camera_test
         /usr/local/xclib/lib/pxipl_x86_64.a
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread)
 
+    target_link_libraries(habitat_cv
+        /usr/local/xclib/lib/pxipl_x86_64.a
+        /usr/local/xclib/lib/xclib_x86_64.a m -pthread )
+
+endif()
 ###
 ### TESTS
 ###
