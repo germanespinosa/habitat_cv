@@ -109,8 +109,12 @@ int main(int argc, char **argv){
 
 
         // path to execute
-        vector<int> path0 = {0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0,
-                             0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0}; // x correct analysis
+        vector<int> path0 = {0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0 };// x correct analysis
+        vector<int> path1 = {1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 1, 1, 3, 0};
+        vector<int> path2 = {0, 0, 3, 3, 3,0};
+        vector<int> path3 = {1,1,1,4,4,4,4,4,1,1,2,2,5,5,0,3,3,0};
+        vector<int> thig0 = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,4,4,4,4,4,4,4,
+                             3,3,3,3,3,3,3,3,3,0};
 
         // LIST MOVES HERE
         Move_list moves;
@@ -131,9 +135,9 @@ int main(int argc, char **argv){
             cout << "Enter move request: " << endl;
             cin >> input;
             if (input == 20){
-                for (unsigned int j = 0; j < path0.size(); j++)
+                for (unsigned int j = 0; j < thig0.size(); j++)
                 {
-                    step = path0[j];
+                    step = thig0[j];
                     auto move = moves[step];
                     prey_robot.execute_move(move);
                 }
