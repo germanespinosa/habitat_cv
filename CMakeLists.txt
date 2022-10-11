@@ -128,6 +128,7 @@ if (NOT ${USE_FAKE_CAMERA})
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread)
 
     target_link_libraries(habitat_cv
+        PRIVATE
         /usr/local/xclib/lib/pxipl_x86_64.a
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread )
 
