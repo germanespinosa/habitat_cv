@@ -89,7 +89,7 @@ int main(int argc, char **argv){
     auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
     controller_experiment_client.subscribe();
 
-    robot::Robot_agent robot(limits);
+//    robot::Robot_agent robot(limits);
 
 //    if (!robot.connect("192.168.137.155")){
 //        cout << "Failed to connect to predator robot" << endl;
@@ -109,7 +109,7 @@ int main(int argc, char **argv){
     }
 
     Controller_service::set_logs_folder("controller/");
-    Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client);
+    Controller_server controller_server("../config/pid.json", prey_robot, controller_tracking_client, controller_experiment_client);
 
     if (!controller_server.start(Controller_service::get_port())) {
         cout << "failed to start controller" << endl;
@@ -117,66 +117,66 @@ int main(int argc, char **argv){
     }
 
 
-    // PATH EXECUTION TEST
-    bool prey_running = true;
-    thread prey_wtf([&prey_robot, &prey_running]( ){
-        //unsigned int i = 0;
-        int input;
-        int step;
-
-
-        // path to execute
-        vector<int> path0 = {0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0 };// x correct analysis
-        vector<int> path1 = {1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 1, 1, 3, 0};
-        vector<int> path2 = {0, 0, 3, 3, 3,0};
-        vector<int> path3 = {1,1,1,4,4,4,4,4,1,1,2,2,5,5,0,3,3,0};
-        vector<int> thig0 = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,4,4,4,4,4,4,4,
-                             3,3,3,3,3,3,3,3,3,0};
-
-        // LIST MOVES HERE
-        Move_list moves;
-        moves.emplace_back(2,0);
-        moves.emplace_back(1,-1);
-        moves.emplace_back(-1,-1);
-        moves.emplace_back(-2,0);
-        moves.emplace_back(-1,1);
-        moves.emplace_back(1,1);
-
-
-        // input -1 = exit
-        // input 20 = sequence of moves
-
-
-        prey_robot.move_count_reset();
-        while (prey_running) {
-            cout << "Enter move request: " << endl;
-            cin >> input;
-            if (input == 20){
-                for (unsigned int j = 0; j < thig0.size(); j++)
-                {
-                    step = thig0[j];
-                    auto move = moves[step];
-                    prey_robot.execute_move(move);
-                }
-            } else {
-                auto move = moves[input];
-                prey_robot.execute_move(move);
-            }
-
-            if (input == -1) {
-                prey_running = false;
-                //cout << "Completed: " << prey_robot.completed_move << "Counter: " << prey_robot.move_counter << endl;
-            }
-        }
-    });
+//    // PATH EXECUTION TEST
+//    bool prey_running = true;
+//    thread prey_wtf([&prey_robot, &prey_running]( ){
+//        //unsigned int i = 0;
+//        int input;
+//        int step;
+//
+//
+//        // path to execute
+//        vector<int> path0 = {0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0 };// x correct analysis
+//        vector<int> path1 = {1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 1, 1, 3, 0};
+//        vector<int> path2 = {0, 0, 3, 3, 3,0};
+//        vector<int> path3 = {1,1,1,4,4,4,4,4,1,1,2,2,5,5,0,3,3,0};
+//        vector<int> thig0 = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,4,4,4,4,4,4,4,
+//                             3,3,3,3,3,3,3,3,3,0};
+//
+//        // LIST MOVES HERE
+//        Move_list moves;
+//        moves.emplace_back(2,0);
+//        moves.emplace_back(1,-1);
+//        moves.emplace_back(-1,-1);
+//        moves.emplace_back(-2,0);
+//        moves.emplace_back(-1,1);
+//        moves.emplace_back(1,1);
+//
+//
+//        // input -1 = exit
+//        // input 20 = sequence of moves
+//
+//
+//        prey_robot.move_count_reset();
+//        while (prey_running) {
+//            cout << "Enter move request: " << endl;
+//            cin >> input;
+//            if (input == 20){
+//                for (unsigned int j = 0; j < thig0.size(); j++)
+//                {
+//                    step = thig0[j];
+//                    auto move = moves[step];
+//                    prey_robot.execute_move(move);
+//                }
+//            } else {
+//                auto move = moves[input];
+//                prey_robot.execute_move(move);
+//            }
+//
+//            if (input == -1) {
+//                prey_running = false;
+//                //cout << "Completed: " << prey_robot.completed_move << "Counter: " << prey_robot.move_counter << endl;
+//            }
+//        }
+//    });
 
 
     tracking_server.start(Tracking_service::get_port());
     cv_server.tracking_process();
     tracking_server.stop();
     experiment_client.disconnect();
-    prey_running = false;
-    if (prey_wtf.joinable()) prey_wtf.join();
+//    prey_running = false;
+//    if (prey_wtf.joinable()) prey_wtf.join();
     exit(0);
 }
 
