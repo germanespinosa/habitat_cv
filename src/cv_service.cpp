@@ -102,31 +102,13 @@ namespace habitat_cv {
         main,
         difference,
         led,
-        led0,
-        led1,
-        led2,
-        led3,
         raw,
         mouse,
         best_mouse,
         cam0,
         cam1,
         cam2,
-        cam3,
-        warped0,
-        warped1,
-        warped2,
-        warped3,
-        warped_video0,
-        warped_video1,
-        warped_video2,
-        warped_video3,
-        warped_detection0,
-        warped_detection1,
-        warped_detection2,
-        warped_detection3,
-        composite_image,
-        large
+        cam3
     };
 
     void Cv_server::tracking_process() {
@@ -295,18 +277,6 @@ namespace habitat_cv {
                     else
                         screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[robot_best_cam] > robot_threshold),""), "LEDs");
                     break;
-                case Screen_image::led0 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[0] > robot_threshold),""), "LED0");
-                    break;
-                case Screen_image::led1 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[1] > robot_threshold),""), "LED1");
-                    break;
-                case Screen_image::led2 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[2] > robot_threshold),""), "LED2");
-                    break;
-                case Screen_image::led3 :
-                    screen_frame = screen_layout.get_frame(Image(cv::Mat(composite.warped_detection[3] > robot_threshold),""), "LED3");
-                    break;
                 case Screen_image::mouse :
                     screen_frame = screen_layout.get_frame(mouse_frame, "mouse");
                     break;
@@ -327,48 +297,6 @@ namespace habitat_cv {
                     break;
                 case Screen_image::cam3 :
                     screen_frame = screen_layout.get_frame(images[3], "cam3");
-                    break;
-                case Screen_image::warped0 :
-                    screen_frame = screen_layout.get_frame(composite.warped[0], "warped0");
-                    break;
-                case Screen_image::warped1 :
-                    screen_frame = screen_layout.get_frame(composite.warped[1], "warped1");
-                    break;
-                case Screen_image::warped2 :
-                    screen_frame = screen_layout.get_frame(composite.warped[2], "warped2");
-                    break;
-                case Screen_image::warped3 :
-                    screen_frame = screen_layout.get_frame(composite.warped[3], "warped3");
-                    break;
-                case Screen_image::warped_video0 :
-                    screen_frame = screen_layout.get_frame(composite.warped_video[0], "warped_video0");
-                    break;
-                case Screen_image::warped_video1 :
-                    screen_frame = screen_layout.get_frame(composite.warped_video[1], "warped_video1");
-                    break;
-                case Screen_image::warped_video2 :
-                    screen_frame = screen_layout.get_frame(composite.warped_video[2], "warped_video2");
-                    break;
-                case Screen_image::warped_video3 :
-                    screen_frame = screen_layout.get_frame(composite.warped_video[3], "warped_video3");
-                    break;
-                case Screen_image::warped_detection0 :
-                    screen_frame = screen_layout.get_frame(composite.warped_detection[0], "warped_detection0");
-                    break;
-                case Screen_image::warped_detection1 :
-                    screen_frame = screen_layout.get_frame(composite.warped_detection[1], "warped_detection1");
-                    break;
-                case Screen_image::warped_detection2 :
-                    screen_frame = screen_layout.get_frame(composite.warped_detection[2], "warped_detection2");
-                    break;
-                case Screen_image::warped_detection3 :
-                    screen_frame = screen_layout.get_frame(composite.warped_detection[3], "warped_detection3");
-                    break;
-                case Screen_image::composite_image :
-                    screen_frame = screen_layout.get_frame(composite.composite_video, "composite");
-                    break;
-                case Screen_image::large :
-                    screen_frame = screen_layout.get_frame(composite.composite_video, "large");
                     break;
             }
             if (main_video.is_open()) screen_frame.circle({20, 20}, 10, {0, 0, 255}, true);
@@ -420,8 +348,20 @@ namespace habitat_cv {
                     case 'O':
                         show_occlusions = !show_occlusions;
                         break;
+                    case '0':
+                    case '1':
+                    case '2':
+                    case '3':
+                    case '4':
+                    case '5':
+                    case '6':
+                    case '7':
+                    case '8':
+                    case '9':
+                        screen_image = static_cast<Screen_image>(key-'0');
+                        break;
                     case '\t':
-                        if (screen_image == Screen_image::large)
+                        if (screen_image == Screen_image::cam3)
                             screen_image = Screen_image::main;
                         else
                             screen_image = static_cast<Screen_image>(screen_image + 1);
@@ -429,7 +369,7 @@ namespace habitat_cv {
                         break;
                     case ' ':
                         if (screen_image == Screen_image::main)
-                            screen_image = Screen_image::large;
+                            screen_image = Screen_image::cam3;
                         else
                             screen_image = static_cast<Screen_image>(screen_image - 1);
                         cout << "change_screen_output to " << screen_image << endl;
@@ -439,7 +379,7 @@ namespace habitat_cv {
                 input_counter--;
             }
             fr.new_frame();
-            //cout << fr.filtered_fps<< "  fps                 \r";
+            cout << fr.filtered_fps<< "  fps                 \r";
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
             //thread t([this, main_frame, mouse_cut, raw_frame]() {
             main_video.add_frame(main_frame);
@@ -470,7 +410,7 @@ namespace habitat_cv {
             main_video(main_layout.size(), Image::rgb),
             raw_video(raw_layout.size(), Image::gray),
             led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
-            mouse_profile(Resources::from("profile").key("prey_robot").get_resource<Profile>()),
+            mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>()),
             prey_robot_head_profile(Resources::from("profile").key("prey_robot_head").get_resource<Profile>())
     {
         experiment_client.cv_server = this;
