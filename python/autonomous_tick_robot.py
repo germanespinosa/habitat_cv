@@ -9,6 +9,7 @@ from cellworld_controller_service import ControllerClient
 
 # Globals
 current_prey_destination = None
+controller_state = None
 
 class AgentData:
     """
@@ -56,6 +57,27 @@ def on_click(event):
         print(location)
         controller_timer.reset()
 
+def on_keypress(event):
+    """
+    Sets up keyboard intervention
+    """
+    global running
+    global current_predator_destination
+    global controller_timer
+    global destination_list
+    global controller_state
+
+    if event.key == "p": # To pause auto robot
+        print("pause")
+        controller.pause()
+        controller_state = 0
+    if event.key == "r":
+        print("resume")
+        controller.resume()
+        controller_state = 1
+
+
+
 
 # World Setup
 occlusions = "00_00"
@@ -78,6 +100,7 @@ controller.on_step = on_step
 
 # Click Input Setup
 cid1 = display.fig.canvas.mpl_connect('button_press_event', on_click)
+cid_keypress = display.fig.canvas.mpl_connect('key_press_event', on_keypress)
 
 current_prey_destination = get_location(-5,7)
 display.circle(current_prey_destination, 0.01, "cyan")
