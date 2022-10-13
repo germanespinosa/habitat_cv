@@ -12,6 +12,8 @@ namespace habitat_cv {
         auto ms = std::chrono::duration<double, std::milli>(new_frame - last_frame).count();
         last_frame = new_frame;
         current_fps = 1000.0 / double(ms);
+        average_fps = (current_fps + (average_fps * (double)frame_counter)) / (double)(frame_counter + 1);
+        frame_counter++;
         filtered_fps = filtered_fps * (1 - filter) + current_fps * filter;
     }
 }

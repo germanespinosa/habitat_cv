@@ -6,6 +6,8 @@ namespace habitat_cv {
         Frame_rate(double filter = .1);
 
         std::chrono::time_point<std::chrono::high_resolution_clock> last_frame;
+        unsigned int frame_counter{};
+        double average_fps{};
         double filter{};
         double current_fps{};
         double filtered_fps{};
