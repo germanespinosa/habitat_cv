@@ -5,18 +5,14 @@ using namespace habitat_cv;
 using namespace cell_world;
 
 namespace habitat_cv {
-    bool Background::update(habitat_cv::Image new_composite, habitat_cv::Images new_cameras) {
+    bool Background::update(habitat_cv::Image new_composite) {
         new_composite.save(path, "composite.png");
-        new_cameras.save(path, {"background_0.png", "background_1.png", "background_2.png", "background_3.png"});
         return load();
     }
 
     bool Background::load() {
-        if (file_exists(path, {"composite.png", "background_0.png", "background_1.png", "background_2.png",
-                               "background_3.png"})) {
+        if (file_exists(path, {"composite.png"})) {
             composite = Image::read(path, "composite.png").to_gray();
-            cameras = Images::read(path, {"background_0.png", "background_1.png", "background_2.png",
-                                          "background_3.png"}).to_gray();
             return true;
         }
         return false;
