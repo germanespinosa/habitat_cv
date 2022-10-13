@@ -6,11 +6,11 @@ namespace habitat_cv{
 
     cv::Size Camera::frame_size;
 
-    Camera::Camera(int camera_number, int buffer_size) : grabber_bit_map(grabber_bit_map){
+    Camera::Camera(int camera_number, int ) : grabber_bit_map(0){
         buffer.emplace_back(Image::read("../fake_camera","camera_" + to_string(camera_number) + ".png"));
     }
 
-    void Camera::init(const std::string &config_file) {
+    void Camera::init(const std::string &) {
     }
 
     Image &Camera::get_current_frame() {
