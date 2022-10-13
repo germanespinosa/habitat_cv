@@ -12,6 +12,7 @@ namespace habitat_cv {
         static void init(const std::string &config_file);
         static void close();
         static cv::Size frame_size;
+        static std::vector<Camera *> cameras;
         std::atomic<bool> running;
         std::thread capture_thread;
         ~Camera();

@@ -49,7 +49,7 @@ namespace habitat_cv{
     }
 
     void Camera::init(const std::string &config_file) {
-        pxd_PIXCIopen("-DM 0xF", "", "/usr/local/xcap/settings/xcvidset.fmt"); //config_file.c_str());
+        pxd_PIXCIopen("-DM 0xF", "", config_file.c_str()); //config_file.c_str());
         frame_size = {pxd_imageXdim(), pxd_imageYdim()};
     }
 
