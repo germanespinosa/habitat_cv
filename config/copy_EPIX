@@ -1,0 +1,3 @@
+#!/bin/bash
+
+cp /usr/local/xcap/settings/xcvidset.fmt EPIX_new.fmt
