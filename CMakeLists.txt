@@ -15,6 +15,7 @@ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 ####
 
 option(USE_FAKE_CAMERA OFF)
+option(USE_CUDA OFF)
 
 ####
 #### DEPENDENCIES
@@ -44,6 +45,10 @@ include_directories (${OpenCV_INCLUDE_DIRS})
 ###
 ### MAIN LIBRARY SETUP
 ###
+
+if (${USE_CUDA})
+    add_definitions(-DUSE_CUDA=TRUE)
+endif()
 
 if (${USE_FAKE_CAMERA})
     message (STATUS "Using fake cameras")
@@ -106,7 +111,8 @@ target_link_libraries(habitat_cv
         ${OpenCV_LIBS}
         agent_tracking
         robot_lib
-        perf-analysis)
+        perf-analysis
+        params-cpp)
 
 add_executable(agent_tracker
         src/tools/agent_tracker.cpp )
@@ -116,21 +122,22 @@ target_link_libraries(agent_tracker habitat_cv )
 if (NOT ${USE_FAKE_CAMERA})
 
     add_executable(camera_test
-            src/tools/camera_test.cpp )
+            src/tools/camera_test.cpp
+            src/frame_rate.cpp
+            src/camera.cpp
+            src/image.cpp)
 
     target_link_libraries(camera_test
             cellworld
-            ${OpenCV_LIBS} )
+             ${OpenCV_LIBS} )
 
     message (STATUS "Linking PIXCI libraries")
     target_link_libraries(camera_test
-        /usr/local/xclib/lib/pxipl_x86_64.a
         /usr/local/xclib/lib/xclib_x86_64.a m -pthread)
 
     target_link_libraries(habitat_cv
         PRIVATE
-        /usr/local/xclib/lib/pxipl_x86_64.a
-        /usr/local/xclib/lib/xclib_x86_64.a m -pthread )
+         /usr/local/xclib/lib/xclib_x86_64.a m -pthread )
 
 endif()
 ###
