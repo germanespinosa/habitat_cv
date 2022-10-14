@@ -11,9 +11,11 @@ namespace habitat_cv {
         for (unsigned int i=0;i<camera_count;i++){
             cameras.emplace_back(new Camera(i, 5));
         }
+        Camera::start();
     }
 
     Camera_array::~Camera_array() {
+        Camera::stop();
         cameras.clear();
         Camera::close();
     }
@@ -29,6 +31,7 @@ namespace habitat_cv {
     }
 
     void Camera_array::reset() {
+        Camera::stop();
         for (auto &camera:cameras){
             delete camera;
         }
@@ -36,9 +39,9 @@ namespace habitat_cv {
         Camera::close();
         Camera::init(config_file_path);
         for (unsigned int i=0;i<camera_count;i++){
-            int grabber_bit_map = 1 << i;
-            cameras.emplace_back(new Camera(grabber_bit_map, 5));
+            cameras.emplace_back(new Camera(i, 5));
         }
+        Camera::start();
     }
 }
 

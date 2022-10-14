@@ -1,13 +1,14 @@
 #include<habitat_cv/camera.h>
 #include <xcliball.h>
 #include <csignal>
-
+#define SIGNAL_BASE 60
 using namespace std;
 
 namespace habitat_cv{
 
     cv::Size Camera::frame_size;
     std::vector<Camera *> Camera::cameras;
+    std::atomic<bool> Camera::running{false};
 
     int frame_diff(int current, int destination, int buffer_size){
         if (destination>current) return destination-current;
@@ -15,10 +16,9 @@ namespace habitat_cv{
     }
 
     void new_frame(int signal) {
-        int camera_number = signal - 60;        //capture_thread = std::thread(capture_process,this);
+        if (!Camera::running) return;
+        int camera_number = signal - SIGNAL_BASE;        //capture_thread = std::thread(capture_process,this);
         auto camera = Camera::cameras[camera_number];
-        //if (camera->in_capture) return;
-        camera->in_capture = true;
         int size = Camera::frame_size.height * Camera::frame_size.width;
         int destination = (camera->current_frame + 1) % (int)camera->buffer.size();
         if (frame_diff(camera->current_frame, destination, (int)camera->buffer.size()) > 1) return;
@@ -26,7 +26,6 @@ namespace habitat_cv{
         pxd_readuchar(camera->grabber_bit_map, 1, 0, 0, -1, -1, camera->buffer[destination].data, size, "Grey");
         camera->buffer[destination].time_stamp.reset();
         camera->current_frame = destination;
-        camera->in_capture = false;
     }
 
     Camera::Camera(int camera_number, int buffer_size) : grabber_bit_map(1 << camera_number){
@@ -35,8 +34,8 @@ namespace habitat_cv{
         }
         Camera::cameras.push_back(this);
         pxd_goLive(grabber_bit_map,1);
-        signal (60 + camera_number, new_frame);
-        pxd_eventCapturedFieldCreate(grabber_bit_map,60 + camera_number,NULL );
+        signal (SIGNAL_BASE + camera_number, new_frame);
+        pxd_eventCapturedFieldCreate(grabber_bit_map, SIGNAL_BASE + camera_number,NULL );
     }
 
     void Camera::init(const std::string &config_file) {
@@ -54,9 +53,19 @@ namespace habitat_cv{
 
     void Camera::close() {
         pxd_PIXCIclose();
+        Camera::cameras.clear();
     }
 
     Camera::Camera(int grabber_bit_map):Camera(grabber_bit_map, 5) {
 
+    }
+
+    void Camera::start() {
+        Camera::running = true;
+    }
+
+    void Camera::stop() {
+        Camera::running = false;
+        this_thread::sleep_for(1000ms);
     }
 }
