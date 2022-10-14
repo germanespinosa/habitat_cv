@@ -2,7 +2,7 @@
 /*
  * Structure:	pxvidformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -35,8 +35,8 @@ struct pxvidformat pxvidformat_561_id31232 =
     0,      0,      0,      0,      0,      0,      0,      0,       /* fgcamera */
     0,                                                      /* fgsignature    */
     0,      0,      15,     385875968,                      /* fgcamdope      */
-    2,      2040,   0,      2,                              /* xviddim        */
-    2,      2040,   0,      2,                              /* xdatdim        */
+    2,      2048,   0,      2,                              /* xviddim        */
+    2,      2048,   0,      2,                              /* xdatdim        */
     1,      2048,   0,      0,                              /* yviddim        */
     1,      2048,   0,      0,                              /* ydatdim        */
     0,      2048,   0,      0,                              /* xvidoffset     */
@@ -80,7 +80,7 @@ struct pxvidformat pxvidformat_561_id31232 =
     0,                                                      /* is.hoffset     */
     0,                                                      /* is.voffset     */
     1,                                                      /* is.fieldsperframe */
-    10,                                                     /* is.pixelsperclock */
+    8,                                                      /* is.pixelsperclock */
     0,                                                      /* is.pixiesperclock */
     0,                                                      /* is.linesperframe */
     0,                                                      /* is.pixelsperline */
@@ -124,7 +124,7 @@ struct pxvidformat pxvidformat_561_id31232 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixmems */
-    2480708,        2480712,        2480716,        2480752,        2480756,        2480760,        2480764,        2480736,         /* vid.pixdopes */
+    2446132,        2446136,        2446140,        2446112,        2446116,        2446120,        2446124,        2446032,         /* vid.pixdopes */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixhints */
     8,      8,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -135,7 +135,7 @@ struct pxvidformat pxvidformat_561_id31232 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixbits */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixmems */
-    3652,   3656,   3660,   2480,   2484,   2488,   2492,   2464,    /* dat.pixdopes */
+    31300,  31304,  31308,  31312,  31316,  31320,  31324,  31328,   /* dat.pixdopes */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixhints */
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -146,13 +146,13 @@ struct pxvidformat pxvidformat_561_id31232 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixmems */
-    40948,  40952,  40956,  40896,  40900,  40904,  40908,  40912,   /* img.pixdopes */
+    127204, 127208, 127212, 127216, 127220, 127224, 127228, 127104,  /* img.pixdopes */
 };
 
 /*
  * Structure:	pxvidres
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -168,10 +168,10 @@ struct pxvidres pxvidres_125_id31232 =
     0,                                                      /* ddch.rw        */
     0,                                                      /* ddch.fu        */
     0,                                                      /* ddch.rs        */
-    2040,                                                   /* x.datsamples   */
-    2040,                                                   /* x.vidsamples   */
+    2048,                                                   /* x.datsamples   */
+    2048,                                                   /* x.vidsamples   */
     0,                                                      /* x.vidoffset    */
-    2039,                                                   /* x.vidoffsend   */
+    2047,                                                   /* x.vidoffsend   */
     0,      0,      0,      0,      0,      0,      0,      0,       /* x.rsvd */
     3,                                                      /* x.setmaxdatsamples */
     3,                                                      /* x.setmaxvidsamples */
@@ -205,34 +205,34 @@ struct pxvidres pxvidres_125_id31232 =
     0,      0,      0,      0,                              /* vid.pixiebits  */
     0,                                                      /* vid.pixhint    */
     0,                                                      /* vid.pixmem     */
-    2480708,                                                /* vid.pixdope    */
+    2446132,                                                /* vid.pixdope    */
     0,                                                      /* vid.setpixbits */
     1,                                                      /* dat.pixies     */
     8,      0,      0,      0,                              /* dat.pixiebits  */
     1,                                                      /* dat.pixhint    */
     1,                                                      /* dat.pixmem     */
-    3652,                                                   /* dat.pixdope    */
+    31300,                                                  /* dat.pixdope    */
     0,                                                      /* dat.setpixbits */
     1,                                                      /* img.pixies     */
     8,      0,      0,      0,                              /* img.pixiebits  */
     1,                                                      /* img.pixhint    */
     0,                                                      /* img.pixmem     */
-    40948,                                                  /* img.pixdope    */
+    127204,                                                 /* img.pixdope    */
     0,                                                      /* img.setpixbits */
-    2040,                                                   /* line.pd        */
-    2040,                                                   /* line.pdod      */
-    2040,                                                   /* line.pdodal    */
-    2040,                                                   /* line.pdodalsf  */
+    2048,                                                   /* line.pd        */
+    2048,                                                   /* line.pdod      */
+    2048,                                                   /* line.pdodal    */
+    2048,                                                   /* line.pdodalsf  */
     0,                                                      /* line.rsvd2     */
-    4177920,                                                /* field.pd       */
-    4177928,                                                /* field.pdod     */
-    4177984,                                                /* field.pdodal   */
-    4177984,                                                /* field.pdodalsf */
+    4194304,                                                /* field.pd       */
+    4194312,                                                /* field.pdod     */
+    4194368,                                                /* field.pdodal   */
+    4194368,                                                /* field.pdodalsf */
     0,                                                      /* field.rsvd2    */
-    4177920,                                                /* frame.pd       */
-    4177928,                                                /* frame.pdod     */
-    4177984,                                                /* frame.pdodal   */
-    4177984,                                                /* frame.pdodalsf */
+    4194304,                                                /* frame.pd       */
+    4194312,                                                /* frame.pdod     */
+    4194368,                                                /* frame.pdodal   */
+    4194368,                                                /* frame.pdodalsf */
     0,                                                      /* frame.rsvd2    */
     2,                                                      /* framebuffers   */
     0,                                                      /* rsvdbuffers    */
@@ -242,7 +242,7 @@ struct pxvidres pxvidres_125_id31232 =
 /*
  * Structure:	pxvidmode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -284,7 +284,7 @@ struct pxvidmode pxvidmode_79_id31232 =
 /*
  * Structure:	pxvidphys
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -329,7 +329,7 @@ struct pxvidphys pxvidphys_118_id31232 =
 /*
  * Structure:	pxvidimage
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -415,7 +415,7 @@ struct pxvidimage pxvidimage_251_id31232 =
 /*
  * Structure:	pxvidopt
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -440,7 +440,7 @@ struct pxvidopt pxvidopt_19_id31232 =
 /*
  * Structure:	pxvidmem
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -469,7 +469,7 @@ struct pxvidmem pxvidmem_72_id31232 =
 /*
  * Structure:	pxcamcntl
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -519,17 +519,17 @@ struct pxcamcntl pxcamcntl_264_id31232 =
     0,                                                      /* cntlcntrcvmask */
     0,      0,      0,      0,      0,                      /* rsvd2          */
     0x05010D06,     0x02000404,     0x00000000,     0x0D030700,     0x24040501,     0x00000404,     0x25000000,     0x04010B03,     
-    0x17074404,     0x54000000,     0x05010D03,     0x02060404,     0x00000000,     0x0D030100,     0x04040501,     0x00000300,     
-    0x06000000,     0x04010B03,     0x0E072404,     0x2D000000,     0x05010D03,     0x03002404,     0x00000100,     0x0D032700,     
+    0x0A074404,     0x49000000,     0x05010D03,     0x02060404,     0x00000000,     0x0D030100,     0x04040501,     0x00000300,     
+    0x06000000,     0x04010B03,     0x0C072404,     0x2F000000,     0x05010D03,     0x03002404,     0x00000100,     0x0D032700,     
     0x64040501,     0x00000301,     0x67000000,     0x05010D03,     0x03032404,     0x00000100,     0x0D032400,     0x44040501,     
-    0x01000303,     0x44000000,     0x05010D03,     0x03020404,     0x0007F800,     0x0D03FB00,     0x44040501,     0x00000302,     
+    0x01000303,     0x44000000,     0x05010D03,     0x03020404,     0x00080000,     0x0D030C00,     0x44040501,     0x00000302,     
     0x44000000,     0x05010A03,     0x03E00401,     0x03E30000,     0x0405010D,     0x00030224,     0x00000800,     0x010D032C,     
     0x02640405,     0x00000003,     0x03640000,     0x0105010A,     0x000302C4,     0x0A03C100,     0x04010501,     0x00000303,     
-    0x010D0300,     0x00240405,     0x00530002,     0x03740000,     0x0405010D,     0x00020044,     0x00000000,     0x010D0347,     
+    0x010D0300,     0x00240405,     0x00380002,     0x031F0000,     0x0405010D,     0x00020044,     0x00000000,     0x010D0347,     
     0x00640405,     0x00000002,     0x03670000,     0x0405010D,     0x00020084,     0x00000000,     0x010D0387,     0x00A40405,     
     0x00000002,     0x03A70000,     0x0405010D,     0x00020204,     0x00000000,     0x010D0305,     0x02240405,     0x00000002,     
     0x03250000,     0x0405010D,     0x00020244,     0x00000000,     0x010D0345,     0x02640405,     0x00000002,     0x03650000,     
-    0x0405010D,     0x00020284,     0x00000000,     0x010D0385,     0x04640405,     0x09C40004,     0x03A80000,     0x0405010D,     
+    0x0405010D,     0x00020284,     0x00000000,     0x010D0385,     0x04640405,     0x14500004,     0x03210000,     0x0405010D,     
     0x00020504,     0x00000000,     0x010D0302,     0x05240405,     0x00000002,     0x03230001,     0x0405010D,     0x00090064,     
     0x00000000,     0x010D036C,     0x00640405,     0x00000008,     0x036D0000,     0x0405010D,     0x000700A4,     0x00000000,     
     0x010D03A2,     0x00640405,     0x00640007,     0x03060000,     0x0405010D,     0x00070084,     0x0007A120,     0x010D0304,     
@@ -558,7 +558,7 @@ struct pxcamcntl pxcamcntl_264_id31232 =
 /*
  * Structure:	xcsv2format
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -596,7 +596,7 @@ struct xcsv2format xcsv2format_32_id31232 =
 /*
  * Structure:	xcsv2mode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -623,7 +623,7 @@ struct xcsv2mode xcsv2mode_21_id31232 =
 /*
  * Structure:	xcdxxformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -653,7 +653,7 @@ struct xcdxxformat xcdxxformat_45_id31232 =
     0x0,                                                    /* PCWD           */
     0x2,                                                    /* CLCCSE         */
     0x0,                                                    /* TEST           */
-    0x10,                                                   /* CLCCSEhi       */
+    0x0,                                                    /* CLCCSEhi       */
     0x0,                                                    /* MSSMUB         */
     0x0,                                                    /* ToucanOpt      */
     0x0,                                                    /* ToucanCoef1    */
@@ -670,7 +670,7 @@ struct xcdxxformat xcdxxformat_45_id31232 =
 /*
  * Structure:	pxvidformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -703,8 +703,8 @@ struct pxvidformat pxvidformat_561_id31233 =
     0,      0,      0,      0,      0,      0,      0,      0,       /* fgcamera */
     0,                                                      /* fgsignature    */
     0,      0,      15,     385875968,                      /* fgcamdope      */
-    2,      2040,   0,      2,                              /* xviddim        */
-    2,      2040,   0,      2,                              /* xdatdim        */
+    2,      2048,   0,      2,                              /* xviddim        */
+    2,      2048,   0,      2,                              /* xdatdim        */
     1,      2048,   0,      0,                              /* yviddim        */
     1,      2048,   0,      0,                              /* ydatdim        */
     0,      2048,   0,      0,                              /* xvidoffset     */
@@ -748,7 +748,7 @@ struct pxvidformat pxvidformat_561_id31233 =
     0,                                                      /* is.hoffset     */
     0,                                                      /* is.voffset     */
     1,                                                      /* is.fieldsperframe */
-    10,                                                     /* is.pixelsperclock */
+    8,                                                      /* is.pixelsperclock */
     0,                                                      /* is.pixiesperclock */
     0,                                                      /* is.linesperframe */
     0,                                                      /* is.pixelsperline */
@@ -792,7 +792,7 @@ struct pxvidformat pxvidformat_561_id31233 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixmems */
-    2490596,        2490600,        2490604,        2490512,        2490516,        2490520,        2490524,        2490496,         /* vid.pixdopes */
+    2457524,        2457528,        2457532,        2457504,        2457508,        2457512,        2457516,        2457424,         /* vid.pixdopes */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixhints */
     8,      8,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -803,7 +803,7 @@ struct pxvidformat pxvidformat_561_id31233 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixbits */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixmems */
-    260804, 260808, 260812, 260848, 260852, 260856, 260860, 260832,  /* dat.pixdopes */
+    1604,   1608,   1612,   1616,   1620,   1624,   1628,   1632,    /* dat.pixdopes */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixhints */
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -814,13 +814,13 @@ struct pxvidformat pxvidformat_561_id31233 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixmems */
-    250884, 250888, 250892, 251376, 251380, 251384, 251388, 251360,  /* img.pixdopes */
+    20068,  20072,  20076,  20080,  20084,  20088,  20092,  19968,   /* img.pixdopes */
 };
 
 /*
  * Structure:	pxvidres
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -836,10 +836,10 @@ struct pxvidres pxvidres_125_id31233 =
     0,                                                      /* ddch.rw        */
     0,                                                      /* ddch.fu        */
     0,                                                      /* ddch.rs        */
-    2040,                                                   /* x.datsamples   */
-    2040,                                                   /* x.vidsamples   */
+    2048,                                                   /* x.datsamples   */
+    2048,                                                   /* x.vidsamples   */
     0,                                                      /* x.vidoffset    */
-    2039,                                                   /* x.vidoffsend   */
+    2047,                                                   /* x.vidoffsend   */
     0,      0,      0,      0,      0,      0,      0,      0,       /* x.rsvd */
     3,                                                      /* x.setmaxdatsamples */
     3,                                                      /* x.setmaxvidsamples */
@@ -873,34 +873,34 @@ struct pxvidres pxvidres_125_id31233 =
     0,      0,      0,      0,                              /* vid.pixiebits  */
     0,                                                      /* vid.pixhint    */
     0,                                                      /* vid.pixmem     */
-    2490596,                                                /* vid.pixdope    */
+    2457524,                                                /* vid.pixdope    */
     0,                                                      /* vid.setpixbits */
     1,                                                      /* dat.pixies     */
     8,      0,      0,      0,                              /* dat.pixiebits  */
     1,                                                      /* dat.pixhint    */
     1,                                                      /* dat.pixmem     */
-    260804,                                                 /* dat.pixdope    */
+    1604,                                                   /* dat.pixdope    */
     0,                                                      /* dat.setpixbits */
     1,                                                      /* img.pixies     */
     8,      0,      0,      0,                              /* img.pixiebits  */
     1,                                                      /* img.pixhint    */
     0,                                                      /* img.pixmem     */
-    250884,                                                 /* img.pixdope    */
+    20068,                                                  /* img.pixdope    */
     0,                                                      /* img.setpixbits */
-    2040,                                                   /* line.pd        */
-    2040,                                                   /* line.pdod      */
-    2040,                                                   /* line.pdodal    */
-    2040,                                                   /* line.pdodalsf  */
+    2048,                                                   /* line.pd        */
+    2048,                                                   /* line.pdod      */
+    2048,                                                   /* line.pdodal    */
+    2048,                                                   /* line.pdodalsf  */
     0,                                                      /* line.rsvd2     */
-    4177920,                                                /* field.pd       */
-    4177928,                                                /* field.pdod     */
-    4177984,                                                /* field.pdodal   */
-    4177984,                                                /* field.pdodalsf */
+    4194304,                                                /* field.pd       */
+    4194312,                                                /* field.pdod     */
+    4194368,                                                /* field.pdodal   */
+    4194368,                                                /* field.pdodalsf */
     0,                                                      /* field.rsvd2    */
-    4177920,                                                /* frame.pd       */
-    4177928,                                                /* frame.pdod     */
-    4177984,                                                /* frame.pdodal   */
-    4177984,                                                /* frame.pdodalsf */
+    4194304,                                                /* frame.pd       */
+    4194312,                                                /* frame.pdod     */
+    4194368,                                                /* frame.pdodal   */
+    4194368,                                                /* frame.pdodalsf */
     0,                                                      /* frame.rsvd2    */
     2,                                                      /* framebuffers   */
     0,                                                      /* rsvdbuffers    */
@@ -910,7 +910,7 @@ struct pxvidres pxvidres_125_id31233 =
 /*
  * Structure:	pxvidmode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -952,7 +952,7 @@ struct pxvidmode pxvidmode_79_id31233 =
 /*
  * Structure:	pxvidphys
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -997,7 +997,7 @@ struct pxvidphys pxvidphys_118_id31233 =
 /*
  * Structure:	pxvidimage
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1083,7 +1083,7 @@ struct pxvidimage pxvidimage_251_id31233 =
 /*
  * Structure:	pxvidopt
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1108,7 +1108,7 @@ struct pxvidopt pxvidopt_19_id31233 =
 /*
  * Structure:	pxvidmem
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1137,7 +1137,7 @@ struct pxvidmem pxvidmem_72_id31233 =
 /*
  * Structure:	pxcamcntl
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1187,17 +1187,17 @@ struct pxcamcntl pxcamcntl_264_id31233 =
     0,                                                      /* cntlcntrcvmask */
     0,      0,      0,      0,      0,                      /* rsvd2          */
     0x05010D06,     0x02000404,     0x00000000,     0x0D030700,     0x24040501,     0x00000404,     0x25000000,     0x04010B03,     
-    0x17074404,     0x54000000,     0x05010D03,     0x02060404,     0x00000000,     0x0D030100,     0x04040501,     0x00000300,     
-    0x06000000,     0x04010B03,     0x0E072404,     0x2D000000,     0x05010D03,     0x03002404,     0x00000100,     0x0D032700,     
+    0x0A074404,     0x49000000,     0x05010D03,     0x02060404,     0x00000000,     0x0D030100,     0x04040501,     0x00000300,     
+    0x06000000,     0x04010B03,     0x0C072404,     0x2F000000,     0x05010D03,     0x03002404,     0x00000100,     0x0D032700,     
     0x64040501,     0x00000301,     0x67000000,     0x05010D03,     0x03032404,     0x00000100,     0x0D032400,     0x44040501,     
-    0x01000303,     0x44000000,     0x05010D03,     0x03020404,     0x0007F800,     0x0D03FB00,     0x44040501,     0x00000302,     
+    0x01000303,     0x44000000,     0x05010D03,     0x03020404,     0x00080000,     0x0D030C00,     0x44040501,     0x00000302,     
     0x44000000,     0x05010A03,     0x03E00401,     0x03E30000,     0x0405010D,     0x00030224,     0x00000800,     0x010D032C,     
     0x02640405,     0x00000003,     0x03640000,     0x0105010A,     0x000302C4,     0x0A03C100,     0x04010501,     0x00000303,     
-    0x010D0300,     0x00240405,     0x00530002,     0x03740000,     0x0405010D,     0x00020044,     0x00000000,     0x010D0347,     
+    0x010D0300,     0x00240405,     0x00360002,     0x03110000,     0x0405010D,     0x00020044,     0x00000000,     0x010D0347,     
     0x00640405,     0x00000002,     0x03670000,     0x0405010D,     0x00020084,     0x00000000,     0x010D0387,     0x00A40405,     
     0x00000002,     0x03A70000,     0x0405010D,     0x00020204,     0x00000000,     0x010D0305,     0x02240405,     0x00000002,     
     0x03250000,     0x0405010D,     0x00020244,     0x00000000,     0x010D0345,     0x02640405,     0x00000002,     0x03650000,     
-    0x0405010D,     0x00020284,     0x00000000,     0x010D0385,     0x04640405,     0x09C40004,     0x03A80000,     0x0405010D,     
+    0x0405010D,     0x00020284,     0x00000000,     0x010D0385,     0x04640405,     0x14500004,     0x03210000,     0x0405010D,     
     0x00020504,     0x00000000,     0x010D0302,     0x05240405,     0x00000002,     0x03230001,     0x0405010D,     0x00090064,     
     0x00000000,     0x010D036C,     0x00640405,     0x00000008,     0x036D0000,     0x0405010D,     0x000700A4,     0x00000000,     
     0x010D03A2,     0x00640405,     0x00640007,     0x03060000,     0x0405010D,     0x00070084,     0x0007A120,     0x010D0304,     
@@ -1226,7 +1226,7 @@ struct pxcamcntl pxcamcntl_264_id31233 =
 /*
  * Structure:	xcsv2format
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1264,7 +1264,7 @@ struct xcsv2format xcsv2format_32_id31233 =
 /*
  * Structure:	xcsv2mode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1291,7 +1291,7 @@ struct xcsv2mode xcsv2mode_21_id31233 =
 /*
  * Structure:	xcdxxformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1321,7 +1321,7 @@ struct xcdxxformat xcdxxformat_45_id31233 =
     0x0,                                                    /* PCWD           */
     0x2,                                                    /* CLCCSE         */
     0x0,                                                    /* TEST           */
-    0x10,                                                   /* CLCCSEhi       */
+    0x0,                                                    /* CLCCSEhi       */
     0x0,                                                    /* MSSMUB         */
     0x0,                                                    /* ToucanOpt      */
     0x0,                                                    /* ToucanCoef1    */
@@ -1338,7 +1338,7 @@ struct xcdxxformat xcdxxformat_45_id31233 =
 /*
  * Structure:	pxvidformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1371,8 +1371,8 @@ struct pxvidformat pxvidformat_561_id31234 =
     0,      0,      0,      0,      0,      0,      0,      0,       /* fgcamera */
     0,                                                      /* fgsignature    */
     0,      0,      15,     385875968,                      /* fgcamdope      */
-    2,      2040,   0,      2,                              /* xviddim        */
-    2,      2040,   0,      2,                              /* xdatdim        */
+    2,      2048,   0,      2,                              /* xviddim        */
+    2,      2048,   0,      2,                              /* xdatdim        */
     1,      2048,   0,      0,                              /* yviddim        */
     1,      2048,   0,      0,                              /* ydatdim        */
     0,      2048,   0,      0,                              /* xvidoffset     */
@@ -1416,7 +1416,7 @@ struct pxvidformat pxvidformat_561_id31234 =
     0,                                                      /* is.hoffset     */
     0,                                                      /* is.voffset     */
     1,                                                      /* is.fieldsperframe */
-    10,                                                     /* is.pixelsperclock */
+    8,                                                      /* is.pixelsperclock */
     0,                                                      /* is.pixiesperclock */
     0,                                                      /* is.linesperframe */
     0,                                                      /* is.pixelsperline */
@@ -1460,7 +1460,7 @@ struct pxvidformat pxvidformat_561_id31234 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixmems */
-    2490596,        2490600,        2490604,        2490512,        2490516,        2490520,        2490524,        2490496,         /* vid.pixdopes */
+    2457524,        2457528,        2457532,        2457504,        2457508,        2457512,        2457516,        2457424,         /* vid.pixdopes */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixhints */
     8,      8,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -1471,7 +1471,7 @@ struct pxvidformat pxvidformat_561_id31234 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixbits */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixmems */
-    260804, 260808, 260812, 260848, 260852, 260856, 260860, 260832,  /* dat.pixdopes */
+    1604,   1608,   1612,   1616,   1620,   1624,   1628,   1632,    /* dat.pixdopes */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixhints */
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -1482,13 +1482,13 @@ struct pxvidformat pxvidformat_561_id31234 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixmems */
-    250884, 250888, 250892, 251376, 251380, 251384, 251388, 251360,  /* img.pixdopes */
+    20068,  20072,  20076,  20080,  20084,  20088,  20092,  19968,   /* img.pixdopes */
 };
 
 /*
  * Structure:	pxvidres
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1504,10 +1504,10 @@ struct pxvidres pxvidres_125_id31234 =
     0,                                                      /* ddch.rw        */
     0,                                                      /* ddch.fu        */
     0,                                                      /* ddch.rs        */
-    2040,                                                   /* x.datsamples   */
-    2040,                                                   /* x.vidsamples   */
+    2048,                                                   /* x.datsamples   */
+    2048,                                                   /* x.vidsamples   */
     0,                                                      /* x.vidoffset    */
-    2039,                                                   /* x.vidoffsend   */
+    2047,                                                   /* x.vidoffsend   */
     0,      0,      0,      0,      0,      0,      0,      0,       /* x.rsvd */
     3,                                                      /* x.setmaxdatsamples */
     3,                                                      /* x.setmaxvidsamples */
@@ -1541,34 +1541,34 @@ struct pxvidres pxvidres_125_id31234 =
     0,      0,      0,      0,                              /* vid.pixiebits  */
     0,                                                      /* vid.pixhint    */
     0,                                                      /* vid.pixmem     */
-    2490596,                                                /* vid.pixdope    */
+    2457524,                                                /* vid.pixdope    */
     0,                                                      /* vid.setpixbits */
     1,                                                      /* dat.pixies     */
     8,      0,      0,      0,                              /* dat.pixiebits  */
     1,                                                      /* dat.pixhint    */
     1,                                                      /* dat.pixmem     */
-    260804,                                                 /* dat.pixdope    */
+    1604,                                                   /* dat.pixdope    */
     0,                                                      /* dat.setpixbits */
     1,                                                      /* img.pixies     */
     8,      0,      0,      0,                              /* img.pixiebits  */
     1,                                                      /* img.pixhint    */
     0,                                                      /* img.pixmem     */
-    250884,                                                 /* img.pixdope    */
+    20068,                                                  /* img.pixdope    */
     0,                                                      /* img.setpixbits */
-    2040,                                                   /* line.pd        */
-    2040,                                                   /* line.pdod      */
-    2040,                                                   /* line.pdodal    */
-    2040,                                                   /* line.pdodalsf  */
+    2048,                                                   /* line.pd        */
+    2048,                                                   /* line.pdod      */
+    2048,                                                   /* line.pdodal    */
+    2048,                                                   /* line.pdodalsf  */
     0,                                                      /* line.rsvd2     */
-    4177920,                                                /* field.pd       */
-    4177928,                                                /* field.pdod     */
-    4177984,                                                /* field.pdodal   */
-    4177984,                                                /* field.pdodalsf */
+    4194304,                                                /* field.pd       */
+    4194312,                                                /* field.pdod     */
+    4194368,                                                /* field.pdodal   */
+    4194368,                                                /* field.pdodalsf */
     0,                                                      /* field.rsvd2    */
-    4177920,                                                /* frame.pd       */
-    4177928,                                                /* frame.pdod     */
-    4177984,                                                /* frame.pdodal   */
-    4177984,                                                /* frame.pdodalsf */
+    4194304,                                                /* frame.pd       */
+    4194312,                                                /* frame.pdod     */
+    4194368,                                                /* frame.pdodal   */
+    4194368,                                                /* frame.pdodalsf */
     0,                                                      /* frame.rsvd2    */
     2,                                                      /* framebuffers   */
     0,                                                      /* rsvdbuffers    */
@@ -1578,7 +1578,7 @@ struct pxvidres pxvidres_125_id31234 =
 /*
  * Structure:	pxvidmode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1620,7 +1620,7 @@ struct pxvidmode pxvidmode_79_id31234 =
 /*
  * Structure:	pxvidphys
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1665,7 +1665,7 @@ struct pxvidphys pxvidphys_118_id31234 =
 /*
  * Structure:	pxvidimage
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1751,7 +1751,7 @@ struct pxvidimage pxvidimage_251_id31234 =
 /*
  * Structure:	pxvidopt
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1776,7 +1776,7 @@ struct pxvidopt pxvidopt_19_id31234 =
 /*
  * Structure:	pxvidmem
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1805,7 +1805,7 @@ struct pxvidmem pxvidmem_72_id31234 =
 /*
  * Structure:	pxcamcntl
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1846,7 +1846,7 @@ struct pxcamcntl pxcamcntl_264_id31234 =
     1,                                                      /* cntlcntrcveot  */
     8,                                                      /* cntloptions    */
     0,                                                      /* cntlcntreset   */
-    500,                                                    /* cntlrcvtout    */
+    5200,                                                   /* cntlrcvtout    */
     0,                                                      /* cntlrsttout    */
     3,                                                      /* cntlretries    */
     0,                                                      /* cntlpause      */
@@ -1855,17 +1855,17 @@ struct pxcamcntl pxcamcntl_264_id31234 =
     0,                                                      /* cntlcntrcvmask */
     0,      0,      0,      0,      0,                      /* rsvd2          */
     0x05010D06,     0x02000404,     0x00000000,     0x0D030700,     0x24040501,     0x00000404,     0x25000000,     0x04010B03,     
-    0x17074404,     0x54000000,     0x05010D03,     0x02060404,     0x00000000,     0x0D030100,     0x04040501,     0x00000300,     
-    0x06000000,     0x04010B03,     0x0E072404,     0x2D000000,     0x05010D03,     0x03002404,     0x00000100,     0x0D032700,     
+    0x0A074404,     0x49000000,     0x05010D03,     0x02060404,     0x00000000,     0x0D030100,     0x04040501,     0x00000300,     
+    0x06000000,     0x04010B03,     0x0C072404,     0x2F000000,     0x05010D03,     0x03002404,     0x00000100,     0x0D032700,     
     0x64040501,     0x00000301,     0x67000000,     0x05010D03,     0x03032404,     0x00000100,     0x0D032400,     0x44040501,     
-    0x01000303,     0x44000000,     0x05010D03,     0x03020404,     0x0007F800,     0x0D03FB00,     0x44040501,     0x00000302,     
+    0x01000303,     0x44000000,     0x05010D03,     0x03020404,     0x00080000,     0x0D030C00,     0x44040501,     0x00000302,     
     0x44000000,     0x05010A03,     0x03E00401,     0x03E30000,     0x0405010D,     0x00030224,     0x00000800,     0x010D032C,     
     0x02640405,     0x00000003,     0x03640000,     0x0105010A,     0x000302C4,     0x0A03C100,     0x04010501,     0x00000303,     
-    0x010D0300,     0x00240405,     0x00530002,     0x03740000,     0x0405010D,     0x00020044,     0x00000000,     0x010D0347,     
+    0x010D0300,     0x00240405,     0x00360002,     0x03110000,     0x0405010D,     0x00020044,     0x00000000,     0x010D0347,     
     0x00640405,     0x00000002,     0x03670000,     0x0405010D,     0x00020084,     0x00000000,     0x010D0387,     0x00A40405,     
     0x00000002,     0x03A70000,     0x0405010D,     0x00020204,     0x00000000,     0x010D0305,     0x02240405,     0x00000002,     
     0x03250000,     0x0405010D,     0x00020244,     0x00000000,     0x010D0345,     0x02640405,     0x00000002,     0x03650000,     
-    0x0405010D,     0x00020284,     0x00000000,     0x010D0385,     0x04640405,     0x09C40004,     0x03A80000,     0x0405010D,     
+    0x0405010D,     0x00020284,     0x00000000,     0x010D0385,     0x04640405,     0x14500004,     0x03210000,     0x0405010D,     
     0x00020504,     0x00000000,     0x010D0302,     0x05240405,     0x00000002,     0x03230001,     0x0405010D,     0x00090064,     
     0x00000000,     0x010D036C,     0x00640405,     0x00000008,     0x036D0000,     0x0405010D,     0x000700A4,     0x00000000,     
     0x010D03A2,     0x00640405,     0x00640007,     0x03060000,     0x0405010D,     0x00070084,     0x0007A120,     0x010D0304,     
@@ -1894,7 +1894,7 @@ struct pxcamcntl pxcamcntl_264_id31234 =
 /*
  * Structure:	xcsv2format
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1932,7 +1932,7 @@ struct xcsv2format xcsv2format_32_id31234 =
 /*
  * Structure:	xcsv2mode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1959,7 +1959,7 @@ struct xcsv2mode xcsv2mode_21_id31234 =
 /*
  * Structure:	xcdxxformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -1989,7 +1989,7 @@ struct xcdxxformat xcdxxformat_45_id31234 =
     0x0,                                                    /* PCWD           */
     0x2,                                                    /* CLCCSE         */
     0x0,                                                    /* TEST           */
-    0x10,                                                   /* CLCCSEhi       */
+    0x0,                                                    /* CLCCSEhi       */
     0x0,                                                    /* MSSMUB         */
     0x0,                                                    /* ToucanOpt      */
     0x0,                                                    /* ToucanCoef1    */
@@ -2006,7 +2006,7 @@ struct xcdxxformat xcdxxformat_45_id31234 =
 /*
  * Structure:	pxvidformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2039,8 +2039,8 @@ struct pxvidformat pxvidformat_561_id31235 =
     0,      0,      0,      0,      0,      0,      0,      0,       /* fgcamera */
     0,                                                      /* fgsignature    */
     0,      0,      15,     0,                              /* fgcamdope      */
-    10,     2048,   0,      10,                             /* xviddim        */
-    10,     2048,   0,      10,                             /* xdatdim        */
+    4,      2048,   0,      4,                              /* xviddim        */
+    4,      2048,   0,      4,                              /* xdatdim        */
     1,      2048,   0,      0,                              /* yviddim        */
     1,      2048,   0,      0,                              /* ydatdim        */
     0,      2048,   0,      0,                              /* xvidoffset     */
@@ -2084,7 +2084,7 @@ struct pxvidformat pxvidformat_561_id31235 =
     0,                                                      /* is.hoffset     */
     0,                                                      /* is.voffset     */
     1,                                                      /* is.fieldsperframe */
-    10,                                                     /* is.pixelsperclock */
+    8,                                                      /* is.pixelsperclock */
     0,                                                      /* is.pixiesperclock */
     0,                                                      /* is.linesperframe */
     0,                                                      /* is.pixelsperline */
@@ -2128,7 +2128,7 @@ struct pxvidformat pxvidformat_561_id31235 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* vid.pixmems */
-    2490596,        2490600,        2490604,        2490512,        2490516,        2490520,        2490524,        2490496,         /* vid.pixdopes */
+    2457524,        2457528,        2457532,        2457504,        2457508,        2457512,        2457516,        2457424,         /* vid.pixdopes */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixhints */
     8,      8,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -2139,7 +2139,7 @@ struct pxvidformat pxvidformat_561_id31235 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixbits */
     1,      0,      0,      0,      0,      0,      0,      0,       /* dat.pixmems */
-    260804, 260808, 260812, 260848, 260852, 260856, 260860, 260832,  /* dat.pixdopes */
+    1604,   1608,   1612,   1616,   1620,   1624,   1628,   1632,    /* dat.pixdopes */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixhints */
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,      
@@ -2150,13 +2150,13 @@ struct pxvidformat pxvidformat_561_id31235 =
     0,      0,      0,      0,      0,      0,      0,      0,      
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixbits */
     0,      0,      0,      0,      0,      0,      0,      0,       /* img.pixmems */
-    250884, 250888, 250892, 251376, 251380, 251384, 251388, 251360,  /* img.pixdopes */
+    20068,  20072,  20076,  20080,  20084,  20088,  20092,  19968,   /* img.pixdopes */
 };
 
 /*
  * Structure:	pxvidres
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2172,10 +2172,10 @@ struct pxvidres pxvidres_125_id31235 =
     0,                                                      /* ddch.rw        */
     0,                                                      /* ddch.fu        */
     0,                                                      /* ddch.rs        */
-    2040,                                                   /* x.datsamples   */
-    2040,                                                   /* x.vidsamples   */
+    2048,                                                   /* x.datsamples   */
+    2048,                                                   /* x.vidsamples   */
     0,                                                      /* x.vidoffset    */
-    2039,                                                   /* x.vidoffsend   */
+    2047,                                                   /* x.vidoffsend   */
     0,      0,      0,      0,      0,      0,      0,      0,       /* x.rsvd */
     3,                                                      /* x.setmaxdatsamples */
     3,                                                      /* x.setmaxvidsamples */
@@ -2209,34 +2209,34 @@ struct pxvidres pxvidres_125_id31235 =
     0,      0,      0,      0,                              /* vid.pixiebits  */
     0,                                                      /* vid.pixhint    */
     0,                                                      /* vid.pixmem     */
-    2490596,                                                /* vid.pixdope    */
+    2457524,                                                /* vid.pixdope    */
     0,                                                      /* vid.setpixbits */
     1,                                                      /* dat.pixies     */
     8,      0,      0,      0,                              /* dat.pixiebits  */
     1,                                                      /* dat.pixhint    */
     1,                                                      /* dat.pixmem     */
-    260804,                                                 /* dat.pixdope    */
+    1604,                                                   /* dat.pixdope    */
     0,                                                      /* dat.setpixbits */
     1,                                                      /* img.pixies     */
     8,      0,      0,      0,                              /* img.pixiebits  */
     1,                                                      /* img.pixhint    */
     0,                                                      /* img.pixmem     */
-    250884,                                                 /* img.pixdope    */
+    20068,                                                  /* img.pixdope    */
     0,                                                      /* img.setpixbits */
-    2040,                                                   /* line.pd        */
-    2040,                                                   /* line.pdod      */
-    2040,                                                   /* line.pdodal    */
-    2040,                                                   /* line.pdodalsf  */
+    2048,                                                   /* line.pd        */
+    2048,                                                   /* line.pdod      */
+    2048,                                                   /* line.pdodal    */
+    2048,                                                   /* line.pdodalsf  */
     0,                                                      /* line.rsvd2     */
-    4177920,                                                /* field.pd       */
-    4177928,                                                /* field.pdod     */
-    4177984,                                                /* field.pdodal   */
-    4177984,                                                /* field.pdodalsf */
+    4194304,                                                /* field.pd       */
+    4194312,                                                /* field.pdod     */
+    4194368,                                                /* field.pdodal   */
+    4194368,                                                /* field.pdodalsf */
     0,                                                      /* field.rsvd2    */
-    4177920,                                                /* frame.pd       */
-    4177928,                                                /* frame.pdod     */
-    4177984,                                                /* frame.pdodal   */
-    4177984,                                                /* frame.pdodalsf */
+    4194304,                                                /* frame.pd       */
+    4194312,                                                /* frame.pdod     */
+    4194368,                                                /* frame.pdodal   */
+    4194368,                                                /* frame.pdodalsf */
     0,                                                      /* frame.rsvd2    */
     2,                                                      /* framebuffers   */
     0,                                                      /* rsvdbuffers    */
@@ -2246,7 +2246,7 @@ struct pxvidres pxvidres_125_id31235 =
 /*
  * Structure:	pxvidmode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2288,7 +2288,7 @@ struct pxvidmode pxvidmode_79_id31235 =
 /*
  * Structure:	pxvidphys
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2333,7 +2333,7 @@ struct pxvidphys pxvidphys_118_id31235 =
 /*
  * Structure:	pxvidimage
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2419,7 +2419,7 @@ struct pxvidimage pxvidimage_251_id31235 =
 /*
  * Structure:	pxvidopt
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2444,7 +2444,7 @@ struct pxvidopt pxvidopt_19_id31235 =
 /*
  * Structure:	pxvidmem
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2473,7 +2473,7 @@ struct pxvidmem pxvidmem_72_id31235 =
 /*
  * Structure:	pxcamcntl
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2524,13 +2524,13 @@ struct pxcamcntl pxcamcntl_264_id31235 =
     0,      0,      0,      0,      0,                      /* rsvd2          */
     0x570A0D0D,     0x30303046,     0x43363034,     0x30303030,     0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     
     0x38313034,     0x30303030,     0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     0x43313034,     0x30303030,     
-    0x30303830,     0x30303830,     0x570A0D0A,     0x30303038,     0x38303130,     0x30303030,     0x30303030,     0x41303030,     
+    0x30303830,     0x30303830,     0x570A0D0A,     0x30303038,     0x38303130,     0x30303030,     0x30303030,     0x38303030,     
     0x570A0D0A,     0x30303046,     0x34363034,     0x30303030,     0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     
     0x38323034,     0x30303030,     0x30303030,     0x34303030,     0x570A0D0A,     0x30303046,     0x34313834,     0x30303030,     
-    0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     0x30343034,     0x30303030,     0x38303130,     0x31303030,     
+    0x30303030,     0x32303030,     0x570A0D0A,     0x30303046,     0x30343034,     0x30303030,     0x38303130,     0x31303030,     
     0x570A0D0A,     0x30303046,     0x30323034,     0x30303030,     0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     
-    0x30353034,     0x30303030,     0x31303030,     0x44433433,     0x570A0D0A,     0x30303046,     0x43343034,     0x30303030,     
-    0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     0x30313034,     0x30303030,     0x30303030,     0x34433930,     
+    0x30353034,     0x30303030,     0x31303030,     0x41393132,     0x570A0D0A,     0x30303046,     0x43343034,     0x30303030,     
+    0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     0x30313034,     0x30303030,     0x30303030,     0x30353431,     
     0x570A0D0A,     0x30303046,     0x43333034,     0x30303030,     0x30303030,     0x30303030,     0x570A0D0A,     0x30303046,     
     0x34333034,     0x30303030,     0x30303030,     0x30303030,     0x570A0D0A,     0x30303038,     0x38303031,     0x30303030,     
     0x30303030,     0x30303030,     0x570A0D0A,     0x30303038,     0x43303031,     0x30303030,     0x30303030,     0x31303030,     
@@ -2600,7 +2600,7 @@ struct pxcamcntl pxcamcntl_264_id31235 =
 /*
  * Structure:	xcsv2format
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2638,7 +2638,7 @@ struct xcsv2format xcsv2format_32_id31235 =
 /*
  * Structure:	xcsv2mode
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2665,7 +2665,7 @@ struct xcsv2mode xcsv2mode_21_id31235 =
 /*
  * Structure:	xcdxxformat
  * Copyright:	(C) EPIX, Inc. 2000-2016
- * Created:	Thu Oct 13 16:09:29 2022
+ * Created:	Fri Oct 14 15:20:47 2022
  * By:		EPIX(r)  XCAP V3.8
  * 		PIXCI(R) 64 Bit Library 3.08.01 [22.09.30]
  * 		PIXCI(R) 64 Bit Driver V3.8.01 [22.08.03.133114] 5.15.0-50-generic
@@ -2695,7 +2695,7 @@ struct xcdxxformat xcdxxformat_45_id31235 =
     0x0,                                                    /* PCWD           */
     0x2,                                                    /* CLCCSE         */
     0x0,                                                    /* TEST           */
-    0x10,                                                   /* CLCCSEhi       */
+    0x0,                                                    /* CLCCSEhi       */
     0x0,                                                    /* MSSMUB         */
     0x0,                                                    /* ToucanOpt      */
     0x0,                                                    /* ToucanCoef1    */

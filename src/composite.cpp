@@ -206,11 +206,11 @@ namespace habitat_cv {
             cv::Rect_<int> source = get_zoom_rect(size, zoom_size, raw_point, offset);
             cv::Rect_<int> destination(-offset, source.size());
             gpu_zoom[camera_index].setTo(0, gpu_zoom_streams[camera_index]);
-            gpu_raw[camera_index](source).copyTo(gpu_zoom[camera_index](destination), gpu_zoom_streams[camera_index]);
+            if (destination.height > 0 && destination.width > 0 && destination.x > 0 && destination.y > 0)
+                gpu_raw[camera_index](source).copyTo(gpu_zoom[camera_index](destination), gpu_zoom_streams[camera_index]);
             gpu_raw[camera_index].download(zoom[camera_index], gpu_zoom_streams[camera_index]);
         }
 #else
-
         zoom_thread = thread ([this](Location location) {
             auto mouse_point = composite.get_point(location);
             for (unsigned int camera_index = 0; camera_index < raw.size(); camera_index++) {
@@ -219,7 +219,8 @@ namespace habitat_cv {
                 cv::Rect_<int> source = get_zoom_rect(size, zoom_size, raw_point, offset);
                 cv::Rect_<int> destination(-offset, source.size());
                 zoom[camera_index].clear();
-                raw[camera_index](source).copyTo(zoom[camera_index](destination));
+                if (destination.height > 0 && destination.width > 0 && destination.x > 0 && destination.y > 0)
+                    raw[camera_index](source).copyTo(zoom[camera_index](destination));
             }
         }, location);
 #endif
