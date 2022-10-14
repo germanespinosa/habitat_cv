@@ -154,7 +154,7 @@ namespace habitat_cv {
         while (tracking_running) {
             //Timer capture_timer;
             PERF_START("WAIT");
-            //while (!frame_timer.time_out());
+//            while (!frame_timer.time_out());
             PERF_STOP("WAIT");
             frame_timer.reset();
             PERF_START("CAPTURE");
@@ -165,7 +165,6 @@ namespace habitat_cv {
             PERF_STOP("COMPOSITE");
             PERF_START("COLOR CONVERSION");
             auto &composite_image_gray = composite.composite_detection;
-            auto &composite_image_rgb = composite.composite_video;
             PERF_STOP("COLOR CONVERSION");
             PERF_START("ROBOT DETECTION");
             if (robot_best_cam == -1) {
@@ -190,28 +189,6 @@ namespace habitat_cv {
                 auto perspective_offset = robot.location - camera_zero[robot_best_cam];
                 auto perspective_adjustment = perspective_offset * height_ratio;
                 robot.location += (-perspective_adjustment);
-                auto color_robot = cv::Scalar({255, 0, 255});
-                if (puff_state) {
-                    robot.data = "puff";
-                    color_robot = cv::Scalar({0, 0, 255});
-                    puff_state--;
-                } else {
-                    robot.data = "";
-                }
-                thread([this, frame_number](Step &robot, Timer &ts, Tracking_server &tracking_server) {
-                    robot.time_stamp = ts.to_seconds();
-                    robot.frame = frame_number;
-                    tracking_server.send_step(robot.convert(cv_space, canonical_space));
-                }, reference_wrapper(robot), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
-
-                composite_image_rgb.circle(robot.location, 5, color_robot, true);
-                auto robot_cell_id = composite.map.cells.find(robot.location);
-                auto robot_cell_coordinates = composite.map.cells[robot_cell_id].coordinates;
-
-                auto cell_polygon = composite.get_polygon(robot_cell_coordinates);
-                composite_image_rgb.polygon(cell_polygon, color_robot);
-                composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot);
-
                 robot_counter = 30;
             } else {
                 if (robot_counter) robot_counter--;
@@ -225,6 +202,7 @@ namespace habitat_cv {
             auto send_prey_step = false;
             PERF_START("MOUSE_STEP");
             if (get_mouse_step(diff, mouse, robot.location)) {
+                composite.start_zoom(mouse.location);
                 PERF_START("MOUSE_DETECTED");
                 int cam_row = mouse.location.y > 540 ? 0 : 1;
                 int cam_col = mouse.location.x > 540 ? 1 : 0;
@@ -235,39 +213,53 @@ namespace habitat_cv {
                     experiment_client.prey_enter_arena();
                 }
                 send_prey_step = true;
+                PERF_STOP("MOUSE_DETECTED");
+            }
+            PERF_STOP("MOUSE_STEP");
+            PERF_STOP("MOUSE DETECTION");
+            PERF_START("DETECTION_PROCESSING");
+            auto &composite_image_rgb=composite.get_video();
+            if (new_robot_data) {
+                auto color_robot = cv::Scalar({255, 0, 255});
+                if (puff_state) {
+                    robot.data = "puff";
+                    color_robot = cv::Scalar({0, 0, 255});
+                    puff_state--;
+                } else {
+                    robot.data = "";
+                }
+                thread([this, frame_number](Step &robot, Timer &ts, Tracking_server &tracking_server) {
+                    robot.time_stamp = ts.to_seconds();
+                    robot.frame = frame_number;
+                    tracking_server.send_step(robot.convert(cv_space, canonical_space));
+                }, reference_wrapper(robot), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
+                composite_image_rgb.circle(robot.location, 5, color_robot, true);
+                auto robot_cell_id = composite.map.cells.find(robot.location);
+                auto robot_cell_coordinates = composite.map.cells[robot_cell_id].coordinates;
+
+                auto cell_polygon = composite.get_polygon(robot_cell_coordinates);
+                composite_image_rgb.polygon(cell_polygon, color_robot);
+                composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot);
+            }
+            PERF_STOP("DETECTION_PROCESSING");
+            if (send_prey_step) {
                 composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
                 auto mouse_cell_id = composite.map.cells.find(mouse.location);
                 auto mouse_cell_coordinates = composite.map.cells[mouse_cell_id].coordinates;
                 auto cell_polygon = composite.get_polygon(mouse_cell_coordinates);
                 composite_image_rgb.polygon(cell_polygon, {255, 0, 0});
-                PERF_STOP("MOUSE_DETECTED");
+                thread([this, frame_number](Step &canonical_step, Timer &ts, Tracking_server &tracking_server) {
+                    canonical_step.time_stamp = ts.to_seconds();
+                    canonical_step.frame = frame_number;
+                    canonical_step.rotation = 0;
+                    tracking_server.send_step(canonical_step);
+                }, reference_wrapper(canonical_step), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
             }
-            PERF_STOP("MOUSE_STEP");
-
             PERF_START("MOUSE_CUT");
             auto main_frame = main_layout.get_frame(composite_image_rgb, frame_number);
             auto raw_frame = raw_layout.get_frame(images);
-            int camera_index = 0;
-            Images mouse_cut;
-            for (auto &image: images) {
-                auto mouse_point = composite_image_gray.get_point(mouse.location);
-                auto mouse_raw_point = composite.get_raw_point(camera_index, mouse_point);
-                auto mouse_raw_location = image.get_location(mouse_raw_point);
-                mouse_cut.emplace_back(Content_crop(mouse_raw_location, 150, image));
-                camera_index++;
-            }
+            Images &mouse_cut = composite.get_zoom();
             PERF_STOP("MOUSE_CUT");
-            if (send_prey_step) {
-                auto prey_robot_theta = get_prey_robot_orientation(mouse_cut[mouse_best_cam]);
-                thread([this, frame_number,prey_robot_theta](Step &canonical_step, Timer &ts, Tracking_server &tracking_server) {
-                    canonical_step.time_stamp = ts.to_seconds();
-                    canonical_step.frame = frame_number;
-                    canonical_step.rotation = to_degrees(prey_robot_theta);
-                    tracking_server.send_step(canonical_step);
-                }, reference_wrapper(canonical_step), reference_wrapper(ts), reference_wrapper(tracking_server)).detach();
-                composite_image_rgb.arrow(mouse.location, prey_robot_theta, 50, {255, 0, 0});
-            }
-            PERF_STOP("MOUSE DETECTION");
             PERF_SCOPE("REST");
             auto mouse_frame = raw_layout.get_frame(mouse_cut);
             Image screen_frame;
@@ -285,6 +277,7 @@ namespace habitat_cv {
                     break;
                 case Screen_image::led :
                     screen_frame = screen_layout.get_frame(Image(cv::Mat(composite_image_gray > robot_threshold),""), "LEDs");
+                    break;
                 case Screen_image::mouse :
                     screen_frame = screen_layout.get_frame(mouse_frame, "mouse");
                     break;
@@ -388,16 +381,16 @@ namespace habitat_cv {
             }
             fr.new_frame();
             cout << fr.filtered_fps<< " fps  "<< fr.average_fps << " fps                \r";
+            if (!main_video.is_open()) mouse.location = NOLOCATION;
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
-            //thread t([this, main_frame, mouse_cut, raw_frame]() {
+//            thread t([this, main_frame, mouse_cut, raw_frame]() {
             main_video.add_frame(main_frame);
             raw_video.add_frame(raw_frame);
             for (int i=0;i<4;i++) {
                 mouse_videos[i]->add_frame(mouse_cut[i]);
             }
-            //});
-            //t.detach();
-            if (!main_video.is_open()) mouse.location = NOLOCATION;
+//            });
+//            t.detach();
             // write videos
         }
 

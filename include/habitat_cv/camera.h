@@ -13,8 +13,7 @@ namespace habitat_cv {
         static void close();
         static cv::Size frame_size;
         static std::vector<Camera *> cameras;
-        std::atomic<bool> running;
-        std::thread capture_thread;
+        std::atomic<bool> in_capture;
         ~Camera();
         Frame_rate frame_rate;
     };

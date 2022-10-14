@@ -20,9 +20,14 @@ namespace habitat_cv {
         size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
 
         composite = Image(size.height, size.width, Image::Type::gray);
-        composite_video = Image(size.height, size.width, Image::Type::gray);
+        composite_video = Image(size.height, size.width, Image::Type::rgb);
         composite_detection = Image(size.height, size.width, Image::Type::gray);
 
+#ifdef USE_CUDA
+        gpu_composite_video.upload(composite);
+        gpu_composite_detection.upload(composite_detection);
+        gpu_composite_video_rgb.upload(composite_detection);
+#endif
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, Transformation(wi.cell_transformation.size , wi.cell_transformation.rotation + wi.space.transformation.rotation));
 
         world = World(wc, wi);
@@ -55,12 +60,14 @@ namespace habitat_cv {
         //creates the crop rectangles for each camera
         cv::Size crop_size (size.width / configuration.order.cols(), size.height / configuration.order.rows());
         for (unsigned int c = 0; c < configuration.order.count(); c++) {
+            zoom.emplace_back(zoom_size.height, zoom_size.width,Image::Type::gray);
             warped.emplace_back(size.height, size.width,Image::Type::gray);
             warped_detection.emplace_back(size.height, size.width,Image::Type::gray);
             warped_video.emplace_back(size.height, size.width,Image::Type::gray);
 
 #ifdef USE_CUDA
-            gpu_threads.emplace_back();
+            gpu_zoom_streams.emplace_back(cudaStreamNonBlocking);
+            gpu_zoom.emplace_back(zoom_size.height, zoom_size.width, CV_8UC1);
             gpu_streams.emplace_back(cudaStreamNonBlocking);
             gpu_raw.emplace_back(size.height, size.width, CV_8UC1);
             gpu_warped.emplace_back(size.height, size.width, CV_8UC1);
@@ -88,35 +95,32 @@ namespace habitat_cv {
     }
 
     Image &Composite::get_composite(const Images &images) {
+        raw = images;
 #ifdef USE_CUDA
         for (unsigned int c = 0; c < configuration.order.count(); c++){
-            gpu_threads[c] = thread( [this, images] (unsigned int c) {
-                auto &stream = gpu_streams[c];
-                gpu_raw[c].upload(images[c], stream);
-                cv::cuda::warpPerspective(gpu_raw[c], gpu_warped[c], homographies[c], size, cv::INTER_LINEAR,
-                                          cv::BORDER_CONSTANT, cv::Scalar(), stream);
-                cv::cuda::bitwise_and(gpu_warped[c], gpu_mask_detection, gpu_warped_detection[c], cv::noArray(),stream);
-                gpu_warped[c](crop_rectangles[c]).copyTo(gpu_composite(crop_rectangles[c]), stream);
-            }, c);
+            auto &stream = gpu_streams[c];
+            gpu_raw[c].upload(raw[c], stream);
+            cv::cuda::warpPerspective(gpu_raw[c], gpu_warped[c], homographies[c], size, cv::INTER_LINEAR,
+                                      cv::BORDER_CONSTANT, cv::Scalar(), stream);
+            cv::cuda::bitwise_and(gpu_warped[c], gpu_mask_detection, gpu_warped_detection[c], cv::noArray(),stream);
+            gpu_warped[c](crop_rectangles[c]).copyTo(gpu_composite(crop_rectangles[c]), stream);
         }
         for (unsigned int c = 0; c < configuration.order.count(); c++) {
             gpu_streams[c].waitForCompletion();
-            if (gpu_threads[c].joinable()) gpu_threads[c].join();
         }
-        cv::cuda::bitwise_and(gpu_composite, gpu_mask_video, gpu_composite_video, cv::noArray());
+        cv::cuda::bitwise_and(gpu_composite, gpu_mask_video, gpu_composite_video, cv::noArray(), gpu_video_stream);
+        gpu_composite_video.download(composite, gpu_video_stream);
         cv::cuda::bitwise_and(gpu_composite, gpu_mask_detection, gpu_composite_detection, cv::noArray());
-        gpu_composite_video.download(composite);
         gpu_composite_detection.download(composite_detection);
-        composite_video = composite.to_rgb();
-        return composite_video;
+        return composite_detection;
 #else
         for (unsigned int c = 0; c < configuration.order.count(); c++){
-            cv::warpPerspective(images[c], warped[c], homographies[c], size);
+            cv::warpPerspective(raw[c], warped[c], homographies[c], size);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
         }
-        composite_video = composite.mask(mask_video).to_rgb();
+        composite = composite.mask(mask_video);
         composite_detection = composite.mask(mask_detection);
-        return composite_video;
+        return composite_detection;
 #endif
     }
 
@@ -145,4 +149,80 @@ namespace habitat_cv {
         warped_detection[camera_index] = warped[camera_index].mask(mask_detection);
         return warped_detection[camera_index];
     }
+
+    Images &Composite::get_zoom() {
+#ifdef USE_CUDA
+        for (unsigned int camera_index=0;camera_index<raw.size();camera_index++) {
+            gpu_zoom_streams[camera_index].waitForCompletion();
+        }
+#else
+        if (zoom_thread.joinable()) zoom_thread.join();
+#endif
+        return zoom;
+    }
+
+    void Composite::set_zoom_size(const cv::Size &s) {
+        zoom_size = s;
+
+    }
+
+    cv::Rect_<int> Composite::get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2f point, cv::Point2f &oftl) {
+        cv::Point2f offset(zs.width / 2,zs.height / 2);
+        auto tl = point - offset;
+        auto br = point + offset;
+        oftl = cv::Point2f (0,0);
+        cv::Size ofbr (0,0);
+        if (tl.x<0) {
+            oftl.x = tl.x;
+            ofbr.width = -tl.x;
+        }
+        if (tl.y<0) {
+            oftl.y = tl.y;
+            ofbr.height = -tl.y;
+        }
+        if (br.x > rs.width) {
+            ofbr.width = br.x - rs.width;
+        }
+        if (br.y > rs.height) {
+            ofbr.height = br.y - rs.height;
+        }
+        return cv::Rect_<int>(tl-oftl, zs-ofbr);
+    }
+
+    Image &Composite::get_video() {
+#ifdef USE_CUDA
+        gpu_video_stream.waitForCompletion();
+#endif
+        composite_video = composite.to_rgb();
+        return composite_video;
+    }
+
+    void Composite::start_zoom(const Location &location) {
+#ifdef USE_CUDA
+        auto mouse_point = composite.get_point(location);
+        for (unsigned int camera_index=0;camera_index<raw.size();camera_index++) {
+            auto raw_point = get_raw_point(camera_index, mouse_point);
+            cv::Point2f offset(0, 0);
+            cv::Rect_<int> source = get_zoom_rect(size, zoom_size, raw_point, offset);
+            cv::Rect_<int> destination(-offset, source.size());
+            gpu_zoom[camera_index].setTo(0, gpu_zoom_streams[camera_index]);
+            gpu_raw[camera_index](source).copyTo(gpu_zoom[camera_index](destination), gpu_zoom_streams[camera_index]);
+            gpu_raw[camera_index].download(zoom[camera_index], gpu_zoom_streams[camera_index]);
+        }
+#else
+
+        zoom_thread = thread ([this](Location location) {
+            auto mouse_point = composite.get_point(location);
+            for (unsigned int camera_index = 0; camera_index < raw.size(); camera_index++) {
+                auto raw_point = get_raw_point(camera_index, mouse_point);
+                cv::Point2f offset(0, 0);
+                cv::Rect_<int> source = get_zoom_rect(size, zoom_size, raw_point, offset);
+                cv::Rect_<int> destination(-offset, source.size());
+                zoom[camera_index].clear();
+                raw[camera_index](source).copyTo(zoom[camera_index](destination));
+            }
+        }, location);
+#endif
+    }
+
 }
