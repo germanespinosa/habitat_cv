@@ -380,7 +380,7 @@ namespace habitat_cv {
                 input_counter--;
             }
             fr.new_frame();
-            cout << fr.filtered_fps<< " fps  "<< fr.average_fps << " fps                \r";
+//            cout << fr.filtered_fps<< " fps  "<< fr.average_fps << " fps                \r";
             if (!main_video.is_open()) mouse.location = NOLOCATION;
             if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
 //            thread t([this, main_frame, mouse_cut, raw_frame]() {
