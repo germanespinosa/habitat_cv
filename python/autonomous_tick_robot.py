@@ -75,6 +75,9 @@ def on_keypress(event):
         print("resume")
         controller.resume()
         controller_state = 1
+    if event.key == "f":
+        print("setting rotation to 0")
+        controller.set_rotation(0)
 
 
 

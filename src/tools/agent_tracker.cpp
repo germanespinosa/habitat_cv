@@ -172,6 +172,14 @@ int main(int argc, char **argv){
 
 
     tracking_server.start(Tracking_service::get_port());
+    auto t = std::thread([&prey_robot, &prey_tracking_client](){
+        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
+        for (int i=0; i<6 ; i++) {
+            prey_robot.set_rotation(i * 60);
+            cout << (i * 60) << endl;
+            this_thread::sleep_for(1s);
+        }
+    });
     cv_server.tracking_process();
     tracking_server.stop();
     experiment_client.disconnect();
