@@ -104,7 +104,9 @@ namespace habitat_cv{
     }
 
     Image Image::read(const string &path, const string &f) {
-        return {cv::imread(path + "/" + f, cv::IMREAD_UNCHANGED), f};
+        auto folder = path;
+        if (!path.ends_with('/')) folder += '/';
+        return {cv::imread(folder + f, cv::IMREAD_UNCHANGED), f};
     }
 
     void Image::clear() {
@@ -207,6 +209,13 @@ namespace habitat_cv{
 
     cell_world::Location Image::get_location(const cv::Point2f &p) const {
         return {(float)p.x, (float)(size().height - p.y)};
+    }
+
+    Image Image::clone() const{
+        auto m = ((cv::Mat *)this)->clone();
+        auto i = Image(m,"");
+        i.type = type;
+        return i;
     }
 
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {

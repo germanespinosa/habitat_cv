@@ -40,13 +40,7 @@ namespace habitat_cv {
     habitat_cv::Image Main_layout::get_frame(const Image &image, unsigned int frame_count) {
         composite = image;
         frame = "Frame: " + to_string(frame_count) + "  ";
-        json_cpp::Json_date jd;
-        date::sys_time<std::chrono::milliseconds> &d = jd;
-        d = round<milliseconds>(system_clock::now()) - 5h;
-
-        auto dt = jd.to_json();
-        dt = dt.substr(1, dt.size() - 2);
-        date_time = "  " + dt;
+        date_time = "  " + json_cpp::Json_date::now().to_string();
         return get_image();
     }
 
@@ -82,15 +76,16 @@ namespace habitat_cv {
             Layout(860, 800, Image::rgb),
             screen({800, 800}, Image::rgb),
             screen_text({800, 30}, Image::rgb, {255, 255, 255}, {30, 30, 30}, 1, 1, 1),
-            fps_text({800, 30}, Image::rgb, {255, 255, 255}, {30, 30, 30}, 1, 0, 1) {
+            fps_text({800, 30}, Image::rgb, {255, 255, 255}, {30, 30, 30}, 1, 2, 1) {
         add_place_holder(fps_text, {0, 0});
         add_place_holder(screen, {0, 30});
         add_place_holder(screen_text, {0, 830});
     }
 
-    habitat_cv::Image Screen_layout::get_frame(const Image &image, const string &text) {
+    habitat_cv::Image Screen_layout::get_frame(const Image &image, const string &text, float fps) {
         screen = image.to_rgb();
         screen_text = text;
+        fps_text = "fps: " + to_string(int(fps));
         return get_image();
     }
 

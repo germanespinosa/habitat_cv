@@ -7,6 +7,7 @@
 #include <controller.h>
 #include <robot_lib.h>
 #include <experiment/experiment_service.h>
+#include <params_cpp.h>
 
 using namespace controller;
 using namespace cell_world;
@@ -30,6 +31,8 @@ struct Agent_tracker_configuration : Json_object {
 };
 
 int main(int argc, char **argv){
+
+    params_cpp::Parser p(argc,argv);
 
     Agent_tracker_configuration config;
     config.load("../config/agent_tracker_config.json");
@@ -66,7 +69,9 @@ int main(int argc, char **argv){
     auto &experiment_client = experiment_server.create_local_client<Cv_server_experiment_client>();
     experiment_client.subscribe();
 
-    Cv_server cv_server(cam_file, bg_path, tracking_server, experiment_client);
+    auto camera_configuration= json_cpp::Json_from_file<Camera_configuration>(config.config_folder + "camera_config.json");
+
+    Cv_server cv_server(camera_configuration, cam_file, bg_path, config.videos_folder, tracking_server, experiment_client, p.contains(params_cpp::Key("-u")));
     auto &experiment_tracking_client = tracking_server.create_local_client<Experiment_tracking_client>();
     experiment_tracking_client.subscribe();
     experiment_server.set_tracking_client(experiment_tracking_client);
@@ -152,7 +157,7 @@ int main(int argc, char **argv){
 //            cout << "Enter move request: " << endl;
 //            cin >> input;
 //            if (input == 20){
-//                for (unsigned int j = 0; j < thig0.size(); j++)
+//                for (unsigned int j = 0; j < thig0.composite_size(); j++)
 //                {
 //                    step = thig0[j];
 //                    auto move = moves[step];

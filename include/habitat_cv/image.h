@@ -44,6 +44,7 @@ namespace habitat_cv {
         [[nodiscard]] cv::Point2f get_point(const cell_world::Location &) const;
         cell_world::Location get_location(const cv::Point2f &) const;
         Image mask(const Binary_image &);
+        Image clone() const;
     };
 
     struct Images : std::vector<Image> {

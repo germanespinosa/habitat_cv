@@ -28,7 +28,11 @@ namespace habitat_cv {
     }
 
     Image Layout::get_image() {
-        clear();
+        if (Image::type == Image::Type::gray) {
+            setTo(0);
+        } else {
+            setTo(cv::Scalar(0,0,0));
+        }
         for (auto &place_holder: place_holders){
             auto point = get_point(place_holder.location);
             auto size = place_holder.content.size();

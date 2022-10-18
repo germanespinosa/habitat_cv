@@ -1,13 +1,28 @@
 #include <habitat_cv/detection.h>
+#include <performance.h>
 
 namespace habitat_cv{
     Detection_list Detection_list::get_detections(const Image &image, unsigned char threshold, int cleaning_cycles) {
-        auto clean_image = image.to_gray().threshold(threshold).
-                           erode(cleaning_cycles).dilate(cleaning_cycles * 2).erode(cleaning_cycles);
+        PERF_START("CLEAN");
+        Binary_image clean_image;
+        if (cleaning_cycles) {
+            clean_image = image
+            .threshold(threshold)
+            .erode(cleaning_cycles)
+            .dilate(cleaning_cycles * 2)
+            .erode(cleaning_cycles);
+        } else {
+            clean_image = image.threshold(threshold);
+        }
+        PERF_STOP("CLEAN");
+        PERF_START("CCC");
         cv::Mat centroids;
         cv::Mat labels;
         cv::Mat stats;
-        connectedComponentsWithStats(clean_image,labels,stats,centroids,4);
+        Image small_clean;
+        connectedComponentsWithStats(clean_image, labels, stats, centroids,4);
+        PERF_STOP("CCC");
+        PERF_START("DETECT");
         Detection_list detections;
         for (int i = 0; i< stats.rows; i++)
         {
@@ -21,6 +36,7 @@ namespace habitat_cv{
             detection.location.y = point.y;
             detections.push_back(detection);
         }
+        PERF_STOP("DETECT");
         return detections;
     }
 
@@ -32,5 +48,13 @@ namespace habitat_cv{
                 filtered.push_back(detection);
         }
         return filtered;
+    }
+
+    Detection_list &Detection_list::scale(float s) {
+        for (auto &d: *this){
+            d.location = d.location * s;
+            d.area = d.area * s * s;
+        }
+        return *this;
     }
 }

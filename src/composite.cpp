@@ -17,68 +17,76 @@ namespace habitat_cv {
                 .key("hexagonal")
                 .key("cv")
                 .get_resource<World_implementation>();
-        size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
 
-        composite = Image(size.height, size.width, Image::Type::gray);
-        composite_video = Image(size.height, size.width, Image::Type::rgb);
-        composite_detection = Image(size.height, size.width, Image::Type::gray);
-
-#ifdef USE_CUDA
-        gpu_composite_video.upload(composite);
-        gpu_composite_detection.upload(composite_detection);
-        gpu_composite_video_rgb.upload(composite_detection);
-#endif
         cells = Polygon_list(wi.cell_locations, wc.cell_shape, Transformation(wi.cell_transformation.size , wi.cell_transformation.rotation + wi.space.transformation.rotation));
-
         world = World(wc, wi);
-
-        // generate mask
-        Image mask_image(size.height, size.width, Image::Type::gray);
-        mask_image.clear();
-        Polygon detection_polygon(world.space.center, world.space.shape, world.space.transformation);
-        mask_image.polygon(detection_polygon,{255},true);
-        mask_detection = mask_image.threshold(0);
-
-#ifdef USE_CUDA
-        gpu_mask_detection.upload(mask_image.threshold(0));
-#endif
-
-        auto t = world.space.transformation;
-        t.size *= 1.05;
-        Polygon video_polygon(world.space.center, world.space.shape, t);
-        mask_image.polygon(video_polygon,{255},true);
-
-
-        mask_video = mask_image.threshold(0);
-
-#ifdef USE_CUDA
-        gpu_mask_video.upload(mask_image.threshold(0));
-#endif
-
         map = Map(world.create_cell_group());
 
-        //creates the crop rectangles for each camera
-        cv::Size crop_size (size.width / configuration.order.cols(), size.height / configuration.order.rows());
+        composite_size = cv::Size(wi.space.transformation.size, wi.space.transformation.size);
+        crop_size =cv::Size (composite_size.width / configuration.order.cols(), composite_size.height / configuration.order.rows());
+
+        composite_video = Image(composite_size.height, composite_size.width, Image::Type::rgb);
+        composite_raw = Image(composite_size.height, composite_size.width, Image::Type::gray);
+        composite = Image(composite_size.height, composite_size.width, Image::Type::gray);
+        background = Image(composite_size.height, composite_size.width, Image::Type::gray);
+        composite_subtracted = Image(composite_size.height, composite_size.width, Image::Type::gray);
+        composite_detection = Image(composite_size.height, composite_size.width, Image::Type::gray);
+        detection_small_size = cv::Size((float)composite_size.width / detection_scale, (float)composite_size.height / detection_scale);
+        composite_detection_small = Image(detection_small_size, Image::gray);
+        composite_subtracted_small = Image(detection_small_size, Image::gray);
+        zoom = Image(zoom_size.height * configuration.order.cols(), zoom_size.width * configuration.order.rows(),Image::Type::gray);
+
+        // generate masks
+        Image detection_mask_image(composite_size.height, composite_size.width, Image::Type::gray);
+        detection_mask_image.clear();
+        Polygon detection_polygon(world.space.center, world.space.shape, world.space.transformation);
+        detection_mask_image.polygon(detection_polygon,{255},true);
+        mask_detection = detection_mask_image.threshold(0);
+
+        Image video_mask_image(composite_size.height, composite_size.width, Image::Type::gray);
+        auto t = world.space.transformation;
+        t.size *= (1 + video_padding);
+        Polygon video_polygon(world.space.center, world.space.shape, t);
+        video_mask_image.polygon(video_polygon,{255},true);
+        mask_video = video_mask_image.threshold(0);
+
         for (unsigned int c = 0; c < configuration.order.count(); c++) {
-            zoom.emplace_back(zoom_size.height, zoom_size.width,Image::Type::gray);
-            warped.emplace_back(size.height, size.width,Image::Type::gray);
-            warped_detection.emplace_back(size.height, size.width,Image::Type::gray);
-            warped_video.emplace_back(size.height, size.width,Image::Type::gray);
+            warped.emplace_back(composite_size, Image::Type::gray);
+            detection.emplace_back(composite_size, Image::Type::gray);
+            detection_small.emplace_back(detection_small_size, Image::Type::gray);
+            raw_small.emplace_back(crop_size, Image::Type::gray);
+        }
 
 #ifdef USE_CUDA
-            gpu_zoom_streams.emplace_back(cudaStreamNonBlocking);
-            gpu_zoom.emplace_back(zoom_size.height, zoom_size.width, CV_8UC1);
-            gpu_streams.emplace_back(cudaStreamNonBlocking);
-            gpu_raw.emplace_back(size.height, size.width, CV_8UC1);
-            gpu_warped.emplace_back(size.height, size.width, CV_8UC1);
-            gpu_warped_detection.emplace_back(size.height, size.width, CV_8UC1);
-            gpu_warped_video.emplace_back(size.height, size.width, CV_8UC1);
-            gpu_composite.upload(composite);
+        gpu_composite.upload(composite);
+        gpu_composite_raw.upload(composite_raw);
+        gpu_background.upload(background);
+        gpu_composite_subtracted.upload(composite_subtracted);
+        gpu_composite_video.upload(composite_video);
+        gpu_composite_detection.upload(composite_detection);
+        gpu_composite_detection_small.upload(composite_detection_small);
+        gpu_mask_detection.upload(mask_detection);
+        gpu_mask_video.upload(mask_video);
+        gpu_zoom.upload(zoom);
+        for (unsigned int c = 0; c < configuration.order.count(); c++) {
+            gpu_zoom_stream = cv::cuda::Stream(cudaStreamNonBlocking);
+            gpu_detection_streams.emplace_back(cudaStreamNonBlocking);
+            gpu_raw.emplace_back(raw_small[c]);
+            gpu_warped.emplace_back().upload(warped[c]);
+            gpu_detection.emplace_back().upload(detection[c]);
+            gpu_detection_small.emplace_back().upload(detection_small[c]);
+        }
 #endif
+
+        //creates the crop rectangles for each camera
+        for (unsigned int c = 0; c < configuration.order.count(); c++) {
             auto camera_coordinates = configuration.order.get_camera_coordinates(c);
             cv::Point crop_location (camera_coordinates.x * crop_size.width,
                                      camera_coordinates.y * crop_size.height);
             crop_rectangles.emplace_back(crop_location, crop_size);
+            cv::Point2f zoom_location (camera_coordinates.x * zoom_size.width,
+                                     camera_coordinates.y * zoom_size.height);
+            zoom_rectangles.emplace_back(zoom_location);
             vector<cv::Point2f> src_cp;
             vector<cv::Point2f> dst_cp;
             for (auto &a:configuration.centroids[c]) {
@@ -94,41 +102,61 @@ namespace habitat_cv {
         return map.cells[cell_id].coordinates;
     }
 
-    Image &Composite::get_composite(const Images &images) {
+    void Composite::start_composite(const Images &images) {
         raw = images;
 #ifdef USE_CUDA
         for (unsigned int c = 0; c < configuration.order.count(); c++){
-            auto &stream = gpu_streams[c];
-            gpu_raw[c].upload(raw[c], stream);
-            cv::cuda::warpPerspective(gpu_raw[c], gpu_warped[c], homographies[c], size, cv::INTER_LINEAR,
-                                      cv::BORDER_CONSTANT, cv::Scalar(), stream);
-            cv::cuda::bitwise_and(gpu_warped[c], gpu_mask_detection, gpu_warped_detection[c], cv::noArray(),stream);
-            gpu_warped[c](crop_rectangles[c]).copyTo(gpu_composite(crop_rectangles[c]), stream);
+            gpu_raw[c].upload(raw[c], gpu_detection_streams[c]);
+            cv::cuda::warpPerspective(gpu_raw[c], gpu_warped[c], homographies[c], composite_size, cv::INTER_LINEAR,
+                                      cv::BORDER_CONSTANT, cv::Scalar(), gpu_detection_streams[c]);
+            cv::cuda::bitwise_and(gpu_warped[c], gpu_mask_detection, gpu_detection[c], cv::noArray(),gpu_detection_streams[c]);
+            cv::cuda::resize(gpu_detection[c], gpu_detection_small[c], detection_small_size, 0, 0, cv::INTER_LINEAR,gpu_detection_streams[c]);
+            gpu_detection[c](crop_rectangles[c]).copyTo(gpu_composite_detection(crop_rectangles[c]), gpu_detection_streams[c]);
         }
-        for (unsigned int c = 0; c < configuration.order.count(); c++) {
-            gpu_streams[c].waitForCompletion();
-        }
-        cv::cuda::bitwise_and(gpu_composite, gpu_mask_video, gpu_composite_video, cv::noArray(), gpu_video_stream);
-        gpu_composite_video.download(composite, gpu_video_stream);
-        cv::cuda::bitwise_and(gpu_composite, gpu_mask_detection, gpu_composite_detection, cv::noArray());
-        gpu_composite_detection.download(composite_detection);
-        return composite_detection;
+        thread( [this]() {
+            for (unsigned int c = 0; c < configuration.order.count(); c++) {
+                gpu_detection_streams[c].waitForCompletion();
+            }
+            cv::cuda::resize(gpu_composite_detection, gpu_composite_detection_small, detection_small_size, 0, 0,
+                             cv::INTER_LINEAR, gpu_detection_stream);
+            gpu_composite_detection_small.download(composite_detection_small, gpu_detection_stream);
+
+            cv::cuda::absdiff(gpu_composite_detection, gpu_background, gpu_composite_subtracted, gpu_subtracted_stream);
+            cv::cuda::resize(gpu_composite_subtracted, gpu_composite_subtracted_small, detection_small_size, 0, 0,
+                             cv::INTER_LINEAR, gpu_subtracted_stream);
+            gpu_composite_subtracted_small.download(composite_subtracted_small, gpu_subtracted_stream);
+
+            for (unsigned int c = 0; c < configuration.order.count(); c++) {
+                gpu_warped[c](crop_rectangles[c]).copyTo(gpu_composite(crop_rectangles[c]), gpu_video_stream);
+            }
+            cv::cuda::bitwise_and(gpu_composite, gpu_mask_video, gpu_composite_video, cv::noArray(), gpu_video_stream);
+            gpu_composite_video.download(composite, gpu_video_stream);
+
+            for (unsigned int c = 0; c < configuration.order.count(); c++) {
+                cv::cuda::resize(gpu_raw[c], gpu_composite_raw(crop_rectangles[c]), crop_rectangles[c].size(), 0, 0,
+                                 cv::INTER_LINEAR, gpu_raw_stream);
+            }
+            gpu_composite_raw.download(composite_raw, gpu_raw_stream);
+        }).detach();
 #else
         for (unsigned int c = 0; c < configuration.order.count(); c++){
-            cv::warpPerspective(raw[c], warped[c], homographies[c], size);
+            cv::warpPerspective(raw[c], warped[c], homographies[c], composite_size);
             warped[c](crop_rectangles[c]).copyTo(composite(crop_rectangles[c]));
+            cv::resize(raw[c], composite_raw(crop_rectangles[c]), crop_rectangles[c].size(), 0, 0,
+                             cv::INTER_LINEAR);
         }
         composite = composite.mask(mask_video);
-        composite_detection = composite.mask(mask_detection);
-        return composite_detection;
+        composite_detection =  composite.mask(mask_detection);
+        cv::resize(composite_detection,composite_detection_small,detection_small_size);
+        cv::absdiff(composite_detection, background, composite_subtracted);
+        cv::resize(composite_subtracted,composite_subtracted_small,detection_small_size);
 #endif
     }
 
     cv::Point2f Composite::get_raw_point(unsigned int camera_index, const cv::Point2f &composite_point){
         cv::Matx33f warp = inverted_homographies[camera_index];
-        cv::Point2f warped_point(composite_point.x,composite_point.y);
-        cv::Point3f homogeneous = warp * warped_point;
-        return {homogeneous.x, homogeneous.y};
+        cv::Point3f raw_point = warp * composite_point;
+        return {raw_point.x / raw_point.z, raw_point.y / raw_point.z};
     }
 
     cell_world::Polygon &Composite::get_polygon(const Coordinates &coordinates) {
@@ -142,19 +170,9 @@ namespace habitat_cv {
         return {warped.x, warped.y};
     }
 
-    Image &Composite::get_camera(unsigned int camera_index) {
+    Image &Composite::get_zoom() {
 #ifdef USE_CUDA
-        gpu_warped[camera_index].download(warped[camera_index]);
-#endif
-        warped_detection[camera_index] = warped[camera_index].mask(mask_detection);
-        return warped_detection[camera_index];
-    }
-
-    Images &Composite::get_zoom() {
-#ifdef USE_CUDA
-        for (unsigned int camera_index=0;camera_index<raw.size();camera_index++) {
-            gpu_zoom_streams[camera_index].waitForCompletion();
-        }
+        gpu_zoom_stream.waitForCompletion();
 #else
         if (zoom_thread.joinable()) zoom_thread.join();
 #endif
@@ -163,7 +181,6 @@ namespace habitat_cv {
 
     void Composite::set_zoom_size(const cv::Size &s) {
         zoom_size = s;
-
     }
 
     cv::Rect_<int> Composite::get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2f point, cv::Point2f &oftl) {
@@ -200,30 +217,109 @@ namespace habitat_cv {
     void Composite::start_zoom(const Location &location) {
 #ifdef USE_CUDA
         auto mouse_point = composite.get_point(location);
+        gpu_zoom.setTo(0, gpu_zoom_stream);
         for (unsigned int camera_index=0;camera_index<raw.size();camera_index++) {
             auto raw_point = get_raw_point(camera_index, mouse_point);
             cv::Point2f offset(0, 0);
-            cv::Rect_<int> source = get_zoom_rect(size, zoom_size, raw_point, offset);
-            cv::Rect_<int> destination(-offset, source.size());
-            gpu_zoom[camera_index].setTo(0, gpu_zoom_streams[camera_index]);
-            if (destination.height > 0 && destination.width > 0 && destination.x > 0 && destination.y > 0)
-                gpu_raw[camera_index](source).copyTo(gpu_zoom[camera_index](destination), gpu_zoom_streams[camera_index]);
-            gpu_raw[camera_index].download(zoom[camera_index], gpu_zoom_streams[camera_index]);
+            cv::Rect_<int> source = get_zoom_rect(composite_size, zoom_size, raw_point, offset);
+            offset.x = (float)zoom_rectangles[camera_index].x - offset.x;
+            offset.y = (float)zoom_rectangles[camera_index].y - offset.y;
+            cv::Rect_<int> destination(offset, source.size());
+            if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0)
+                gpu_raw[camera_index](source).copyTo(gpu_zoom(destination), gpu_zoom_stream);
         }
+        gpu_zoom.download(zoom, gpu_zoom_stream);
 #else
         zoom_thread = thread ([this](Location location) {
             auto mouse_point = composite.get_point(location);
+            zoom.setTo(0);
             for (unsigned int camera_index = 0; camera_index < raw.size(); camera_index++) {
                 auto raw_point = get_raw_point(camera_index, mouse_point);
                 cv::Point2f offset(0, 0);
-                cv::Rect_<int> source = get_zoom_rect(size, zoom_size, raw_point, offset);
-                cv::Rect_<int> destination(-offset, source.size());
-                zoom[camera_index].clear();
-                if (destination.height > 0 && destination.width > 0 && destination.x > 0 && destination.y > 0)
-                    raw[camera_index](source).copyTo(zoom[camera_index](destination));
+                cv::Rect_<int> source = get_zoom_rect(composite_size, zoom_size, raw_point, offset);
+                offset.x = (float)zoom_rectangles[camera_index].x - offset.x;
+                offset.y = (float)zoom_rectangles[camera_index].y - offset.y;
+                cv::Rect_<int> destination(offset, source.size());
+                if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0)
+                    raw[camera_index](source).copyTo(zoom(destination));
             }
         }, location);
 #endif
     }
 
+    void Composite::set_background(const Image &bg) {
+        background = bg.to_gray();
+#ifdef USE_CUDA
+        gpu_background.upload(background);
+#endif
+    }
+
+    Image &Composite::get_detection_small() {
+#ifdef USE_CUDA
+    gpu_detection_stream.waitForCompletion();
+#endif
+        return composite_detection_small;
+    }
+
+    Image &Composite::get_raw(unsigned int camera_index) {
+        return raw[camera_index];
+    }
+
+    Image &Composite::get_composite() {
+#ifdef USE_CUDA
+        gpu_composite.download(composite);
+#endif
+        return composite;
+    }
+
+    Image &Composite::get_detection() {
+#ifdef USE_CUDA
+        gpu_composite_detection.download(composite_detection);
+#endif
+        return composite_detection;
+    }
+
+    Image &Composite::get_subtracted() {
+#ifdef USE_CUDA
+        gpu_composite_subtracted.download(composite_subtracted);
+#endif
+        return composite_subtracted;
+    }
+
+    Image &Composite::get_subtracted_small() {
+#ifdef USE_CUDA
+        gpu_subtracted_stream.waitForCompletion();
+#endif
+        return composite_subtracted_small;
+    }
+
+    Image &Composite::get_detection_small(unsigned int c) {
+        return detection_small[c];
+    }
+
+    bool Composite::is_transitioning(const cell_world::Location &l) {
+        for (auto &r: crop_rectangles) {
+            if(r.x && (l.x-r.x) < (float)transition_size) return true;
+            if(r.y && (l.y-r.y) < (float)transition_size) return true;
+        }
+        return false;
+    }
+
+    unsigned int Composite::get_best_camera(const cell_world::Location &l) {
+        for (unsigned int camera=0; camera<crop_rectangles.size();camera++) {
+            auto &r=crop_rectangles[camera];
+            if( r.x < l.x &&
+                l.x < r.x+r.width &&
+                r.y < l.y &&
+                l.y < r.y+r.height ) return camera;
+        }
+        return 0;
+    }
+
+    Image &Composite::get_raw_composite() {
+#ifdef USE_CUDA
+        gpu_raw_stream.waitForCompletion();
+#endif
+        return composite_raw;
+    }
 }

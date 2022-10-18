@@ -1,3 +1,4 @@
+#pragma once
 #include <habitat_cv/image.h>
 #include <habitat_cv/frame_rate.h>
 #include <thread>

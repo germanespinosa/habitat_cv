@@ -7,7 +7,7 @@ project(habitat_cv
         DESCRIPTION "A very opinionated open cv implementation for research"
         LANGUAGES CXX)
 
-string(APPEND CMAKE_CXX_FLAGS " -DC_GNU64=400 -DOS_LINUX -no-pie -Wall -Wextra -pthread ")
+string(APPEND CMAKE_CXX_FLAGS " -DC_GNU64=400 -DOS_LINUX -no-pie -Wall -Wextra -pthread -Wno-deprecated-enum-enum-conversion")
 string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 
 ####
@@ -125,7 +125,8 @@ if (NOT ${USE_FAKE_CAMERA})
             src/tools/camera_test.cpp
             src/frame_rate.cpp
             src/camera.cpp
-            src/image.cpp)
+            src/image.cpp
+            src/video.cpp)
 
     target_link_libraries(camera_test
             cellworld
@@ -138,13 +139,26 @@ if (NOT ${USE_FAKE_CAMERA})
     target_link_libraries(habitat_cv
         PRIVATE
          /usr/local/xclib/lib/xclib_x86_64.a m -pthread )
+else()
+    add_executable(camera_test
+            src/tools/camera_test.cpp
+            src/frame_rate.cpp
+            src/fake_camera.cpp
+            src/camera_array.cpp
+            src/image.cpp
+            src/video.cpp)
+
+    target_link_libraries(camera_test
+            cellworld
+            ${OpenCV_LIBS} )
 
 endif()
 ###
 ### TESTS
 ###
-#install_dependency ( https://github.com/germanespinosa/catch )
-#test_library(habitat_cv catchtests/camera_array.cpp)
+install_git_dependency( Catch
+        https://github.com/germanespinosa/catch
+        ADD_SUBDIRECTORY)
 
 ###
 ### LIBRARY INSTALLATION
