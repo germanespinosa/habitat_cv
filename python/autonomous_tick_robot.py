@@ -1,17 +1,30 @@
 import math
 from math import sin, cos, pi, atan2, asin
 from time import sleep
-from cellworld import World, Display, Location, Agent_markers, Step, Timer, Cell_map, Coordinates, Cell_group, Cell_group_builder
-from cellworld_tracking import TrackingClient
-from tcp_messages import MessageClient, Message
+from cellworld import *
 from json_cpp import JsonObject
 from cellworld_controller_service import ControllerClient
+from cellworld_experiment_service import ExperimentClient
+from random import choice, choices
 
 # Globals
 display = None
-current_prey_destination = None
+current_predator_destination = None
 controller_state = None
 possible_destinations = Cell_group()
+
+episode_in_progress = False
+experiment_log_folder = "/research/logsV2"
+current_experiment_name = ""
+
+pheromone_charge = .25
+pheromone_decay = 1.0
+pheromone_max = 50
+
+possible_destinations = Cell_group()
+possible_destinations_weights = []
+spawn_locations = Cell_group()
+spawn_locations_weights = []
 
 class AgentData:
     """
@@ -25,11 +38,65 @@ class AgentData:
         self.move_done = False
 
 
-def load_world():
-    global display
-    global world
-    global possible_destinations
+def on_experiment_started(experiment):
+    """
+    To start experiment right click on map
+    """
+    print("Experiment started:", experiment)
+    experiments[experiment.experiment_name] = experiment.copy()
 
+
+def on_episode_finished(m):
+    global episode_in_progress, current_predator_destination, inertia_buffer, display
+
+    last_trajectory = Experiment.get_from_file(experiment_log_folder + "/" + current_experiment_name + "_experiment.json").episodes[-1].trajectories.get_agent_trajectory("prey")
+    for step in last_trajectory:
+        cell_id = world.cells[world.cells.find(step.location)].id
+        for index, pd in enumerate(possible_destinations):
+            if pd.id == cell_id:
+                possible_destinations_weights[index] = min(possible_destinations_weights[index] + pheromone_charge, pheromone_max)
+
+        for index, pd in enumerate(spawn_locations):
+            if pd.id == cell_id:
+                spawn_locations_weights[index] = min(spawn_locations_weights[index] + pheromone_charge, pheromone_max)
+
+    cmap=plt.cm.Reds([w / max(spawn_locations_weights) for w in spawn_locations_weights])
+    for i, sl in enumerate(spawn_locations):
+        display.cell(cell=sl, color=cmap[i])
+
+    controller.resume()
+    controller.set_behavior(0)
+    inertia_buffer = 1
+    episode_in_progress = False
+    current_predator_destination = choices(spawn_locations, weights=spawn_locations_weights)[0].location
+    controller.set_destination(current_predator_destination)     # set destination
+    destination_list.append(current_predator_destination)
+    if controller_timer != 1: # no idea why the timer would be an integer but whatevs
+        controller_timer.reset()                                     # reset controller timer
+    display.circle(current_predator_destination, 0.01, "red")
+
+
+def on_capture( frame:int ):
+    global inertia_buffer
+    controller.set_behavior(0)
+    inertia_buffer = 1
+    print ("PREY CAPTURED")
+
+
+def on_episode_started(experiment_name):
+    print("hi")
+    global display, episode_in_progress, current_experiment_name
+    current_experiment_name = experiment_name
+    print("New Episode: ", experiment_name)
+    print("Occlusions: ", experiments[experiment_name].world.occlusions)
+
+def on_prey_entered_arena():
+    global episode_in_progress
+    episode_in_progress = True
+
+
+def load_world():
+    global display, world, possible_destinations
     occlusion = Cell_group_builder.get_from_name("hexagonal", occlusions + ".occlusions")
     possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("hexagonal", occlusions + ".predator_destinations"))
     world.set_occlusions(occlusion)
@@ -93,13 +160,10 @@ def get_correction_location(current_location, get_rotation=False):
 def get_correction_rotation(location, destination, set_rotation_num):
     if set_rotation_num == 1:
         rotation = to_degrees(location.atan(destination))
-
     else:
         rotation = get_correction_location(destination, True)
 
     return rotation
-
-
 
 
 def on_click(event):
@@ -108,16 +172,29 @@ def on_click(event):
     :param event: click on figure
     """
 
-    global current_prey_destination
+    global current_predator_destination
     if event.button == 1:
         location = Location(event.xdata, event.ydata)
         cell_id = world.cells.find(location)
         destination_cell = world.cells[cell_id]
-        current_prey_destination = destination_cell.location
+        current_predator_destination = destination_cell.location
         controller.set_destination(destination_cell.location)
-        display.circle(current_prey_destination, 0.01, "orange")
+        display.circle(current_predator_destination, 0.01, "orange")
         print(location)
         controller_timer.reset()
+    else:
+        print("starting experiment")
+        exp = experiment_service.start_experiment(                  # call start experiment
+            prefix="PREFIX",
+            suffix="SUFFIX",
+            occlusions=occlusions,
+            world_implementation="canonical",
+            world_configuration="hexagonal",
+            subject_name="SUBJECT",
+            duration=10)
+        print("Experiment Name: ", exp.experiment_name)
+        r = experiment_service.start_episode(exp.experiment_name)   # call start episode
+        print(f"R: {r}")
 
 def on_keypress(event):
     """
@@ -145,31 +222,42 @@ def on_keypress(event):
         print("correcting robot position")
         current_robot_location = tick_robot.step.location
         # 1. get new coordinate
-        predator_correction = get_correction_location(current_robot_location)
+        predator_correction_coordinate = get_correction_location(current_robot_location)
         # 2. get rotation 1 - rotation required to translate to new location
         rotation1 = get_correction_rotation(current_robot_location, current_predator_destination, 1)
         controller.set_rotation(rotation1)
         # 3. set destination
-        controller.set_coordinate(predator_correction)
+        controller.set_coordinate(predator_correction_coordinate)
         # 4. get rotation 2 - rotation to prep for next move will be standard move rotation
-
-        """
-        #rotation2 = get_correction_rotation(0, current_predator_destination, 2)
-        #controller.set_rotation(rotation2) # make it either 150 or 210 or ... based on position and where the occlusions are
-        """
+        rotation2 = get_correction_rotation(0, current_predator_destination, 2)
+        controller.set_rotation(rotation2) # make it either 150 or 210 or ... based on position and where the occlusions are
 
 
 
 
 # World Setup
-occlusions = "00_00"
-# occlusions = "21_05"
+# occlusions = "00_00"
+occlusions = "21_05"
 world = World.get_from_parameters_names("hexagonal", "canonical", occlusions)
 map = Cell_map(world.configuration.cell_coordinates)
 load_world()
 
 # Agent Setup
 tick_robot = AgentData("predator") # robot with 3 leds recognized as predator by tracker
+
+# Experiment Setup
+experiment_service = ExperimentClient()
+experiment_service.on_experiment_started = on_experiment_started
+experiment_service.on_episode_started = on_episode_started
+experiment_service.on_prey_entered_arena = on_prey_entered_arena
+experiment_service.on_episode_finished = on_episode_finished
+experiment_service.on_capture = on_capture
+if not experiment_service.connect("127.0.0.1"):
+    print("Failed to connect to experiment service")
+    exit(1)
+experiment_service.set_request_time_out(5000)
+experiment_service.subscribe()                  # having issues subscribing to exp service
+experiments = {}
 
 # Controller Setup
 controller_timer = Timer(3.0)
@@ -185,16 +273,16 @@ controller.on_step = on_step
 cid1 = display.fig.canvas.mpl_connect('button_press_event', on_click)
 cid_keypress = display.fig.canvas.mpl_connect('key_press_event', on_keypress)
 
-current_prey_destination = get_location(-5,7)
-display.circle(current_prey_destination, 0.01, "cyan")
 
-#current_predator_destination = tick_robot.step.location  # initial predator destination
+# current_predator_destination = get_location(-5,7)
+current_predator_destination = tick_robot.step.location  # initial predator destination
+display.circle(current_predator_destination, 0.01, "cyan")
 
 running = True
 while running:
     if not controller_timer:
         print()
-        controller.set_destination(current_prey_destination)
+        controller.set_destination(current_predator_destination)
         controller_timer.reset()
 
     if tick_robot.is_valid:

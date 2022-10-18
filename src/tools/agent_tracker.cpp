@@ -118,13 +118,14 @@ int main(int argc, char **argv){
 
 
     // test set rotation
-    tracking_server.start(Tracking_service::get_port());
-    auto t = std::thread([&prey_robot, &prey_tracking_client](){
-        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
-        prey_robot.set_rotation(90);
-        prey_robot.set_coordinate(Coordinates(-3,7));
-        prey_robot.set_rotation(210);
-    });
+//    tracking_server.start(Tracking_service::get_port());
+//    auto t = std::thread([&prey_robot, &prey_tracking_client](){
+//        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
+//        prey_robot.set_rotation(90);
+//        prey_robot.set_coordinate(Coordinates(-3,7));
+//        prey_robot.set_rotation(210);
+//    });
+
     cv_server.tracking_process();
     tracking_server.stop();
     experiment_client.disconnect();

@@ -430,7 +430,7 @@ namespace habitat_cv {
     void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
         auto experiment = this->get_experiment(experiment_name);
         std::stringstream ss;
-        ss << "/habitat/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
+        ss << "/research/videos/" << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
         std::string destination_folder = ss.str();
         cv_server->new_episode(experiment.subject_name, experiment.experiment_name, experiment.episode_count, experiment.world_info.occlusions, destination_folder);
     }
