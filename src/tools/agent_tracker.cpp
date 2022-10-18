@@ -122,57 +122,13 @@ int main(int argc, char **argv){
     }
 
 
-//    // PATH EXECUTION TEST
-//    bool prey_running = true;
-//    thread prey_wtf([&prey_robot, &prey_running]( ){
-//        //unsigned int i = 0;
-//        int input;
-//        int step;
-//
-//
-//        // path to execute
-//        vector<int> path0 = {0, 0,  3, 3, 3, 3, 0, 0, 0, 0,  3, 3, 3, 3, 0, 0 };// x correct analysis
-//        vector<int> path1 = {1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 1, 1, 3, 0};
-//        vector<int> path2 = {0, 0, 3, 3, 3,0};
-//        vector<int> path3 = {1,1,1,4,4,4,4,4,1,1,2,2,5,5,0,3,3,0};
-//        vector<int> thig0 = {0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,4,4,4,4,4,4,4,
-//                             3,3,3,3,3,3,3,3,3,0};
-//
-//        // LIST MOVES HERE
-//        Move_list moves;
-//        moves.emplace_back(2,0);
-//        moves.emplace_back(1,-1);
-//        moves.emplace_back(-1,-1);
-//        moves.emplace_back(-2,0);
-//        moves.emplace_back(-1,1);
-//        moves.emplace_back(1,1);
-//
-//
-//        // input -1 = exit
-//        // input 20 = sequence of moves
-//
-//
-//        prey_robot.move_count_reset();
-//        while (prey_running) {
-//            cout << "Enter move request: " << endl;
-//            cin >> input;
-//            if (input == 20){
-//                for (unsigned int j = 0; j < thig0.composite_size(); j++)
-//                {
-//                    step = thig0[j];
-//                    auto move = moves[step];
-//                    prey_robot.execute_move(move);
-//                }
-//            } else {
-//                auto move = moves[input];
-//                prey_robot.execute_move(move);
-//            }
-//
-//            if (input == -1) {
-//                prey_running = false;
-//                //cout << "Completed: " << prey_robot.completed_move << "Counter: " << prey_robot.move_counter << endl;
-//            }
-//        }
+    // test set rotation
+//    tracking_server.start(Tracking_service::get_port());
+//    auto t = std::thread([&prey_robot, &prey_tracking_client](){
+//        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
+//        prey_robot.set_rotation(90);
+//        prey_robot.set_coordinate(Coordinates(-3,7));
+//        prey_robot.set_rotation(210);
 //    });
 
 

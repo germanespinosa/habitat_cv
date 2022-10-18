@@ -269,7 +269,7 @@ inertia_buffer = 1 #1.8 # 1.5
 time_out = 1.0      # step timer for predator and preyQ
 
 robot_visibility = None
-controller_state = 1 # resume = 1, pause = 0
+controller_state = 1  # resume = 1, pause = 0
 # create world
 world = World.get_from_parameters_names("hexagonal", "canonical")
 robot_world = World.get_from_parameters_names("hexagonal", "canonical")

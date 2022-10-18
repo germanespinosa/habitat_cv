@@ -3,7 +3,7 @@
   "orientation": 0,
   "left_ticks": 1020,
   "right_ticks": 1020,
-  "speed": 1000
+  "speed": 3500
 }, {
   "move": {"x": 1,"y": -1 },
   "orientation": 1,
