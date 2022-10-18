@@ -236,8 +236,8 @@ def on_keypress(event):
 
 
 # World Setup
-# occlusions = "00_00"
-occlusions = "21_05"
+occlusions = "00_00"
+# occlusions = "21_05"
 world = World.get_from_parameters_names("hexagonal", "canonical", occlusions)
 map = Cell_map(world.configuration.cell_coordinates)
 load_world()

@@ -56,6 +56,7 @@ namespace habitat_cv{
         cell_world::World world;
         cell_world::Map map;
         cell_world::Polygon_list cells;
+        cell_world::Location_list camera_zero;
 
         float detection_scale = 2;
 

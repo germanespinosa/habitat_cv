@@ -125,8 +125,10 @@ if (NOT ${USE_FAKE_CAMERA})
             src/tools/camera_test.cpp
             src/frame_rate.cpp
             src/camera.cpp
+            src/camera_array.cpp
             src/image.cpp
             src/video.cpp)
+
 
     target_link_libraries(camera_test
             cellworld

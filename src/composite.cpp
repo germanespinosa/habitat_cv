@@ -95,6 +95,12 @@ namespace habitat_cv {
             }
             inverted_homographies.emplace_back(homographies.emplace_back(findHomography(src_cp, dst_cp)).inv());
         }
+        for (unsigned int c = 0; c < configuration.order.count(); c++) {
+            cv::Point2f zero_point(crop_rectangles[c].x + crop_rectangles[c].width/2, crop_rectangles[c].y + crop_rectangles[c].height/2);
+            auto camera_zero_point = get_warped_point(c, zero_point);
+            auto camera_zero_location = composite.get_location(camera_zero_point);
+            camera_zero.push_back(camera_zero_location);
+        }
     }
 
     cell_world::Coordinates Composite::get_coordinates(const cell_world::Location & point) {
@@ -225,7 +231,9 @@ namespace habitat_cv {
             offset.x = (float)zoom_rectangles[camera_index].x - offset.x;
             offset.y = (float)zoom_rectangles[camera_index].y - offset.y;
             cv::Rect_<int> destination(offset, source.size());
-            if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0)
+            if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0 &&
+            destination.x + destination.width < gpu_zoom.size().width &&
+                    destination.y + destination.height < gpu_zoom.size().height )
                 gpu_raw[camera_index](source).copyTo(gpu_zoom(destination), gpu_zoom_stream);
         }
         gpu_zoom.download(zoom, gpu_zoom_stream);
@@ -298,22 +306,25 @@ namespace habitat_cv {
     }
 
     bool Composite::is_transitioning(const cell_world::Location &l) {
-        for (auto &r: crop_rectangles) {
-            if(r.x && (l.x-r.x) < (float)transition_size) return true;
-            if(r.y && (l.y-r.y) < (float)transition_size) return true;
-        }
-        return false;
+//        for (auto &r: crop_rectangles) {
+//            if(r.x && (l.x-r.x) < (float)transition_size) return true;
+//            if(r.y && (l.y-r.y) < (float)transition_size) return true;
+//        }
+
+        return l.x>500 && l.x<580 && l.y > 500 && l.y <580;
     }
 
     unsigned int Composite::get_best_camera(const cell_world::Location &l) {
-        for (unsigned int camera=0; camera<crop_rectangles.size();camera++) {
-            auto &r=crop_rectangles[camera];
-            if( r.x < l.x &&
-                l.x < r.x+r.width &&
-                r.y < l.y &&
-                l.y < r.y+r.height ) return camera;
+        float min_d = camera_zero[0].dist(l);
+        unsigned int best = 0;
+        for (unsigned int camera=1; camera<camera_zero.size();camera++) {
+            auto d = camera_zero[camera].dist(l);
+            if (d < min_d) {
+                best = camera;
+                min_d = d;
+            }
         }
-        return 0;
+        return best;
     }
 
     Image &Composite::get_raw_composite() {

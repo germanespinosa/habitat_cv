@@ -51,7 +51,7 @@ namespace habitat_cv{
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
 
-        unsigned int robot_threshold = 220;
+        unsigned int robot_threshold = 254;
 
         cell_world::Space canonical_space;
         cell_world::Space cv_space;
@@ -84,8 +84,8 @@ namespace habitat_cv{
         Profile prey_robot_head_profile;
         std::string video_path;
 
-        float camera_height = 205; // cm
-        float robot_height = 0;    // cm
+        float camera_height = 200; // cm
+        float robot_height = 0;    // 5cm
         cell_world::Location_list camera_zero;
 
     };

@@ -132,7 +132,7 @@ namespace habitat_cv {
         string screen_text;
         Screen_image screen_image = Screen_image::main;
         double fps = Video::get_fps();
-        double time_out = 1.0 / fps * .999;
+        double time_out = 1.0 / fps * .99;
         float height_ratio = robot_height / camera_height;
         Step canonical_step;
         Timer frame_timer(time_out);
@@ -168,7 +168,7 @@ namespace habitat_cv {
                 if (!composite.is_transitioning(robot.location)) {
                     robot_best_cam = composite.get_best_camera(robot.location);
                 }
-                auto perspective_offset = robot.location - camera_zero[robot_best_cam];
+                auto perspective_offset = robot.location - composite.camera_zero[robot_best_cam];
                 auto perspective_adjustment = perspective_offset * height_ratio;
                 robot.location += (-perspective_adjustment);
                 robot_counter = 30;
@@ -387,14 +387,15 @@ namespace habitat_cv {
             }
             fr.new_frame();
             PERF_START("VIDEO");
-            if (mouse.location == NOLOCATION) continue; // starts recording when mouse crosses the door
-            PERF_START("LAYOUT");
-            auto main_frame = main_layout.get_frame(composite_image_rgb, main_video.frame_count);
-            PERF_STOP("LAYOUT");
-            main_video.add_frame(main_frame);
-            raw_video.add_frame(raw_frame);
-            zoom_video.add_frame(zoom);
-            // write videos
+            if (mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
+                PERF_START("LAYOUT");
+                auto main_frame = main_layout.get_frame(composite_image_rgb, main_video.frame_count);
+                PERF_STOP("LAYOUT");
+                main_video.add_frame(main_frame);
+                raw_video.add_frame(raw_frame);
+                zoom_video.add_frame(zoom);
+                // write videos
+            }
             PERF_STOP("VIDEO");
         }
 
@@ -434,15 +435,9 @@ namespace habitat_cv {
             bg = composite.get_detection();
         }
         int i = 0;
-        auto zero_point = cv::Point2f(Camera::frame_size.width / 2, Camera::frame_size.height / 2);
         auto images = cameras.capture();
         composite.start_composite(images);
         auto &composite_image = composite.get_detection_small();
-        for (unsigned int c=0; c < cameras.cameras.size(); c++) {
-            auto camera_zero_point = composite.get_warped_point(i++, zero_point);
-            auto camera_zero_location = composite_image.get_location(camera_zero_point);
-            camera_zero.push_back(camera_zero_location);
-        }
     }
 
     void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
