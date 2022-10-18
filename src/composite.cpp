@@ -311,20 +311,27 @@ namespace habitat_cv {
 //            if(r.y && (l.y-r.y) < (float)transition_size) return true;
 //        }
 
-        return l.x>500 && l.x<580 && l.y > 500 && l.y <580;
+        return (l.x>500 && l.x<580) || (l.y > 500 && l.y <580);
     }
 
     unsigned int Composite::get_best_camera(const cell_world::Location &l) {
-        float min_d = camera_zero[0].dist(l);
-        unsigned int best = 0;
-        for (unsigned int camera=1; camera<camera_zero.size();camera++) {
-            auto d = camera_zero[camera].dist(l);
-            if (d < min_d) {
-                best = camera;
-                min_d = d;
-            }
-        }
-        return best;
+//        float min_d = camera_zero[0].dist(l);
+//        unsigned int best = 0;
+//        for (unsigned int camera=1; camera<camera_zero.size();camera++) {
+//            auto d = camera_zero[camera].dist(l);
+//            if (d < min_d) {
+//                best = camera;
+//                min_d = d;
+//            }
+//        }
+        return
+        l.y < 540 ?
+            l.x < 540 ?
+                configuration.order[1][0] :
+                configuration.order[1][1]
+            : l.x < 540 ?
+              configuration.order[0][0] :
+              configuration.order[0][1];
     }
 
     Image &Composite::get_raw_composite() {
