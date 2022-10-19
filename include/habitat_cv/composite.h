@@ -18,7 +18,7 @@ namespace habitat_cv{
         cell_world::Coordinates get_coordinates(const cell_world::Location &);
         cv::Point2f get_raw_point(unsigned int camera_index, const cv::Point2f &);
         cv::Point2f get_warped_point(unsigned int camera_index, const cv::Point2f &);
-        static cv::Rect_<int> get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2f point, cv::Point2f &);
+        static cv::Rect_<int> get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2i point, cv::Point2i &);
         void set_zoom_size(const cv::Size &);
         Image &get_zoom();
         void start_zoom(const cell_world::Location &);
@@ -29,8 +29,7 @@ namespace habitat_cv{
         Image &get_detection();
         Image &get_detection_small();
         Image &get_detection_small(unsigned int);
-        Binary_image &get_detection_threshold(unsigned char);
-        Binary_image &get_detection_threshold(unsigned char, unsigned int);
+        Binary_image &get_detection_threshold(unsigned char, int camera=-1);
         Binary_image &get_subtracted_threshold(unsigned char);
         Image &get_raw(unsigned int);
         Image &get_raw_composite();

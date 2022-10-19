@@ -50,6 +50,8 @@ namespace habitat_cv{
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
 
+        std::string background_path;
+
         unsigned int mouse_threshold = 55;
         unsigned int robot_threshold = 250;
 

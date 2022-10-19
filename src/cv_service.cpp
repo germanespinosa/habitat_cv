@@ -153,7 +153,7 @@ namespace habitat_cv {
             }
             if (robot_detected) {
                 auto perspective_adjustment = composite.get_perspective_correction(robot.location, robot_height, robot_camera);
-                robot.location += perspective_adjustment;
+                robot.location += (-perspective_adjustment);
                 robot_counter = 30;
             } else {
                 if (robot_counter) robot_counter--;
@@ -249,7 +249,7 @@ namespace habitat_cv {
                     screen_frame = screen_layout.get_frame(composite.get_subtracted_small(), "difference", fr.filtered_fps);
                     break;
                 case Screen_image::led :
-                    screen_frame = screen_layout.get_frame(Image(composite.get_detection_threshold(robot_camera),""), "LEDs", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(Image(composite.get_detection_threshold(robot_threshold),""), "LEDs", fr.filtered_fps);
                     break;
                 case Screen_image::zoom :
                     screen_frame = screen_layout.get_frame(composite.get_zoom(), "zoom", fr.filtered_fps);
@@ -258,16 +258,16 @@ namespace habitat_cv {
                     screen_frame = screen_layout.get_frame(composite.get_raw_composite(), "raw", fr.filtered_fps);
                     break;
                 case Screen_image::cam0 :
-                    screen_frame = screen_layout.get_frame(images[0], "cam0", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_detection_small(0), "cam0", fr.filtered_fps);
                     break;
                 case Screen_image::cam1 :
-                    screen_frame = screen_layout.get_frame(images[1], "cam1", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_detection_small(1), "cam1", fr.filtered_fps);
                     break;
                 case Screen_image::cam2 :
-                    screen_frame = screen_layout.get_frame(images[2], "cam2", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_detection_small(2), "cam2", fr.filtered_fps);
                     break;
                 case Screen_image::cam3 :
-                    screen_frame = screen_layout.get_frame(images[3], "cam3", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_detection_small(3), "cam3", fr.filtered_fps);
                     break;
             }
             PERF_STOP("DISPLAY");
@@ -320,6 +320,7 @@ namespace habitat_cv {
                         break;
                     case 'U':
                         composite.set_background(composite.get_detection());
+                        composite.get_detection().save(background_path,"composite.png");
                         break;
                     case 'O':
                         show_occlusions = !show_occlusions;
@@ -382,7 +383,8 @@ namespace habitat_cv {
             led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
             mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>()),
             prey_robot_head_profile(Resources::from("profile").key("prey_robot_head").get_resource<Profile>()),
-            video_path(video_path)
+            video_path(video_path),
+            background_path(background_path)
     {
         experiment_client.cv_server = this;
         Image bg;

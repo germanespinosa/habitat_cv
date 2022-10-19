@@ -196,11 +196,11 @@ namespace habitat_cv {
         zoom_size = s;
     }
 
-    cv::Rect_<int> Composite::get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2f point, cv::Point2f &oftl) {
-        cv::Point2f offset(zs.width / 2,zs.height / 2);
+    cv::Rect_<int> Composite::get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2i point, cv::Point2i &oftl) {
+        cv::Point2i offset(zs.width / 2,zs.height / 2);
         auto tl = point - offset;
         auto br = point + offset;
-        oftl = cv::Point2f (0,0);
+        oftl = cv::Point2i (0,0);
         cv::Size ofbr (0,0);
         if (tl.x<0) {
             oftl.x = tl.x;
@@ -233,10 +233,10 @@ namespace habitat_cv {
         gpu_zoom.setTo(0, gpu_zoom_stream);
         for (unsigned int camera_index=0;camera_index<raw.size();camera_index++) {
             auto raw_point = get_raw_point(camera_index, mouse_point);
-            cv::Point2f offset(0, 0);
+            cv::Point2i offset(0, 0);
             cv::Rect_<int> source = get_zoom_rect(composite_size, zoom_size, raw_point, offset);
-            offset.x = (float)zoom_rectangles[camera_index].x - offset.x;
-            offset.y = (float)zoom_rectangles[camera_index].y - offset.y;
+            offset.x = zoom_rectangles[camera_index].x - offset.x;
+            offset.y = zoom_rectangles[camera_index].y - offset.y;
             cv::Rect_<int> destination(offset, source.size());
             if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0)
                 gpu_raw[camera_index](source).copyTo(gpu_zoom(destination), gpu_zoom_stream);
@@ -307,6 +307,9 @@ namespace habitat_cv {
     }
 
     Image &Composite::get_detection_small(unsigned int c) {
+#ifdef USE_CUDA
+        gpu_detection_small[c].download(detection_small[c]);
+#endif
         return detection_small[c];
     }
 
@@ -339,24 +342,24 @@ namespace habitat_cv {
         return ((location - cameras_center[camera]) * (height / (camera_height - height)));
     }
 
-    Binary_image &Composite::get_detection_threshold(unsigned char t) {
-        if (detection_threshold.empty()) {
-            detection_threshold = Binary_image(get_detection_small()>t);
-        }
-        return detection_threshold;
-    }
-
-    Binary_image &Composite::get_subtracted_threshold(unsigned char t) {
+        Binary_image &Composite::get_subtracted_threshold(unsigned char t) {
         if (subtracted_threshold.empty()) {
             subtracted_threshold = Binary_image(get_subtracted_small()>t);
         }
         return subtracted_threshold;
     }
 
-    Binary_image &Composite::get_detection_threshold(unsigned char t, unsigned int c) {
+    Binary_image &Composite::get_detection_threshold(unsigned char t, int c) {
+        if (c==-1){
+            if (detection_threshold.empty()) {
+                detection_threshold = Binary_image(get_detection_small()>t);
+            }
+            return detection_threshold;
+
+        }
         if (detection_camera_threshold[c].empty()) {
-            detection_camera_threshold[c] = Binary_image(get_detection_small(c)>t);
+            detection_camera_threshold[c] = Binary_image(get_detection_small(c) > t);
         }
         return detection_camera_threshold[c];
-    }
+        }
 }
