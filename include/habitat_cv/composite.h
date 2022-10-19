@@ -29,6 +29,9 @@ namespace habitat_cv{
         Image &get_detection();
         Image &get_detection_small();
         Image &get_detection_small(unsigned int);
+        Binary_image &get_detection_threshold(unsigned char);
+        Binary_image &get_detection_threshold(unsigned char, unsigned int);
+        Binary_image &get_subtracted_threshold(unsigned char);
         Image &get_raw(unsigned int);
         Image &get_raw_composite();
         Image &get_composite();
@@ -38,7 +41,7 @@ namespace habitat_cv{
         cell_world::Location get_perspective_correction(const cell_world::Location &location, float height, int camera = -1);
 
         float camera_height = 200; // cm
-        int transition_size = 50;
+        int transition_size = 40;
         Image zoom;
         Image background; // background image
 
@@ -60,6 +63,9 @@ namespace habitat_cv{
         cell_world::Location_list cameras_center;
         float detection_scale = 2;
 
+        Binary_image detection_threshold;
+        Binary_image subtracted_threshold;
+        std::vector<Binary_image> detection_camera_threshold;
     private:
         Camera_configuration configuration;
         Images raw; // raw images from the cameras

@@ -18,7 +18,7 @@ namespace habitat_cv {
     };
 
     struct Detection_list : json_cpp::Json_vector<Detection> {
-        static Detection_list get_detections(const Image &, unsigned char threshold, int cleaning_cycles);
+        static Detection_list get_detections(const Binary_image &);
         Detection_list filter (const Profile &);
         Detection_list &scale(float);
     private:

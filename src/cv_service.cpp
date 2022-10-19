@@ -46,9 +46,9 @@ namespace habitat_cv {
         return true;
     }
 
-    bool Cv_server::get_mouse_step(const Image &diff, Step &step, const Location &robot_location, float scale) {
+    bool Cv_server::get_mouse_step(const Binary_image &diff, Step &step, const Location &robot_location, float scale) {
         PERF_START("MOUSE_DETECTIONS");
-        auto detections = Detection_list::get_detections(diff, 55, 1).scale(scale);
+        auto detections = Detection_list::get_detections(diff).scale(scale);
         PERF_STOP("MOUSE_DETECTIONS");
         PERF_START("MOUSE_FILTER");
         auto mouse_candidates = detections.filter(mouse_profile);
@@ -63,8 +63,8 @@ namespace habitat_cv {
         return false;
     }
 
-    bool Cv_server::get_robot_step(const Image &image, Step &step, float scale) {
-        auto leds = Detection_list::get_detections(image, robot_threshold, 0).scale(scale).filter(led_profile);
+    bool Cv_server::get_robot_step(const Binary_image &image, Step &step, float scale) {
+        auto leds = Detection_list::get_detections(image).scale(scale).filter(led_profile);
         if (leds.size() != 3) return false;
         double d1 = leds[0].location.dist(leds[1].location);
         double d2 = leds[1].location.dist(leds[2].location);
@@ -94,15 +94,6 @@ namespace habitat_cv {
         return true;
     }
 
-    float Cv_server::get_prey_robot_orientation(Image &prey_robot_cam) {
-        auto detections = Detection_list::get_detections(prey_robot_cam, 50, 0);
-        auto robot_center = detections.filter(mouse_profile);
-        if (robot_center.empty()) return 0;
-        auto robot_head = detections.filter(prey_robot_head_profile);
-        if (robot_head.empty()) return 0;
-        return robot_center[0].location.atan(robot_head[0].location);
-    }
-
 #define NOLOCATION Location(-1000,-1000)
  enum Screen_image {
         main,
@@ -126,7 +117,7 @@ namespace habitat_cv {
         robot.location = NOLOCATION;
         int robot_counter = 0;
         ts.reset();
-        int robot_best_cam = -1;
+        int robot_camera = -1;
         bool robot_detected;
         bool mouse_detected;
         string screen_text;
@@ -152,23 +143,16 @@ namespace habitat_cv {
             composite.start_composite(images);
             PERF_STOP("COMPOSITE");
             PERF_START("COLOR CONVERSION");
-            auto &composite_detection = composite.get_detection_small();
             PERF_STOP("COLOR CONVERSION");
             PERF_START("ROBOT DETECTION");
-            if (robot_best_cam == -1) {
-                robot_detected = get_robot_step(composite_detection, robot, composite.detection_scale);
+            if (robot_camera == -1 || !composite.is_transitioning(robot.location)) {
+                robot_detected = get_robot_step(composite.get_detection_threshold(robot_threshold), robot, composite.detection_scale);
+                if (robot_detected) robot_camera = composite.get_best_camera(robot.location);
             } else {
-                robot_detected = get_robot_step(composite.get_detection_small(robot_best_cam), robot, composite.detection_scale);
-                if (!robot_detected) {
-                    robot_detected = get_robot_step(composite_detection, robot, composite.detection_scale);
-                }
+                robot_detected = get_robot_step(composite.get_detection_threshold(robot_threshold, robot_camera), robot, composite.detection_scale);
             }
             if (robot_detected) {
-                auto perspective_adjustment = composite.get_perspective_correction(robot.location, robot_height, robot_best_cam);
-
-                if (!composite.is_transitioning(robot.location) || robot_best_cam == -1) {
-                    robot_best_cam = composite.get_best_camera(robot.location);
-                }
+                auto perspective_adjustment = composite.get_perspective_correction(robot.location, robot_height, robot_camera);
                 robot.location += perspective_adjustment;
                 robot_counter = 30;
             } else {
@@ -177,11 +161,8 @@ namespace habitat_cv {
             }
             PERF_STOP("ROBOT DETECTION");
             PERF_START("MOUSE DETECTION");
-            PERF_START("DIFF");
-            auto diff = composite.get_subtracted_small();
-            PERF_STOP("DIFF");
             PERF_START("MOUSE_STEP");
-            mouse_detected = get_mouse_step(diff, mouse, robot.location, composite.detection_scale);
+            mouse_detected = get_mouse_step(composite.get_subtracted_threshold(mouse_threshold), mouse, robot.location, composite.detection_scale);
             if (mouse_detected) {
                 PERF_START("MOUSE_DETECTED");
                 composite.start_zoom(mouse.location);
@@ -199,7 +180,7 @@ namespace habitat_cv {
             auto &composite_image_rgb= composite.get_video();
             PERF_START("SCREEN_ROBOT");
             if (robot_detected) {
-                auto color_robot = cv::Scalar({255, 0, 255});
+                auto color_robot = cv::Scalar({150, 0, 150});
                 if (puff_state) {
                     robot.data = "puff";
                     color_robot = cv::Scalar({0, 0, 255});
@@ -208,20 +189,12 @@ namespace habitat_cv {
                     robot.data = "";
                 }
                 composite_image_rgb.circle(robot.location, 5, color_robot, true);
-                auto robot_cell_id = composite.map.cells.find(robot.location);
-                auto robot_cell_coordinates = composite.map.cells[robot_cell_id].coordinates;
-                auto cell_polygon = composite.get_polygon(robot_cell_coordinates);
-                composite_image_rgb.polygon(cell_polygon, color_robot);
-                composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot);
+                composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot, 3);
             }
             PERF_STOP("SCREEN_ROBOT");
             PERF_START("SCREEN_MOUSE");
             if (mouse_detected) {
-                composite_image_rgb.circle(mouse.location, 5, {255, 0, 0}, true);
-                auto mouse_cell_id = composite.map.cells.find(mouse.location);
-                auto mouse_cell_coordinates = composite.map.cells[mouse_cell_id].coordinates;
-                auto cell_polygon = composite.get_polygon(mouse_cell_coordinates);
-                composite_image_rgb.polygon(cell_polygon, {255, 0, 0});
+                composite_image_rgb.circle(mouse.location, 5, {120, 120, 0}, true);
             }
             PERF_STOP("SCREEN_MOUSE");
             PERF_STOP("SCREEN");
@@ -261,12 +234,6 @@ namespace habitat_cv {
             }
             PERF_STOP("MESSAGE");
             PERF_STOP("DETECTION_PROCESSING");
-            PERF_START("MOUSE_CUT");
-            Image &zoom = composite.get_zoom();
-            PERF_STOP("MOUSE_CUT");
-            PERF_START("raw_layout");
-            auto raw_frame = composite.get_raw_composite();
-            PERF_STOP("raw_layout");
             PERF_START("DISPLAY");
             Image screen_frame;
             switch (screen_image) {
@@ -279,22 +246,16 @@ namespace habitat_cv {
                     screen_frame = screen_layout.get_frame(composite_image_rgb, "main", fr.filtered_fps);
                     break;
                 case Screen_image::difference :
-                    screen_frame = screen_layout.get_frame(diff, "difference", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_subtracted_small(), "difference", fr.filtered_fps);
                     break;
                 case Screen_image::led :
-                    {
-                        Image small;
-                        small.type = Image::Type::gray;
-                        cv::resize(composite_detection, small, composite_detection.size()/2);
-                        auto small_t = Image(cv::Mat(small > robot_threshold), "");
-                        screen_frame = screen_layout.get_frame(small_t, "LEDs", fr.filtered_fps);
-                    }
+                    screen_frame = screen_layout.get_frame(Image(composite.get_detection_threshold(robot_camera),""), "LEDs", fr.filtered_fps);
                     break;
                 case Screen_image::zoom :
-                    screen_frame = screen_layout.get_frame(zoom, "zoom", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_zoom(), "zoom", fr.filtered_fps);
                     break;
                 case Screen_image::raw :
-                    screen_frame = screen_layout.get_frame(raw_frame, "raw", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_raw_composite(), "raw", fr.filtered_fps);
                     break;
                 case Screen_image::cam0 :
                     screen_frame = screen_layout.get_frame(images[0], "cam0", fr.filtered_fps);
@@ -312,7 +273,7 @@ namespace habitat_cv {
             PERF_STOP("DISPLAY");
             PERF_SCOPE("REST");
             PERF_START("SHOW");
-            if (main_video.is_open()) screen_frame.circle({20, 20}, 10, {0, 0, 255}, true);
+            if (main_video.is_open()) screen_frame.circle({15, 15}, 10, {0, 0, 255}, true);
             cv::imshow("Agent Tracking", screen_frame);
             PERF_STOP("SHOW");
             if (!input_counter) {
@@ -391,8 +352,8 @@ namespace habitat_cv {
                 auto main_frame = main_layout.get_frame(composite_image_rgb, main_video.frame_count);
                 PERF_STOP("LAYOUT");
                 main_video.add_frame(main_frame);
-                raw_video.add_frame(raw_frame);
-                zoom_video.add_frame(zoom);
+                raw_video.add_frame(composite.get_raw_composite());
+                zoom_video.add_frame(composite.get_zoom());
                 // write videos
             }
             PERF_STOP("VIDEO");
@@ -425,17 +386,17 @@ namespace habitat_cv {
     {
         experiment_client.cv_server = this;
         Image bg;
-        if (file_exists(background_path + "composite.png")){
+        auto images = cameras.capture();
+        if (file_exists(background_path + "composite.png")){ // if there is a background image saved
             bg = Image::read(background_path, "composite.png");
-            composite.set_background(bg);
         } else {
-            auto images = cameras.capture();
             composite.start_composite(images);
             bg = composite.get_detection();
+            create_folder(background_path);
+            bg.save(background_path, "composite.png");
         }
-        auto images = cameras.capture();
-        composite.start_composite(images);
-        auto &composite_image = composite.get_detection_small();
+        composite.set_background(bg);
+        composite.set_cameras_center(images);
     }
 
     void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {

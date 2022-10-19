@@ -43,15 +43,15 @@ namespace habitat_cv{
                            bool unlimited = false);
         void tracking_process();
         bool new_episode(const std::string &subject, const std::string &experiment, int episode, const std::string &occlusions, const std::string &destination_folder);
-        bool get_mouse_step(const Image &diff, cell_world::Step &step, const cell_world::Location &robot_location, float scale);
-        bool get_robot_step(const Image &image, cell_world::Step &step, float scale);
+        bool get_mouse_step(const Binary_image &diff, cell_world::Step &step, const cell_world::Location &robot_location, float scale);
+        bool get_robot_step(const Binary_image &image, cell_world::Step &step, float scale);
         bool end_episode();
-        float get_prey_robot_orientation(Image &);
 
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
 
-        unsigned int robot_threshold = 185; //254;
+        unsigned int mouse_threshold = 55;
+        unsigned int robot_threshold = 250;
 
         cell_world::Space canonical_space;
         cell_world::Space cv_space;

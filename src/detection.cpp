@@ -2,19 +2,7 @@
 #include <performance.h>
 
 namespace habitat_cv{
-    Detection_list Detection_list::get_detections(const Image &image, unsigned char threshold, int cleaning_cycles) {
-        PERF_START("CLEAN");
-        Binary_image clean_image;
-        if (cleaning_cycles) {
-            clean_image = image
-            .threshold(threshold)
-            .erode(cleaning_cycles)
-            .dilate(cleaning_cycles * 2)
-            .erode(cleaning_cycles);
-        } else {
-            clean_image = image.threshold(threshold);
-        }
-        PERF_STOP("CLEAN");
+    Detection_list Detection_list::get_detections(const Binary_image &clean_image) {
         PERF_START("CCC");
         cv::Mat centroids;
         cv::Mat labels;
@@ -31,7 +19,7 @@ namespace habitat_cv{
             detection.area = area;
             auto x = centroids.at<double>(i, 0);
             auto y = centroids.at<double>(i, 1);
-            auto point = image.get_point({ (float)x, (float)y});
+            auto point = clean_image.get_point({ (float)x, (float)y});
             detection.location.x = point.x;
             detection.location.y = point.y;
             detections.push_back(detection);

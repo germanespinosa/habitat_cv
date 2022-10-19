@@ -10,6 +10,8 @@ namespace habitat_cv {
         explicit Binary_image(cv::MatExpr);
         Binary_image dilate(unsigned int);
         Binary_image erode(unsigned int);
+        cv::Point2f get_point(const cell_world::Location &) const;
+        cell_world::Location get_location(const cv::Point2f &) const;
     private:
         explicit Binary_image(cv::Mat);
     };
@@ -32,16 +34,16 @@ namespace habitat_cv {
         void save(const std::string &);
         void save(const std::string &, const std::string &);
         static Image read(const std::string &, const std::string &);
-        void arrow (const cell_world::Location &, const cell_world::Location &, const cv::Scalar &color);
-        void arrow (const cell_world::Location &, double, double, const cv::Scalar &color);
+        void arrow (const cell_world::Location &, const cell_world::Location &, const cv::Scalar &color, int thickness = 1);
+        void arrow (const cell_world::Location &, double, double, const cv::Scalar &color, int thickness = 1);
         void line (const cell_world::Location &, const cell_world::Location &, const cv::Scalar &color);
         void line (const cell_world::Location &, double, double, const cv::Scalar &color);
         void polygon (const cell_world::Polygon &, const cv::Scalar &color, bool filled = false);
-        void circle (const cell_world::Location &, double, const cv::Scalar &color, bool filled = false);
+        void circle (const cell_world::Location &, double, const cv::Scalar &color, bool filled = false, int thickness = 1);
         void text (const cell_world::Location &, const std::string &, const cv::Scalar &color, float size = 1, int halign = 0, int valign = 0);
         void clear();
         Image diff(const Image &) const;
-        [[nodiscard]] cv::Point2f get_point(const cell_world::Location &) const;
+        cv::Point2f get_point(const cell_world::Location &) const;
         cell_world::Location get_location(const cv::Point2f &) const;
         Image mask(const Binary_image &);
         Image clone() const;

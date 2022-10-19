@@ -112,6 +112,9 @@ namespace habitat_cv {
     }
 
     void Composite::start_composite(const Images &images) {
+        subtracted_threshold = Binary_image();
+        detection_threshold = Binary_image();
+        detection_camera_threshold = vector<Binary_image>(4);
         raw = images;
         if (cameras_center.empty()) set_cameras_center(images);
 #ifdef USE_CUDA
@@ -235,9 +238,7 @@ namespace habitat_cv {
             offset.x = (float)zoom_rectangles[camera_index].x - offset.x;
             offset.y = (float)zoom_rectangles[camera_index].y - offset.y;
             cv::Rect_<int> destination(offset, source.size());
-            if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0 &&
-            destination.x + destination.width < gpu_zoom.size().width &&
-                    destination.y + destination.height < gpu_zoom.size().height )
+            if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0)
                 gpu_raw[camera_index](source).copyTo(gpu_zoom(destination), gpu_zoom_stream);
         }
         gpu_zoom.download(zoom, gpu_zoom_stream);
@@ -310,32 +311,20 @@ namespace habitat_cv {
     }
 
     bool Composite::is_transitioning(const cell_world::Location &l) {
-//        for (auto &r: crop_rectangles) {
-//            if(r.x && (l.x-r.x) < (float)transition_size) return true;
-//            if(r.y && (l.y-r.y) < (float)transition_size) return true;
-//        }
-
-        return (l.x>500 && l.x<580) || (l.y > 500 && l.y <580);
+        auto p = composite.get_point(l);
+        for (auto &r: crop_rectangles) {
+            if(r.x && abs(p.x-r.x) < (float)transition_size) return true;
+            if(r.y && abs(p.y-r.y) < (float)transition_size) return true;
+        }
+        return false;
     }
 
     unsigned int Composite::get_best_camera(const cell_world::Location &l) {
-//        float min_d = camera_zero[0].dist(l);
-//        unsigned int best = 0;
-//        for (unsigned int camera=1; camera<camera_zero.size();camera++) {
-//            auto d = camera_zero[camera].dist(l);
-//            if (d < min_d) {
-//                best = camera;
-//                min_d = d;
-//            }
-//        }
-        return
-        l.y < 540 ?
-            l.x < 540 ?
-                configuration.order[1][0] :
-                configuration.order[1][1]
-            : l.x < 540 ?
-              configuration.order[0][0] :
-              configuration.order[0][1];
+        auto p = composite.get_point(l);
+        for (unsigned int c = 0;c < raw.size();c++)  {
+            if (crop_rectangles[c].contains(p)) return c;
+        }
+        return -1;
     }
 
     Image &Composite::get_raw_composite() {
@@ -348,5 +337,26 @@ namespace habitat_cv {
     cell_world::Location Composite::get_perspective_correction(const Location &location, float height, int camera) {
         if (camera == -1) camera = get_best_camera(location);
         return ((location - cameras_center[camera]) * (height / (camera_height - height)));
+    }
+
+    Binary_image &Composite::get_detection_threshold(unsigned char t) {
+        if (detection_threshold.empty()) {
+            detection_threshold = Binary_image(get_detection_small()>t);
+        }
+        return detection_threshold;
+    }
+
+    Binary_image &Composite::get_subtracted_threshold(unsigned char t) {
+        if (subtracted_threshold.empty()) {
+            subtracted_threshold = Binary_image(get_subtracted_small()>t);
+        }
+        return subtracted_threshold;
+    }
+
+    Binary_image &Composite::get_detection_threshold(unsigned char t, unsigned int c) {
+        if (detection_camera_threshold[c].empty()) {
+            detection_camera_threshold[c] = Binary_image(get_detection_small(c)>t);
+        }
+        return detection_camera_threshold[c];
     }
 }

@@ -133,23 +133,22 @@ namespace habitat_cv{
             cv::polylines(*this, points, true, color);
     }
 
-    void Image::circle(const cell_world::Location &center, double radius, const cv::Scalar &color, bool filled) {
+    void Image::circle(const cell_world::Location &center, double radius, const cv::Scalar &color, bool filled, int thickness) {
         if (filled)
             cv::circle(*this, get_point(center), radius, color, -1);
         else
-            cv::circle(*this, get_point(center), radius, color);
+            cv::circle(*this, get_point(center), radius, color, thickness);
     }
 
     void Image::line(const cell_world::Location &src, double theta, double dist, const cv::Scalar &color) {
         line(src, src.move(theta, dist), color);
     }
 
-    void Image::arrow(const cell_world::Location &src, double theta, double dist, const cv::Scalar &color) {
-        arrow(src, src.move(theta, dist), color);
+    void Image::arrow(const cell_world::Location &src, double theta, double dist, const cv::Scalar &color, int thickness) {
+        arrow(src, src.move(theta, dist), color, thickness);
     }
 
-    void Image::arrow(const cell_world::Location &src, const cell_world::Location &dst, const cv::Scalar &color) {
-        int thickness = 2;
+    void Image::arrow(const cell_world::Location &src, const cell_world::Location &dst, const cv::Scalar &color, int thickness) {
         int lineType = cv::LINE_8;
         cv::arrowedLine( *this, get_point(src), get_point(dst), color, thickness, lineType, 0, .2);
     }
@@ -235,5 +234,13 @@ namespace habitat_cv{
         cv::Mat eroded;
         cv::erode(*this, eroded, cv::Mat(), cv::Point(-1, -1), erosions, 1, 1);
         return Binary_image(eroded);
+    }
+
+    cv::Point2f Binary_image::get_point(const cell_world::Location &l) const {
+        return {(float)l.x, (float)(size().height - l.y)};
+    }
+
+    cell_world::Location Binary_image::get_location(const cv::Point2f &p) const {
+        return {(float)p.x, (float)(size().height - p.y)};
     }
 }
