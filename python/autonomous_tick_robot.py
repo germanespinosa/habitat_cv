@@ -97,8 +97,8 @@ def on_prey_entered_arena():
 
 def load_world():
     global display, world, possible_destinations
-    occlusion = Cell_group_builder.get_from_name("hexagonal", occlusions + ".occlusions")
-    possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("hexagonal", occlusions + ".predator_destinations"))
+    occlusion = Cell_group_builder.get_from_name("robot", occlusions + ".occlusions")
+    #possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("robot", occlusions + ".predator_destinations"))
     world.set_occlusions(occlusion)
     display = Display(world, fig_size=(9.0*.75, 8.0*.75), animated=True)
 
@@ -149,8 +149,12 @@ def get_correction_location(current_location, get_rotation=False):
     for move in move_check:
         new_coordinate = current_coordinate + moves_dict[move][0]
         new_id = world.cells[map[new_coordinate]].id
-        if world.cells[new_id].occluded == False:
-            break
+        coord_list = world.cells.get('coordinates')
+
+        # check if cell exists and if it is not occluded
+        if new_coordinate in coord_list:
+            if (world.cells[new_id].occluded == False):
+                break
 
     if get_rotation:
         return moves_dict[move][1]
@@ -236,9 +240,9 @@ def on_keypress(event):
 
 
 # World Setup
-occlusions = "00_00"
-# occlusions = "21_05"
-world = World.get_from_parameters_names("hexagonal", "canonical", occlusions)
+# occlusions = "00_00"
+occlusions = "21_05"
+world = World.get_from_parameters_names("robot", "canonical", occlusions)
 map = Cell_map(world.configuration.cell_coordinates)
 load_world()
 
