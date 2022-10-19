@@ -95,12 +95,6 @@ namespace habitat_cv {
             }
             inverted_homographies.emplace_back(homographies.emplace_back(findHomography(src_cp, dst_cp)).inv());
         }
-        for (unsigned int c = 0; c < configuration.order.count(); c++) {
-            cv::Point2f zero_point(crop_rectangles[c].x + crop_rectangles[c].width/2, crop_rectangles[c].y + crop_rectangles[c].height/2);
-            auto camera_zero_point = get_warped_point(c, zero_point);
-            auto camera_zero_location = composite.get_location(camera_zero_point);
-            camera_zero.push_back(camera_zero_location);
-        }
     }
 
     cell_world::Coordinates Composite::get_coordinates(const cell_world::Location & point) {
@@ -108,8 +102,18 @@ namespace habitat_cv {
         return map.cells[cell_id].coordinates;
     }
 
+    void Composite::set_cameras_center(const habitat_cv::Images &images) {
+        for (unsigned int c = 0; c < images.size(); c++) {
+            cv::Point2f zero_point(images[c].size().width / 2, images[c].size().height / 2);
+            auto camera_zero_point = get_warped_point(c, zero_point);
+            auto camera_zero_location = warped[c].get_location(camera_zero_point);
+            cameras_center.push_back(camera_zero_location);
+        }
+    }
+
     void Composite::start_composite(const Images &images) {
         raw = images;
+        if (cameras_center.empty()) set_cameras_center(images);
 #ifdef USE_CUDA
         for (unsigned int c = 0; c < configuration.order.count(); c++){
             gpu_raw[c].upload(raw[c], gpu_detection_streams[c]);
@@ -339,5 +343,10 @@ namespace habitat_cv {
         gpu_raw_stream.waitForCompletion();
 #endif
         return composite_raw;
+    }
+
+    cell_world::Location Composite::get_perspective_correction(const Location &location, float height, int camera) {
+        if (camera == -1) camera = get_best_camera(location);
+        return ((location - cameras_center[camera]) * (height / (camera_height - height)));
     }
 }
