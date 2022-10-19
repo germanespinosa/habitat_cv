@@ -32,12 +32,13 @@ namespace habitat_cv{
         Image &get_raw(unsigned int);
         Image &get_raw_composite();
         Image &get_composite();
+        void set_cameras_center(const Images&);
         unsigned int get_best_camera(const cell_world::Location &);
         bool is_transitioning(const cell_world::Location &);
+        cell_world::Location get_perspective_correction(const cell_world::Location &location, float height, int camera = -1);
 
-
+        float camera_height = 200; // cm
         int transition_size = 50;
-
         Image zoom;
         Image background; // background image
 
@@ -56,8 +57,7 @@ namespace habitat_cv{
         cell_world::World world;
         cell_world::Map map;
         cell_world::Polygon_list cells;
-        cell_world::Location_list camera_zero;
-
+        cell_world::Location_list cameras_center;
         float detection_scale = 2;
 
     private:

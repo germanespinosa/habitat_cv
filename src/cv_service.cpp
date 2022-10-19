@@ -133,7 +133,6 @@ namespace habitat_cv {
         Screen_image screen_image = Screen_image::main;
         double fps = Video::get_fps();
         double time_out = 1.0 / fps * .99;
-        float height_ratio = robot_height / camera_height;
         Step canonical_step;
         Timer frame_timer(time_out);
         Frame_rate fr;
@@ -165,12 +164,12 @@ namespace habitat_cv {
                 }
             }
             if (robot_detected) {
-                if (!composite.is_transitioning(robot.location)) {
+                auto perspective_adjustment = composite.get_perspective_correction(robot.location, robot_height, robot_best_cam);
+
+                if (!composite.is_transitioning(robot.location) || robot_best_cam == -1) {
                     robot_best_cam = composite.get_best_camera(robot.location);
                 }
-                auto perspective_offset = robot.location - composite.camera_zero[robot_best_cam];
-                auto perspective_adjustment = perspective_offset * height_ratio;
-                robot.location += (-perspective_adjustment);
+                robot.location += perspective_adjustment;
                 robot_counter = 30;
             } else {
                 if (robot_counter) robot_counter--;
@@ -434,7 +433,6 @@ namespace habitat_cv {
             composite.start_composite(images);
             bg = composite.get_detection();
         }
-        int i = 0;
         auto images = cameras.capture();
         composite.start_composite(images);
         auto &composite_image = composite.get_detection_small();
