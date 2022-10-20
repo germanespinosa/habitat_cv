@@ -108,11 +108,12 @@ int main(int argc, char **argv){
     prey_tracking_client.subscribe();
     robot::Tick_robot_agent prey_robot(tick_moves, prey_tracking_client);
 
-    if (!prey_robot.connect("192.168.137.154")){
-        cout << "Failed to connect to prey robot" << endl;
-        exit(1);
+    if (!p.contains(params_cpp::Key("-n"))) {
+        if (!prey_robot.connect("192.168.137.154")) {
+            cout << "Failed to connect to prey robot" << endl;
+            exit(1);
+        }
     }
-
     Controller_service::set_logs_folder("controller/");
     Controller_server controller_server("../config/pid.json", prey_robot, controller_tracking_client, controller_experiment_client);
 
@@ -122,11 +123,12 @@ int main(int argc, char **argv){
     }
 
     tracking_server.start(Tracking_service::get_port());
-    auto t = std::thread([&prey_robot, &prey_tracking_client](){
-        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
-        prey_robot.correct_robot();
-    });
-
+    if (!p.contains(params_cpp::Key("-n"))) {
+        auto t = std::thread([&prey_robot, &prey_tracking_client]() {
+            while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
+            prey_robot.correct_robot();
+        });
+    }
     tracking_server.start(Tracking_service::get_port());
     cv_server.tracking_process();
     tracking_server.stop();
