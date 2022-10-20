@@ -106,7 +106,7 @@ int main(int argc, char **argv){
 
     auto &prey_tracking_client = tracking_server.create_local_client<Tracking_client>();
     prey_tracking_client.subscribe();
-    robot::Tick_robot_agent prey_robot(tick_moves,map, prey_tracking_client);
+    robot::Tick_robot_agent prey_robot(tick_moves, prey_tracking_client);
 
     if (!prey_robot.connect("192.168.137.154")){
         cout << "Failed to connect to prey robot" << endl;
@@ -121,6 +121,13 @@ int main(int argc, char **argv){
         exit(1);
     }
 
+//    tracking_server.start(Tracking_service::get_port());
+//    auto t = std::thread([&prey_robot, &prey_tracking_client](){
+//        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
+//        prey_robot.set_rotation(90);
+//        prey_robot.set_coordinate(Coordinates(-8,10));
+//        prey_robot.set_rotation(210);
+//    });
 
     tracking_server.start(Tracking_service::get_port());
     cv_server.tracking_process();
