@@ -108,6 +108,27 @@ namespace habitat_cv {
     };
 
     void Cv_server::tracking_process() {
+        unsigned int parallel_threads = 2;
+        vector<Composite> composites;
+        vector<thread> composite_threads;
+        for (unsigned int pt=0; pt < parallel_threads; pt++){
+            composites.emplace_back(camera_configuration);
+            composite_threads.emplace_back();
+        }
+        for (auto &composite:composites) {
+            Image bg;
+            auto images = cameras.capture();
+            if (file_exists(background_path + "composite.png")) { // if there is a background image saved
+                bg = Image::read(background_path, "composite.png");
+            } else {
+                composite.start_composite(images);
+                bg = composite.get_detection();
+                create_folder(background_path);
+                bg.save(background_path, "composite.png");
+            }
+            composite.set_background(bg);
+            composite.set_cameras_center(images);
+        }
         json_cpp::Json_date::set_local_time_zone_offset();
         tracking_running = true;
         puff_state = false;
@@ -131,6 +152,8 @@ namespace habitat_cv {
         fr.filter = .01;
         bool show_occlusions = false;
         int input_counter=0;
+        unsigned int current_composite = 0;
+        unsigned int previous_composite = 0;
         while (tracking_running) {
             PERF_START("WAIT");
             while (!unlimited && !frame_timer.time_out()) this_thread::sleep_for(100us);
@@ -140,6 +163,9 @@ namespace habitat_cv {
             auto images = cameras.capture();
             PERF_STOP("CAPTURE");
             PERF_START("COMPOSITE");
+            previous_composite = current_composite;
+            current_composite = (current_composite + 1) % 2;
+            auto &composite = composites[current_composite];
             composite.start_composite(images);
             PERF_STOP("COMPOSITE");
             PERF_START("COLOR CONVERSION");
@@ -200,7 +226,7 @@ namespace habitat_cv {
             PERF_STOP("SCREEN");
             PERF_START("MESSAGE");
             if (robot_detected || mouse_detected) {
-                thread([this](
+                thread([this, &composite](
                         bool robot_detected,
                         bool mouse_detected,
                         Step robot,
@@ -349,13 +375,14 @@ namespace habitat_cv {
             fr.new_frame();
             PERF_START("VIDEO");
             if (mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
-                PERF_START("LAYOUT");
-                auto main_frame = main_layout.get_frame(composite_image_rgb, main_video.frame_count);
-                PERF_STOP("LAYOUT");
-                main_video.add_frame(main_frame);
-                raw_video.add_frame(composite.get_raw_composite());
-                zoom_video.add_frame(composite.get_zoom());
+                if (composite_threads[previous_composite].joinable()) composite_threads[previous_composite].join();
+                composite_threads[current_composite] = thread ([this, &composite](){
+                    auto main_frame = main_layout.get_frame(composite.get_video(), main_video.frame_count);
+                    main_video.add_frame(main_frame);
+                    raw_video.add_frame(composite.get_raw_composite());
+                    zoom_video.add_frame(composite.get_zoom());
                 // write videos
+                });
             }
             PERF_STOP("VIDEO");
         }
@@ -376,7 +403,6 @@ namespace habitat_cv {
             unlimited(unlimited),
             camera_configuration(camera_configuration),
             cameras(camera_configuration_file, camera_configuration.order.count()),
-            composite(camera_configuration),
             main_video(main_layout.size(), Image::rgb),
             raw_video(raw_layout.size(), Image::gray),
             zoom_video(cv::Size(300,300), Image::gray),
@@ -387,18 +413,6 @@ namespace habitat_cv {
             background_path(background_path)
     {
         experiment_client.cv_server = this;
-        Image bg;
-        auto images = cameras.capture();
-        if (file_exists(background_path + "composite.png")){ // if there is a background image saved
-            bg = Image::read(background_path, "composite.png");
-        } else {
-            composite.start_composite(images);
-            bg = composite.get_detection();
-            create_folder(background_path);
-            bg.save(background_path, "composite.png");
-        }
-        composite.set_background(bg);
-        composite.set_cameras_center(images);
     }
 
     void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {

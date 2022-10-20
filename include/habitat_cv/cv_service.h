@@ -67,7 +67,6 @@ namespace habitat_cv{
         bool waiting_for_prey;
         Camera_configuration camera_configuration;
         Camera_array cameras;
-        Composite composite;
 
 
         Background background;
