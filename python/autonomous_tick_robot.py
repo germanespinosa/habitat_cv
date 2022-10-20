@@ -196,8 +196,6 @@ def on_click(event):
         current_predator_destination = destination_cell.location
         controller.set_destination(destination_cell.location)
         display.circle(current_predator_destination, 0.01, "orange")
-        print(location)
-        print(destination_cell)
         controller_timer.reset()
     else:
         # print("starting experiment")
