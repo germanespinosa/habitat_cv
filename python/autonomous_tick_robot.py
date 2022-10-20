@@ -125,6 +125,12 @@ def to_degrees(angle_rads):
         ang = 360 + ang
     return ang
 
+def unnormalize(ang):
+    if ang < 0:
+        ang = 360 + ang
+    return ang
+
+
 
 def get_idl(location):
     return world.cells.find(location)
@@ -174,48 +180,6 @@ def get_correction(current_location, current_rotation):
 
     return new_coordinate, rotation1, rotation2
 
-
-def get_correction_coordinate(current_location, get_rotation=False):
-    '''
-    Checks surrounding cells and provides new robot location
-    '''
-    current_id = world.cells.find(current_location)
-    current_coordinate = world.cells[current_id].coordinates
-
-    # holds move info
-    moves_dict = {'0': [Coordinates(2,0), 90.0],
-                  '1': [Coordinates(1,-1), 150.0],
-                  '2': [Coordinates(-1,-1), 210.0],
-                  '3': [Coordinates(-2,0), 270.0],
-                  '4': [Coordinates(-1,1), 330.0],
-                  '5': [Coordinates(1,1), 30.0]}
-
-    # new coordinate closest open location
-    move_check = ['2', '1', '0', '3', '4', '5']
-
-    # find first open cell from move_check list
-    for move in move_check:
-        new_coordinate = current_coordinate + moves_dict[move][0]
-        new_id = world.cells[map[new_coordinate]].id
-        coord_list = world.cells.get('coordinates')
-
-        # check if cell exists and if it is not occluded
-        if new_coordinate in coord_list:
-            if (world.cells[new_id].occluded == False):
-                break
-
-    if get_rotation:
-        return moves_dict[move][1]
-
-    return new_coordinate
-
-def get_correction_rotation(location, destination, set_rotation_num):
-    if set_rotation_num == 1:
-        rotation = to_degrees(location.atan(destination))
-    else:
-        rotation = get_correction_coordinate(destination, True)
-
-    return rotation
 
 
 def on_click(event):
@@ -277,24 +241,18 @@ def on_keypress(event):
         # maybe puase controller here
         print("correcting robot position")
         current_robot_location = tick_robot.step.location
+        current_predator_rotation = unnormalize(tick_robot.step.rotation)
+        correction_coordinate, rotation1, rotation2 = get_correction(current_robot_location,current_predator_rotation)
+        current_predator_destination = get_location2(correction_coordinate)
 
-        # 1. get new coordinate
-        predator_correction_coordinate = get_correction_coordinate(current_robot_location)
-        predator_correction_location = world.cells[map[predator_correction_coordinate]].location
-        current_predator_destination = predator_correction_location
-
-        # 2. get rotation 1 - rotation required to translate to new location
-        rotation1 = get_correction_rotation(current_robot_location, predator_correction_location, 1)
         controller.set_rotation(rotation1)
-        # 3. set destination
-        controller.set_coordinate(predator_correction_coordinate)
-        # 4. get rotation 2 - rotation to prep for next move will be standard move rotation
-        rotation2 = get_correction_rotation(0, predator_correction_location, 2)
+        controller.set_coordinate(correction_coordinate)
         controller.set_rotation(rotation2) # make it either 150 or 210 or ... based on position and where the occlusions are
 
         display.circle(current_robot_location, 0.005, "blue")
-        display.circle(predator_correction_location, 0.005, "red")
+        display.circle(current_predator_destination, 0.005, "red")
         display.update()
+
         controller.resume()
         controller_state = 1
 
