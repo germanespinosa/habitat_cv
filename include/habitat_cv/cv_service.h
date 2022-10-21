@@ -83,6 +83,6 @@ namespace habitat_cv{
         std::string video_path;
         std::string background_path;
 
-        float robot_height = 5;    // cm
+        float robot_height = 5;    // cm  // 5 (short) , 10.4 (tall)
     };
 }

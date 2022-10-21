@@ -123,12 +123,10 @@ int main(int argc, char **argv){
     }
 
     tracking_server.start(Tracking_service::get_port());
-    if (!p.contains(params_cpp::Key("-n"))) {
-        auto t = std::thread([&prey_robot, &prey_tracking_client]() {
-            while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
-            prey_robot.correct_robot();
-        });
-    }
+    auto t = std::thread([&prey_robot, &prey_tracking_client]() {
+        while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
+        prey_robot.correct_robot();
+    });
     tracking_server.start(Tracking_service::get_port());
     cv_server.tracking_process();
     tracking_server.stop();

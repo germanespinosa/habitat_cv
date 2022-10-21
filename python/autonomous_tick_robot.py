@@ -189,15 +189,13 @@ def on_click(event):
     """
 
     global current_predator_destination
-    if event.button == 1:
+    if event.button == 1 and controller_state:
         location = Location(event.xdata, event.ydata)
         cell_id = world.cells.find(location)
         destination_cell = world.cells[cell_id]
         current_predator_destination = destination_cell.location
         controller.set_destination(destination_cell.location)
         display.circle(current_predator_destination, 0.01, "orange")
-        print(location)
-        print(destination_cell)
         controller_timer.reset()
     else:
         # print("starting experiment")
@@ -234,6 +232,9 @@ def on_keypress(event):
     if event.key == "f":
         print("setting rotation to 0")
         controller.set_rotation(0)
+    if event.key == "z":
+        id = get_idl(tick_robot.step.location)
+        print(get_coordinate(id))
 
     if event.key == "c":
         controller.pause()
@@ -304,11 +305,12 @@ current_predator_destination = tick_robot.step.location  # initial predator dest
 display.circle(current_predator_destination, 0.01, "cyan")
 
 running = True
+controller_state = 1
 while running:
-    # if not controller_timer and controller_state == 1:
-    #     print("SENDING IT AGAIN!")
-    #     controller.set_destination(current_predator_destination)
-    #     controller_timer.reset()
+    if not controller_timer and controller_state == 1:
+        # print("SENDING IT AGAIN!")
+        controller.set_destination(current_predator_destination)
+        controller_timer.reset()
 
     if tick_robot.is_valid:
         display.agent(step=tick_robot.step, color="blue", size= 15)
