@@ -307,10 +307,10 @@ display.circle(current_predator_destination, 0.01, "cyan")
 running = True
 controller_state = 1
 while running:
-    if not controller_timer and controller_state == 1:
-        # print("SENDING IT AGAIN!")
-        controller.set_destination(current_predator_destination)
-        controller_timer.reset()
+    # if not controller_timer and controller_state == 1:
+    #     # print("SENDING IT AGAIN!")
+    #     controller.set_destination(current_predator_destination)
+    #     controller_timer.reset()
 
     if tick_robot.is_valid:
         display.agent(step=tick_robot.step, color="blue", size= 15)
