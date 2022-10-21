@@ -144,19 +144,19 @@ namespace habitat_cv {
         string screen_text;
         Screen_image screen_image = Screen_image::main;
         double fps = Video::get_fps();
-        double time_out = 1.0 / fps * .99;
+        double time_out = 1.0 / fps * .999;
         Step canonical_step;
         Timer frame_timer(time_out);
         Frame_rate fr;
         fr.filtered_fps = fps;
-        fr.filter = .01;
+        fr.filter = .1;
         bool show_occlusions = false;
         int input_counter=0;
         unsigned int current_composite = 0;
         unsigned int previous_composite = 0;
         while (tracking_running) {
             PERF_START("WAIT");
-            while (!unlimited && !frame_timer.time_out()) this_thread::sleep_for(100us);
+            while ((!unlimited || main_video.is_open()) && !frame_timer.time_out()) this_thread::sleep_for(100us);
             PERF_STOP("WAIT");
             frame_timer.reset();
             PERF_START("CAPTURE");
@@ -203,7 +203,6 @@ namespace habitat_cv {
             PERF_STOP("MOUSE DETECTION");
             PERF_START("DETECTION_PROCESSING");
             PERF_START("SCREEN");
-            auto &composite_image_rgb= composite.get_video();
             PERF_START("SCREEN_ROBOT");
             if (robot_detected) {
                 auto color_robot = cv::Scalar({150, 0, 150});
@@ -214,13 +213,13 @@ namespace habitat_cv {
                 } else {
                     robot.data = "";
                 }
-                composite_image_rgb.circle(robot.location, 5, color_robot, true);
-                composite_image_rgb.arrow(robot.location, to_radians(robot.rotation), 50, color_robot, 3);
+                composite.get_video().circle(robot.location, 5, color_robot, true);
+                composite.get_video().arrow(robot.location, to_radians(robot.rotation), 50, color_robot, 3);
             }
             PERF_STOP("SCREEN_ROBOT");
             PERF_START("SCREEN_MOUSE");
             if (mouse_detected) {
-                composite_image_rgb.circle(mouse.location, 5, {120, 120, 0}, true);
+                composite.get_video().circle(mouse.location, 5, {120, 120, 0}, true);
             }
             PERF_STOP("SCREEN_MOUSE");
             PERF_STOP("SCREEN");
@@ -266,10 +265,10 @@ namespace habitat_cv {
                 case Screen_image::main :
                     if (show_occlusions) {
                         for (auto &occlusion: occlusions) {
-                            composite_image_rgb.circle(occlusion.get().location, 20, {255, 0, 0}, true);
+                            composite.get_video().circle(occlusion.get().location, 20, {255, 0, 0}, true);
                         }
                     }
-                    screen_frame = screen_layout.get_frame(composite_image_rgb, "main", fr.filtered_fps);
+                    screen_frame = screen_layout.get_frame(composite.get_video(), "main", fr.filtered_fps);
                     break;
                 case Screen_image::difference :
                     screen_frame = screen_layout.get_frame(composite.get_subtracted_small(), "difference", fr.filtered_fps);
@@ -296,12 +295,11 @@ namespace habitat_cv {
                     screen_frame = screen_layout.get_frame(composite.get_detection_small(3), "cam3", fr.filtered_fps);
                     break;
             }
-            PERF_STOP("DISPLAY");
-            PERF_SCOPE("REST");
             PERF_START("SHOW");
             if (main_video.is_open()) screen_frame.circle({15, 15}, 10, {0, 0, 255}, true);
             cv::imshow("Agent Tracking", screen_frame);
             PERF_STOP("SHOW");
+            PERF_STOP("DISPLAY");
             if (!input_counter) {
                 input_counter = 10;
                 auto key = cv::waitKey(1);
@@ -386,7 +384,7 @@ namespace habitat_cv {
             }
             PERF_STOP("VIDEO");
         }
-
+        for (auto &t:composite_threads) if (t.joinable()) t.join();
     }
 
     Cv_server::Cv_server(const Camera_configuration &camera_configuration,
@@ -408,8 +406,7 @@ namespace habitat_cv {
             zoom_video(cv::Size(300,300), Image::gray),
             led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
             mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>()),
-            prey_robot_head_profile(Resources::from("profile").key("prey_robot_head").get_resource<Profile>()),
-            video_path(video_path),
+             video_path(video_path),
             background_path(background_path)
     {
         experiment_client.cv_server = this;

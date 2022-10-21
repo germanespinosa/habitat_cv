@@ -50,8 +50,6 @@ namespace habitat_cv{
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
 
-        std::string background_path;
-
         unsigned int mouse_threshold = 55;
         unsigned int robot_threshold = 250;
 
@@ -82,8 +80,8 @@ namespace habitat_cv{
 
         Profile led_profile;
         Profile mouse_profile;
-        Profile prey_robot_head_profile;
         std::string video_path;
+        std::string background_path;
 
         float robot_height = 5;    // cm
     };

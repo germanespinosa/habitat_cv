@@ -112,6 +112,7 @@ namespace habitat_cv {
     }
 
     void Composite::start_composite(const Images &images) {
+        composite_video = Image();
         subtracted_threshold = Binary_image();
         detection_threshold = Binary_image();
         detection_camera_threshold = vector<Binary_image>(4);
@@ -223,7 +224,7 @@ namespace habitat_cv {
 #ifdef USE_CUDA
         gpu_video_stream.waitForCompletion();
 #endif
-        composite_video = composite.to_rgb();
+        if (composite_video.empty()) composite_video = composite.to_rgb();
         return composite_video;
     }
 
@@ -248,7 +249,7 @@ namespace habitat_cv {
             zoom.setTo(0);
             for (unsigned int camera_index = 0; camera_index < raw.size(); camera_index++) {
                 auto raw_point = get_raw_point(camera_index, mouse_point);
-                cv::Point2f offset(0, 0);
+                cv::Point2i offset(0, 0);
                 cv::Rect_<int> source = get_zoom_rect(composite_size, zoom_size, raw_point, offset);
                 offset.x = (float)zoom_rectangles[camera_index].x - offset.x;
                 offset.y = (float)zoom_rectangles[camera_index].y - offset.y;
