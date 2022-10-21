@@ -41,8 +41,13 @@ namespace habitat_cv {
     bool Cv_server::end_episode() {
         cout << "end_episode" << endl;
         main_video.close();
-        zoom_video.close();
         raw_video.close();
+        if (zoom_video.is_open()) {
+            zoom_video.close();
+            thread([this](){
+                zoom_video.split_video(zoom_rectangles, zoom_size);
+            }).detach();
+        }
         return true;
     }
 
@@ -128,6 +133,8 @@ namespace habitat_cv {
             }
             composite.set_background(bg);
             composite.set_cameras_center(images);
+            zoom_rectangles = composite.zoom_rectangles;
+            zoom_size = composite.zoom_size;
         }
         json_cpp::Json_date::set_local_time_zone_offset();
         tracking_running = true;
@@ -322,8 +329,12 @@ namespace habitat_cv {
                         // end video recording
                         main_video.close();
                         raw_video.close();
-                        zoom_video.close();
-                        zoom_video.split_video(composite.zoom_rectangles, composite.zoom_size);
+                        if (zoom_video.is_open()) {
+                            zoom_video.close();
+                            thread([this](){
+                                zoom_video.split_video(zoom_rectangles, zoom_size);
+                            }).detach();
+                        }
                         break;
                     case 'Q':
                         tracking_running = false;
