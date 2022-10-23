@@ -103,10 +103,11 @@ int main(int argc, char **argv){
 
     Tick_agent_moves tick_moves;
     tick_moves.load("../config/tick_robot_moves.json");
+    std::string joystick_path = "/dev/input/js0";
 
     auto &prey_tracking_client = tracking_server.create_local_client<Tracking_client>();
     prey_tracking_client.subscribe();
-    robot::Tick_robot_agent prey_robot(tick_moves, prey_tracking_client);
+    robot::Tick_robot_agent prey_robot(tick_moves, prey_tracking_client, joystick_path);
 
     if (!p.contains(params_cpp::Key("-n"))) {
         if (!prey_robot.connect("192.168.137.154")) {
@@ -122,11 +123,13 @@ int main(int argc, char **argv){
         exit(1);
     }
 
+//     initial corrector
     tracking_server.start(Tracking_service::get_port());
     auto t = std::thread([&prey_robot, &prey_tracking_client]() {
         while (!(prey_tracking_client.contains_agent_state("predator"))) this_thread::sleep_for(10ms);
         prey_robot.correct_robot();
     });
+
     tracking_server.start(Tracking_service::get_port());
     cv_server.tracking_process();
     tracking_server.stop();
