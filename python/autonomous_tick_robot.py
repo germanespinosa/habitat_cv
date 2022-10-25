@@ -242,21 +242,16 @@ def on_keypress(event):
     """
     Sets up keyboard intervention
     """
-    global running
-    global current_predator_destination
-    global controller_timer
-    global destination_list
-    global controller_state
+    global running, current_predator_destination, controller_timer, destination_list, controller_state
 
-    if event.key == "p": # To pause auto robot
+    if event.key == "p":    # To pause auto robot
         print("pause")
         controller.pause()
         controller_state = 0
     if event.key == "r":
         print("resume")
         controller.resume()
-        controller_state = 1
-
+        controller_state = 0
     if event.key == "m":
         print("MOVING AUTONOMOUSLY")
         controller_state = 1
@@ -286,7 +281,6 @@ def on_keypress(event):
         display.update()
 
         controller.resume()
-        controller_state = 1
 
 
 
