@@ -354,7 +354,8 @@ namespace habitat_cv {
                         cout << "robot threshold set to " << robot_threshold << endl;
                         break;
                     case 'U':
-                        composite.set_background(composite.get_detection());
+                        for (auto &comp:composites)
+                        comp.set_background(composite.get_detection());
                         composite.get_detection().save(background_path,"composite.png");
                         break;
                     case 'O':
@@ -368,14 +369,14 @@ namespace habitat_cv {
                             screen_image = Screen_image::main;
                         else
                             screen_image = static_cast<Screen_image>(screen_image + 1);
-                        cout << "change_screen_output to " << screen_image << endl;
+                        //cout << "change_screen_output to " << screen_image << endl;
                         break;
                     case ' ':
                         if (screen_image == Screen_image::main)
                             screen_image = Screen_image::cam3;
                         else
                             screen_image = static_cast<Screen_image>(screen_image - 1);
-                        cout << "change_screen_output to " << screen_image << endl;
+                        //cout << "change_screen_output to " << screen_image << endl;
                         break;
                 }
             } else {

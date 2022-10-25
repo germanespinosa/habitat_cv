@@ -7,11 +7,13 @@ from cellworld_controller_service import ControllerClient
 from cellworld_experiment_service import ExperimentClient
 from random import choice, choices
 
+# TODO: fix possible destinations
+
 # Globals
 display = None
 current_predator_destination = None
 controller_state = None
-possible_destinations = Cell_group()
+
 
 episode_in_progress = False
 experiment_log_folder = "/research/logsV2"
@@ -34,19 +36,20 @@ class AgentData:
         self.is_valid = None
         self.step = Step()                      # step object - step is a class in experiment.py
         self.step.agent_name = agent_name
-        self.move_state = None
-        self.move_done = False
 
 
 def on_experiment_started(experiment):
     """
     To start experiment right click on map
     """
-    # print("Experiment started:", experiment)
+    print("Experiment started:", experiment)
     experiments[experiment.experiment_name] = experiment.copy()
 
 
 def on_episode_finished(m):
+    """
+    spawn robot
+    """
     global episode_in_progress, current_predator_destination, inertia_buffer, display
 
     last_trajectory = Experiment.get_from_file(experiment_log_folder + "/" + current_experiment_name + "_experiment.json").episodes[-1].trajectories.get_agent_trajectory("prey")
@@ -68,7 +71,7 @@ def on_episode_finished(m):
     controller.set_behavior(0)
     inertia_buffer = 1
     episode_in_progress = False
-    current_predator_destination = choices(spawn_locations, weights=spawn_locations_weights)[0].location
+    #current_predator_destination = choices(spawn_locations, weights=spawn_locations_weights)[0].location
     controller.set_destination(current_predator_destination)     # set destination
     destination_list.append(current_predator_destination)
     if controller_timer != 1: # no idea why the timer would be an integer but whatevs
@@ -80,13 +83,32 @@ def on_capture( frame:int ):
     global inertia_buffer
     controller.set_behavior(0)
     inertia_buffer = 1
-    # print ("PREY CAPTURED")
+    print ("PREY CAPTURED")
+
+
+def hidden_location():
+    """
+    Returns random hidden location in robot_world
+    """
+    current_location = tick_robot.step.location
+    #hidden_cells = robot_visibility.hidden_cells(current_location, robot_world.cells)
+    #hidden_cells = robot_visibility.hidden_cells(current_location, possible_destinations)
+
+    try:
+        #new_cell = choices(hidden_cells)
+        new_cell = choices(possible_destinations, weights=possible_destinations_weights)[0]
+        new_cell_location = new_cell.location
+    except:  # if no hidden locations
+        new_cell_location = choice(world.cells.free_cells().get("location"))
+    return new_cell_location
+
 
 
 def on_episode_started(experiment_name):
     global display, episode_in_progress, current_experiment_name
     current_experiment_name = experiment_name
-    # print("New Episode: ", experiment_name)
+    episode_in_progress = True
+    print("New Episode: ", experiment_name)
     # print("Occlusions: ", experiments[experiment_name].world.occlusions)
 
 def on_prey_entered_arena():
@@ -97,7 +119,7 @@ def on_prey_entered_arena():
 def load_world():
     global display, world, possible_destinations
     occlusion = Cell_group_builder.get_from_name("robot", occlusions + ".occlusions")
-    #possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("robot", occlusions + ".predator_destinations"))
+    possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("robot", occlusions + ".spawn_locations"))
     world.set_occlusions(occlusion)
     display = Display(world, fig_size=(9.0*.75, 8.0*.75), animated=True)
 
@@ -110,6 +132,11 @@ def on_step(step):
     if step.agent_name == "predator":
         tick_robot.is_valid = Timer(time_out)
         tick_robot.step = step
+    else:
+        prey.is_valid = Timer(time_out) # pursue when prey is seen
+        prey.step = step
+        controller.set_behavior(ControllerClient.Behavior.Pursue)
+
 
 
 def get_location(x, y):
@@ -189,7 +216,7 @@ def on_click(event):
     """
 
     global current_predator_destination
-    if event.button == 1 and controller_state:
+    if event.button == 1:
         location = Location(event.xdata, event.ydata)
         cell_id = world.cells.find(location)
         destination_cell = world.cells[cell_id]
@@ -229,12 +256,16 @@ def on_keypress(event):
         print("resume")
         controller.resume()
         controller_state = 1
-    if event.key == "f":
-        print("setting rotation to 0")
-        controller.set_rotation(0)
-    if event.key == "z":
-        id = get_idl(tick_robot.step.location)
-        print(get_coordinate(id))
+
+    if event.key == "m":
+        print("MOVING AUTONOMOUSLY")
+        controller_state = 1
+        controller_timer = Timer(5.0)                           # set initial destination and timer
+        current_predator_destination = hidden_location()        # assign new destination
+        controller.set_destination(current_predator_destination)
+        destination_list.append(current_predator_destination)
+        display.circle(current_predator_destination, 0.01, "red")
+
 
     if event.key == "c":
         controller.pause()
@@ -261,7 +292,6 @@ def on_keypress(event):
 
 
 # World Setup
-# occlusions = "00_00"
 occlusions = "21_05"
 world = World.get_from_parameters_names("robot", "canonical", occlusions)
 map = Cell_map(world.configuration.cell_coordinates)
@@ -270,6 +300,7 @@ coord_list = world.cells.get('coordinates')
 
 # Agent Setup
 tick_robot = AgentData("predator") # robot with 3 leds recognized as predator by tracker
+prey = AgentData("prey")
 
 # Experiment Setup
 experiment_service = ExperimentClient()
@@ -299,25 +330,56 @@ controller.on_step = on_step
 cid1 = display.fig.canvas.mpl_connect('button_press_event', on_click)
 cid_keypress = display.fig.canvas.mpl_connect('key_press_event', on_keypress)
 
-
-# current_predator_destination = get_location(-5,7)
+# Predator location at start
+destination_list = []
 current_predator_destination = tick_robot.step.location  # initial predator destination
 display.circle(current_predator_destination, 0.01, "cyan")
 
 running = True
-controller_state = 1
+controller_state = 0
 while running:
-    # if not controller_timer and controller_state == 1:
-    #     # print("SENDING IT AGAIN!")
-    #     controller.set_destination(current_predator_destination)
-    #     controller_timer.reset()
+    # send new destination when predator gets close enough to target
+    if current_predator_destination.dist(tick_robot.step.location) < world.implementation.cell_transformation.size and controller_state:
+        print(episode_in_progress)
+        if episode_in_progress:
+            current_predator_destination = hidden_location()             # assign new destination
+            controller.set_destination(current_predator_destination)     # set destination
+            destination_list.append(current_predator_destination)
+            controller_timer.reset()                                     # reset controller timer
+            display.circle(current_predator_destination, 0.01, "red")
 
+    # check for timeout and resent current destination
+    if not controller_timer and controller_state:
+        controller.set_destination(current_predator_destination)
+        controller_timer.reset()
+
+    # check if prey is seen and if so prey new destination
+    # TODO: may have to add prey timer
+    if prey.is_valid and controller_state and episode_in_progress: # controller state allows pause to overrule pursue
+        print("PREY SEEN")
+        current_predator_destination = prey.step.location
+        controller.set_destination(current_predator_destination)      # if prey is visible set new destination to prey location
+        destination_list.append(current_predator_destination)
+        display.circle(prey.step.location, 0.01, "cyan")
+
+
+    # PLOT
+    if prey.is_valid:
+        display.agent(step=prey.step, color="green", size=10)
+    else:
+        display.agent(step=prey.step, color="gray", size=10)
     if tick_robot.is_valid:
         display.agent(step=tick_robot.step, color="blue", size= 15)
     else:
         display.agent(step=tick_robot.step, color="grey", size= 15)
 
+    # remove old destinations from map
+    if len(destination_list) > 1:
+        display.circle(destination_list[0], 0.008, "white")
+        destination_list.remove(destination_list[0])
+
     display.update()
     sleep(0.1)
 
-# TODO: add pause feature
+controller.unsubscribe()
+controller.stop()
