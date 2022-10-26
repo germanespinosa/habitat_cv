@@ -14,6 +14,8 @@ display = None
 current_predator_destination = None
 controller_state = None
 
+#german
+stop_this_madness = False;
 
 episode_in_progress = False
 experiment_log_folder = "/research/logsV2"
@@ -51,6 +53,7 @@ def on_episode_finished(m):
     spawn robot
     """
     global episode_in_progress, current_predator_destination, inertia_buffer, display
+#zoom? yes
 
     last_trajectory = Experiment.get_from_file(experiment_log_folder + "/" + current_experiment_name + "_experiment.json").episodes[-1].trajectories.get_agent_trajectory("prey")
     for step in last_trajectory:
@@ -80,6 +83,8 @@ def on_episode_finished(m):
 
 
 def on_capture( frame:int ):
+    global stop_this_madness
+    #stop_this_madness = True
     global inertia_buffer
     controller.set_behavior(0)
     inertia_buffer = 1
@@ -251,7 +256,7 @@ def on_keypress(event):
     if event.key == "r":
         print("resume")
         controller.resume()
-        controller_state = 0
+        controller_state = 1
     if event.key == "m":
         print("MOVING AUTONOMOUSLY")
         controller_state = 1
@@ -335,7 +340,7 @@ while running:
     # send new destination when predator gets close enough to target
     if current_predator_destination.dist(tick_robot.step.location) < world.implementation.cell_transformation.size and controller_state:
         print(episode_in_progress)
-        if episode_in_progress:
+        if episode_in_progress and not stop_this_madness:
             current_predator_destination = hidden_location()             # assign new destination
             controller.set_destination(current_predator_destination)     # set destination
             destination_list.append(current_predator_destination)
@@ -343,13 +348,13 @@ while running:
             display.circle(current_predator_destination, 0.01, "red")
 
     # check for timeout and resent current destination
-    if not controller_timer and controller_state:
+    if not controller_timer and controller_state and not stop_this_madness:
         controller.set_destination(current_predator_destination)
         controller_timer.reset()
 
     # check if prey is seen and if so prey new destination
     # TODO: may have to add prey timer
-    if prey.is_valid and controller_state and episode_in_progress: # controller state allows pause to overrule pursue
+    if prey.is_valid and controller_state and episode_in_progress and not stop_this_madness: # controller state allows pause to overrule pursue
         print("PREY SEEN")
         current_predator_destination = prey.step.location
         controller.set_destination(current_predator_destination)      # if prey is visible set new destination to prey location

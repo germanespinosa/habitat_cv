@@ -3,13 +3,13 @@
     "orientation": 0,
     "left_ticks": 1020,
     "right_ticks": 1020,
-    "speed": 2750
+    "speed": 1000
   },{
   "move": {"x": 2,"y": 0 },
   "orientation": 0,
   "left_ticks": 1750,
   "right_ticks": 1750,
-  "speed": 2750
+  "speed": 1000
   }],
   "turning_moves":[{
   "move": {"x": 2,"y": 0 },
@@ -20,8 +20,8 @@
 }, {
   "move": {"x": 3,"y": -1 },
   "orientation": 1,
-  "left_ticks": 210,
-  "right_ticks": -210,
+  "left_ticks": 230,
+  "right_ticks": -230,
   "speed": 2000
 }, {
   "move": {"x": 1,"y": -1 },
@@ -32,8 +32,8 @@
 }, {
   "move": {"x": 0,"y": -2 },
   "orientation": 3,
-  "left_ticks": 685,
-  "right_ticks": -685,
+  "left_ticks": 687,
+  "right_ticks": -687,
   "speed": 2000
 },{
   "move": {"x": -1,"y": -1 },
@@ -68,8 +68,8 @@
 }, {
   "move": {"x": 0,"y": 2 },
   "orientation": 9,
-  "left_ticks": -685,
-  "right_ticks": 685,
+  "left_ticks": -687,
+  "right_ticks": 687,
   "speed": 2000
 },{
   "move": {"x": 1,"y": 1 },
@@ -80,7 +80,7 @@
 }, {
   "move": {"x": 3,"y": 1 },
   "orientation": 11,
-  "left_ticks": -210,
-  "right_ticks": 210,
+  "left_ticks": -230,
+  "right_ticks": 230,
   "speed": 2000
 }]}
