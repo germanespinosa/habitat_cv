@@ -40,12 +40,14 @@ int main(int argc, char **argv){
     controller::Agent_operational_limits limits;
     limits.load("../config/robot_operational_limits.json"); // robot, ghost
 
+    auto occlusions_str = p.get(params_cpp::Key("-w", "--world"),"21_05");
     auto configuration = Resources::from("world_configuration").key("hexagonal").get_resource<World_configuration>();
     auto implementation = Resources::from("world_implementation").key("hexagonal").key("canonical").get_resource<World_implementation>(); // mice, vr, canonical
+    auto occlusions = Resources::from("cell_group").key("hexagonal").key(occlusions_str).key("occlusions").get_resource<Cell_group_builder>();
     auto capture_parameters = Resources::from("capture_parameters").key("default").get_resource<Capture_parameters>();
     auto peeking_parameters = Resources::from("peeking_parameters").key("default").get_resource<Peeking_parameters>();
 
-    auto world = World(configuration, implementation);
+    auto world = World(configuration, implementation, occlusions);
     auto cells = world.create_cell_group();
     Map map(cells);
     Location_visibility visibility(cells, configuration.cell_shape, implementation.cell_transformation);
@@ -75,6 +77,8 @@ int main(int argc, char **argv){
     auto &experiment_tracking_client = tracking_server.create_local_client<Experiment_tracking_client>();
     experiment_tracking_client.subscribe();
     experiment_server.set_tracking_client(experiment_tracking_client);
+
+    cv_server.occlusions = world.create_cell_group().occluded_cells();
 
     World_info wi;
     wi.world_configuration = "hexagonal";
@@ -112,7 +116,7 @@ int main(int argc, char **argv){
     if (!p.contains(params_cpp::Key("-n"))) {
         if (!prey_robot.connect("192.168.137.154")) {
             cout << "Failed to connect to prey robot" << endl;
-            exit(1);
+            //exit(1);
         }
     }
     Controller_service::set_logs_folder("controller/");

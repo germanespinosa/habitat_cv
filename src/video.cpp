@@ -34,7 +34,7 @@ namespace habitat_cv {
                 frame_count = 0;
                 while (running || !pending_frames.empty()) {
                     while (running && pending_frames.empty());
-                    if (!pending_frames.empty()) {
+                    if (!pending_frames.empty() && running) {
                         auto frame = pending_frames.front();
                         pending_frames.pop();
                         if (frame.type != this->type || frame.size() != this->size) continue;
@@ -42,6 +42,7 @@ namespace habitat_cv {
                         frame_count++;
                     }
                 }
+                pending_frames = std::queue<Image>();
                 writer.release();
             });
             return true;

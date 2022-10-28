@@ -19,6 +19,22 @@ using namespace tcp_messages;
 
 namespace habitat_cv {
 
+    string get_experiment_prefix(const string &experiment_name){
+        return experiment_name.substr(0,experiment_name.find('_'));
+    }
+
+    void Cv_server_experiment_client::on_experiment_started(const experiment::Start_experiment_response &) {
+//        cv_server->occlusions = World::get_from_parameters_name(experiment.world.world_configuration,"cv",experiment.world.occlusions).create_cell_group().occluded_cells();
+    }
+
+    void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
+        auto experiment = this->get_experiment(experiment_name);
+        std::stringstream ss;
+        ss << "/" << get_experiment_prefix(experiment_name) << '/' << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
+        std::string destination_folder = ss.str();
+        cv_server->new_episode(experiment.subject_name, experiment.experiment_name, experiment.episode_count, experiment.world_info.occlusions, destination_folder);
+    }
+
     bool Cv_server::new_episode(const string &subject,
                                 const string &experiment,
                                 int episode,
@@ -40,14 +56,14 @@ namespace habitat_cv {
 
     bool Cv_server::end_episode() {
         cout << "end_episode" << endl;
+        thread([this](){
         main_video.close();
         raw_video.close();
         if (zoom_video.is_open()) {
             zoom_video.close();
-            thread([this](){
-                zoom_video.split_video(zoom_rectangles, zoom_size);
-            }).detach();
+            zoom_video.split_video(zoom_rectangles, zoom_size);
         }
+        }).detach();
         return true;
     }
 
@@ -161,6 +177,9 @@ namespace habitat_cv {
         int input_counter=0;
         unsigned int current_composite = 0;
         unsigned int previous_composite = 0;
+        Location_list occlusions_locations;
+        Location entrance_location = cv_space.transform( ENTRANCE, canonical_space);
+        float entrance_distance = ENTRANCE_DISTANCE * cv_space.transformation.size;
         while (tracking_running) {
             PERF_START("WAIT");
             while ((!unlimited || main_video.is_open()) && !frame_timer.time_out()) this_thread::sleep_for(100us);
@@ -198,7 +217,6 @@ namespace habitat_cv {
             mouse_detected = get_mouse_step(composite.get_subtracted_threshold(mouse_threshold), mouse, robot.location, composite.detection_scale);
             if (mouse_detected) {
                 PERF_START("MOUSE_DETECTED");
-                composite.start_zoom(mouse.location);
                 canonical_step = mouse.convert(cv_space, canonical_space);
                 if (waiting_for_prey && canonical_step.location.dist(ENTRANCE) > ENTRANCE_DISTANCE) {
                     waiting_for_prey = false;
@@ -208,8 +226,12 @@ namespace habitat_cv {
             }
             PERF_STOP("MOUSE_STEP");
             PERF_STOP("MOUSE DETECTION");
+            PERF_START("ZOOM");
+            composite.start_zoom(mouse.location);
+            PERF_STOP("ZOOM");
             PERF_START("DETECTION_PROCESSING");
             PERF_START("SCREEN");
+            composite.get_video().circle(entrance_location, entrance_distance, {120, 120, 0}, false);
             PERF_START("SCREEN_ROBOT");
             if (robot_detected) {
                 auto color_robot = cv::Scalar({150, 0, 150});
@@ -244,6 +266,7 @@ namespace habitat_cv {
                         Predator_data predator_data;
                         predator_data.capture = puff_state ==  PUFF_DURATION;
                         predator_data.best_camera = composite.get_best_camera(robot.location);
+                        predator_data.human_intervention = human_intervention;
                         robot.time_stamp = time_stamp;
                         robot.frame = frame_number;
                         robot.data = predator_data.to_json();
@@ -271,8 +294,8 @@ namespace habitat_cv {
             switch (screen_image) {
                 case Screen_image::main :
                     if (show_occlusions) {
-                        for (auto &occlusion: occlusions) {
-                            composite.get_video().circle(occlusion.get().location, 20, {255, 0, 0}, true);
+                        for (const Cell &occlusion: occlusions) {
+                            composite.get_video().circle(composite.world.cells[occlusion.id].location, 20, {255, 0, 0}, true);
                         }
                     }
                     screen_frame = screen_layout.get_frame(composite.get_video(), "main", fr.filtered_fps);
@@ -304,6 +327,7 @@ namespace habitat_cv {
             }
             PERF_START("SHOW");
             if (main_video.is_open()) screen_frame.circle({15, 15}, 10, {0, 0, 255}, true);
+            if (human_intervention) screen_frame.circle({35, 15}, 10, {255, 0, 0}, true);
             cv::imshow("Agent Tracking", screen_frame);
             PERF_STOP("SHOW");
             PERF_STOP("DISPLAY");
@@ -418,32 +442,26 @@ namespace habitat_cv {
             zoom_video(cv::Size(300,300), Image::gray),
             led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
             mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>()),
-             video_path(video_path),
+            video_path(video_path),
             background_path(background_path)
     {
         experiment_client.cv_server = this;
-    }
-
-    void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
-        auto experiment = this->get_experiment(experiment_name);
-        std::stringstream ss;
-        ss << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
-        std::string destination_folder = ss.str();
-        cv_server->new_episode(experiment.subject_name, experiment.experiment_name, experiment.episode_count, experiment.world_info.occlusions, destination_folder);
     }
 
     void Cv_server_experiment_client::on_episode_finished() {
         cv_server->end_episode();
     }
 
-    Cv_server_experiment_client::Cv_server_experiment_client() {}
+    Cv_server_experiment_client::Cv_server_experiment_client() {
+
+    }
 
     void Cv_server_experiment_client::on_capture(int) {
         cv_server->puff_state =  PUFF_DURATION;
     }
 
-    void Cv_server_experiment_client::on_experiment_started(const experiment::Start_experiment_response &experiment) {
-        cv_server->occlusions = World::get_from_parameters_name(experiment.world.world_configuration,"cv",experiment.world.occlusions).create_cell_group().occluded_cells();
+    void Cv_server_experiment_client::on_human_intervention(bool active) {
+        cv_server->human_intervention = active;
     }
 
 }

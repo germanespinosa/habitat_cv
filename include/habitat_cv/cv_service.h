@@ -18,9 +18,11 @@ namespace habitat_cv{
     struct Predator_data : json_cpp::Json_object{
         Json_object_members(
                 Add_member(capture);
+                Add_member(human_intervention);
                 Add_member(best_camera);
                 )
         bool capture;
+        bool human_intervention;
         int best_camera;
     };
 
@@ -30,6 +32,7 @@ namespace habitat_cv{
         void on_capture(int frame) override;
         void on_episode_finished() override;
         void on_experiment_started(const experiment::Start_experiment_response &) override;
+        void on_human_intervention(bool) override;
         Cv_server *cv_server;
     };
 
@@ -55,14 +58,14 @@ namespace habitat_cv{
 
         cell_world::Space canonical_space;
         cell_world::Space cv_space;
-
+        bool human_intervention = false;
         cell_world::Timer ts;
         std::atomic<bool> tracking_running = false;
         std::atomic<int> puff_state = 0;
         cell_world::Cell_group occlusions;
 
         bool unlimited;
-        bool waiting_for_prey;
+        bool waiting_for_prey = false;
         Camera_configuration camera_configuration;
         Camera_array cameras;
 

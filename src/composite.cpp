@@ -197,27 +197,36 @@ namespace habitat_cv {
         zoom_size = s;
     }
 
-    cv::Rect_<int> Composite::get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2i point, cv::Point2i &oftl) {
+    cv::Rect_<int> Composite::get_zoom_rect(cv::Size rs, cv::Size zs, cv::Point2i point, cv::Point2i &os) {
+
         cv::Point2i offset(zs.width / 2,zs.height / 2);
+
         auto tl = point - offset;
         auto br = point + offset;
-        oftl = cv::Point2i (0,0);
-        cv::Size ofbr (0,0);
+        cv::Size rect_size = zs;
+
+        //cut on the left
         if (tl.x<0) {
-            oftl.x = tl.x;
-            ofbr.width = -tl.x;
+            rect_size.width += tl.x;
+            os.x = -tl.x;
         }
+        //cut on the right
+        if (br.x >= rs.width) {
+            rect_size.width -= br.x - rs.width;
+        }
+
+        //cut on the top
         if (tl.y<0) {
-            oftl.y = tl.y;
-            ofbr.height = -tl.y;
+            rect_size.height += tl.y;
+            os.y = -tl.y;
         }
-        if (br.x > rs.width) {
-            ofbr.width = br.x - rs.width;
+
+        //cut on the bottom
+        if (br.y >= rs.height) {
+            rect_size.height -= br.y - rs.height;
         }
-        if (br.y > rs.height) {
-            ofbr.height = br.y - rs.height;
-        }
-        return cv::Rect_<int>(tl-oftl, zs-ofbr);
+
+        return cv::Rect_<int>(tl + os, rect_size);
     }
 
     Image &Composite::get_video() {
@@ -235,12 +244,12 @@ namespace habitat_cv {
         for (unsigned int camera_index=0;camera_index<raw.size();camera_index++) {
             auto raw_point = get_raw_point(camera_index, mouse_point);
             cv::Point2i offset(0, 0);
-            cv::Rect_<int> source = get_zoom_rect(composite_size, zoom_size, raw_point, offset);
-            offset.x = zoom_rectangles[camera_index].x - offset.x;
-            offset.y = zoom_rectangles[camera_index].y - offset.y;
+            cv::Rect_<int> source = get_zoom_rect(raw[camera_index].size(), zoom_size, raw_point, offset);
+            offset.x += zoom_rectangles[camera_index].x;
+            offset.y += zoom_rectangles[camera_index].y;
             cv::Rect_<int> destination(offset, source.size());
-            if (destination.height > 0 && destination.width > 0 && destination.x >= 0 && destination.y >= 0)
-                gpu_raw[camera_index](source).copyTo(gpu_zoom(destination), gpu_zoom_stream);
+            if (source.size().height<0  || source.width<0 ) continue;
+            gpu_raw[camera_index](source).copyTo(gpu_zoom(destination), gpu_zoom_stream);
         }
         gpu_zoom.download(zoom, gpu_zoom_stream);
 #else
