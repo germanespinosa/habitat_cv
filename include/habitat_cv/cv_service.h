@@ -11,6 +11,7 @@
 #include <agent_tracking/tracking_service.h>
 #include <experiment/experiment_client.h>
 
+#define NOLOCATION cell_world::Location(-1000,-1000)
 
 namespace habitat_cv{
     struct Cv_server;
@@ -50,10 +51,16 @@ namespace habitat_cv{
         bool get_robot_step(const Binary_image &image, cell_world::Step &step, float scale);
         bool end_episode();
 
+        cell_world::Location robot_destination = NOLOCATION;
+        cell_world::Location gravity_adjustment = NOLOCATION;
+
+        cv::Scalar robot_color {150, 0, 150};
+        cv::Scalar mouse_color {120, 120, 0};
+
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
 
-        unsigned int mouse_threshold = 55;
+        unsigned int mouse_threshold = 85;
         unsigned int robot_threshold = 250;
 
         cell_world::Space canonical_space;
@@ -89,6 +96,5 @@ namespace habitat_cv{
         float robot_height = 10.4;    // cm  // 5 (short) , 10.4 (tall)
         std::vector<cv::Point2f> zoom_rectangles;
         cv::Size zoom_size{150,150};
-
     };
 }

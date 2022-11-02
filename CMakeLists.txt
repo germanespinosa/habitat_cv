@@ -16,6 +16,7 @@ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 
 option(USE_FAKE_CAMERA OFF)
 option(USE_CUDA OFF)
+option(PLAN_B OFF)
 
 ####
 #### DEPENDENCIES
@@ -76,34 +77,67 @@ set( habitat_cv_files
 
 add_library(habitat_cv ${habitat_cv_files})
 
-install_git_dependency ( Controller
-        https://github.com/germanespinosa/cellworld_controller
-        CMAKE_PROJECT
-        IMPORT_TARGETS
-        controller
-        CONNECTED)
-
 install_git_dependency( Perf-analysis
         https://github.com/germanespinosa/perf-analysis
         CMAKE_PROJECT
         IMPORT_TARGETS perf-analysis
         INCLUDE_DIRECTORIES include)
 
-install_git_dependency ( Robot_lib
-        https://github.com/germanespinosa/robot_library
-        CMAKE_PROJECT
-        IMPORT_TARGETS
-        gamepad_lib
-        cellworld
-        requests
-        json-cpp
-        params-cpp
-        easy-tcp
-        tcp_messages
-        agent_tracking
-        experiment_service
-        robot_lib
-        CONNECTED)
+if (${PLAN_B})
+    install_git_dependency ( Pid_controller
+            https://github.com/germanespinosa/cellworld_pid_controller
+            CMAKE_PROJECT
+            IMPORT_TARGETS
+            controller
+            CONNECTED)
+
+    install_git_dependency ( Robot_pid_lib
+            https://github.com/germanespinosa/robot_pid_library
+            CMAKE_PROJECT
+            IMPORT_TARGETS
+            gamepad_lib
+            cellworld
+            requests
+            json-cpp
+            params-cpp
+            easy-tcp
+            tcp_messages
+            agent_tracking
+            experiment_service
+            robot_lib
+            CONNECTED)
+
+    add_executable(agent_tracker
+            src/tools/agent_tracker_B.cpp)
+
+else()
+    install_git_dependency ( Controller
+            https://github.com/germanespinosa/cellworld_controller
+            CMAKE_PROJECT
+            IMPORT_TARGETS
+            controller
+            CONNECTED)
+
+    install_git_dependency ( Robot_lib
+            https://github.com/germanespinosa/robot_library
+            CMAKE_PROJECT
+            IMPORT_TARGETS
+            gamepad_lib
+            cellworld
+            requests
+            json-cpp
+            params-cpp
+            easy-tcp
+            tcp_messages
+            agent_tracking
+            experiment_service
+            robot_lib
+            CONNECTED)
+
+    add_executable(agent_tracker
+            src/tools/agent_tracker.cpp)
+
+endif()
 
 target_link_libraries(habitat_cv
         PRIVATE
@@ -114,10 +148,12 @@ target_link_libraries(habitat_cv
         perf-analysis
         params-cpp)
 
-add_executable(agent_tracker
-        src/tools/agent_tracker.cpp )
-
 target_link_libraries(agent_tracker habitat_cv )
+
+add_executable(create_paths
+        src/tools/create_paths.cpp)
+
+target_link_libraries(create_paths cellworld params-cpp)
 
 if (NOT ${USE_FAKE_CAMERA})
 

@@ -59,10 +59,7 @@ namespace habitat_cv {
         thread([this](){
         main_video.close();
         raw_video.close();
-        if (zoom_video.is_open()) {
-            zoom_video.close();
-            zoom_video.split_video(zoom_rectangles, zoom_size);
-        }
+        zoom_video.close();
         }).detach();
         return true;
     }
@@ -115,7 +112,6 @@ namespace habitat_cv {
         return true;
     }
 
-#define NOLOCATION Location(-1000,-1000)
  enum Screen_image {
         main,
         difference,
@@ -180,6 +176,8 @@ namespace habitat_cv {
         Location_list occlusions_locations;
         Location entrance_location = cv_space.transform( ENTRANCE, canonical_space);
         float entrance_distance = ENTRANCE_DISTANCE * cv_space.transformation.size;
+        bool show_robot_destination = false;
+        unsigned int prey_entered_arena_indicator = 0;
         while (tracking_running) {
             PERF_START("WAIT");
             while ((!unlimited || main_video.is_open()) && !frame_timer.time_out()) this_thread::sleep_for(100us);
@@ -217,24 +215,28 @@ namespace habitat_cv {
             mouse_detected = get_mouse_step(composite.get_subtracted_threshold(mouse_threshold), mouse, robot.location, composite.detection_scale);
             if (mouse_detected) {
                 PERF_START("MOUSE_DETECTED");
-                canonical_step = mouse.convert(cv_space, canonical_space);
-                if (waiting_for_prey && canonical_step.location.dist(ENTRANCE) > ENTRANCE_DISTANCE) {
+                if (waiting_for_prey && mouse.location.dist(entrance_location) > entrance_distance) {
                     waiting_for_prey = false;
                     experiment_client.prey_enter_arena();
+                    prey_entered_arena_indicator = 100;
                 }
                 PERF_STOP("MOUSE_DETECTED");
             }
             PERF_STOP("MOUSE_STEP");
             PERF_STOP("MOUSE DETECTION");
             PERF_START("ZOOM");
-            composite.start_zoom(mouse.location);
+            if (mouse.location != NOLOCATION) {
+                composite.start_zoom(mouse.location);
+            } else {
+                composite.get_zoom().setTo(0);
+            }
             PERF_STOP("ZOOM");
             PERF_START("DETECTION_PROCESSING");
             PERF_START("SCREEN");
             composite.get_video().circle(entrance_location, entrance_distance, {120, 120, 0}, false);
             PERF_START("SCREEN_ROBOT");
             if (robot_detected) {
-                auto color_robot = cv::Scalar({150, 0, 150});
+                auto color_robot = robot_color;
                 if (puff_state) {
                     robot.data = "puff";
                     color_robot = cv::Scalar({0, 0, 255});
@@ -244,11 +246,17 @@ namespace habitat_cv {
                 }
                 composite.get_video().circle(robot.location, 5, color_robot, true);
                 composite.get_video().arrow(robot.location, to_radians(robot.rotation), 50, color_robot, 3);
+                if ( show_robot_destination && robot_destination != NOLOCATION) {
+                    auto robot_destination_cv = cv_space.transform(robot_destination, canonical_space);
+                    composite.get_video().arrow(robot.location, robot_destination_cv, {0,255,0}, 1);
+                    auto gravity_adjustment_cv = cv_space.transform(gravity_adjustment, canonical_space);
+                    composite.get_video().arrow(robot_destination_cv, robot_destination_cv + gravity_adjustment_cv, {255,0,0}, 1);
+                }
             }
             PERF_STOP("SCREEN_ROBOT");
             PERF_START("SCREEN_MOUSE");
             if (mouse_detected) {
-                composite.get_video().circle(mouse.location, 5, {120, 120, 0}, true);
+                composite.get_video().circle(mouse.location, 5, mouse_color, true);
             }
             PERF_STOP("SCREEN_MOUSE");
             PERF_STOP("SCREEN");
@@ -326,8 +334,17 @@ namespace habitat_cv {
                     break;
             }
             PERF_START("SHOW");
-            if (main_video.is_open()) screen_frame.circle({15, 15}, 10, {0, 0, 255}, true);
+            if (main_video.is_open()) {
+                screen_frame.circle({15, 15}, 10, {0, 0, 255}, true);
+                if (mouse.location == NOLOCATION) {
+                    screen_frame.circle({15, 15}, 5, {0, 0, 0}, true);
+                }
+            }
             if (human_intervention) screen_frame.circle({35, 15}, 10, {255, 0, 0}, true);
+            if (prey_entered_arena_indicator){
+                prey_entered_arena_indicator--;
+                screen_frame.circle({55, 15}, 10, {0, 255, 0}, true);
+            }
             cv::imshow("Agent Tracking", screen_frame);
             PERF_STOP("SHOW");
             PERF_STOP("DISPLAY");
@@ -335,6 +352,9 @@ namespace habitat_cv {
                 input_counter = 10;
                 auto key = cv::waitKey(1);
                 switch (key) {
+                    case 'D':
+                        show_robot_destination=!show_robot_destination;
+                        break;
                     case 'C':
                         // start video recording
                         images.save(".");
@@ -344,21 +364,20 @@ namespace habitat_cv {
                         break;
                     case 'V':
                         // start video recording
-                        main_layout.new_episode("","",0,"");
-                        main_video.new_video("main");
-                        raw_video.new_video("raw");
-                        zoom_video.new_video("mouse");
+                        if (main_video.is_open() && mouse.location==NOLOCATION){
+                            mouse.location = Location(0, 0);
+                        } else {
+                            main_layout.new_episode("","",0,"");
+                            main_video.new_video("main");
+                            raw_video.new_video("raw");
+                            zoom_video.new_video("mouse");
+                        }
                         break;
                     case 'B':
                         // end video recording
                         main_video.close();
                         raw_video.close();
-                        if (zoom_video.is_open()) {
-                            zoom_video.close();
-                            thread([this](){
-                                zoom_video.split_video(zoom_rectangles, zoom_size);
-                            }).detach();
-                        }
+                        zoom_video.close();
                         break;
                     case 'Q':
                         tracking_running = false;
@@ -408,15 +427,18 @@ namespace habitat_cv {
             }
             fr.new_frame();
             PERF_START("VIDEO");
-            if (mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
-                if (composite_threads[previous_composite].joinable()) composite_threads[previous_composite].join();
-                composite_threads[current_composite] = thread ([this, &composite](){
+            if (main_video.is_open() && mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
+//                if (composite_threads[previous_composite].joinable()) composite_threads[previous_composite].join();
+//                composite_threads[current_composite] = thread ([this, &composites, current_composite](){
+//                    auto &composite=composites[current_composite];
                     auto main_frame = main_layout.get_frame(composite.get_video(), main_video.frame_count);
                     main_video.add_frame(main_frame);
                     raw_video.add_frame(composite.get_raw_composite());
                     zoom_video.add_frame(composite.get_zoom());
-                // write videos
-                });
+//                // write videos
+//                });
+            } else {
+                mouse.location = NOLOCATION;
             }
             PERF_STOP("VIDEO");
         }

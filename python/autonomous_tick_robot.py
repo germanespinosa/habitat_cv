@@ -18,7 +18,7 @@ controller_state = None
 stop_this_madness = False;
 
 episode_in_progress = False
-experiment_log_folder = "/research/logsV2"
+experiment_log_folder = "/research/data"
 current_experiment_name = ""
 
 pheromone_charge = .25
@@ -53,33 +53,34 @@ def on_episode_finished(m):
     spawn robot
     """
     global episode_in_progress, current_predator_destination, inertia_buffer, display
-#zoom? yes
+    # experiment_file = experiment_log_folder + "/" + current_experiment_name.split('_')[0] + "/" + current_experiment_name + "/" + current_experiment_name + "_experiment.json"
+    # print(f'experiment_file: {experiment_file}')
+    # last_trajectory = Experiment.get_from_file(experiment_file).episodes[-1].trajectories.get_agent_trajectory("prey")
+    # for step in last_trajectory:
+    #     cell_id = world.cells[world.cells.find(step.location)].id
+    #     for index, pd in enumerate(possible_destinations):
+    #         if pd.id == cell_id:
+    #             possible_destinations_weights[index] = min(possible_destinations_weights[index] + pheromone_charge, pheromone_max)
+    #
+    #     for index, pd in enumerate(spawn_locations):
+    #         if pd.id == cell_id:
+    #             spawn_locations_weights[index] = min(spawn_locations_weights[index] + pheromone_charge, pheromone_max)
+    #
+    # cmap=plt.cm.Reds([w / max(spawn_locations_weights) for w in spawn_locations_weights])
+    # for i, sl in enumerate(spawn_locations):
+    #     display.cell(cell=sl, color=cmap[i])
 
-    last_trajectory = Experiment.get_from_file(experiment_log_folder + "/" + current_experiment_name + "_experiment.json").episodes[-1].trajectories.get_agent_trajectory("prey")
-    for step in last_trajectory:
-        cell_id = world.cells[world.cells.find(step.location)].id
-        for index, pd in enumerate(possible_destinations):
-            if pd.id == cell_id:
-                possible_destinations_weights[index] = min(possible_destinations_weights[index] + pheromone_charge, pheromone_max)
-
-        for index, pd in enumerate(spawn_locations):
-            if pd.id == cell_id:
-                spawn_locations_weights[index] = min(spawn_locations_weights[index] + pheromone_charge, pheromone_max)
-
-    cmap=plt.cm.Reds([w / max(spawn_locations_weights) for w in spawn_locations_weights])
-    for i, sl in enumerate(spawn_locations):
-        display.cell(cell=sl, color=cmap[i])
-
-    controller.resume()
-    controller.set_behavior(0)
     inertia_buffer = 1
     episode_in_progress = False
     #current_predator_destination = choices(spawn_locations, weights=spawn_locations_weights)[0].location
+    current_predator_destination = choice(spawn_locations).location
+    print(current_predator_destination)
     controller.set_destination(current_predator_destination)     # set destination
+    print("destination set")
     destination_list.append(current_predator_destination)
-    if controller_timer != 1: # no idea why the timer would be an integer but whatevs
-        controller_timer.reset()                                     # reset controller timer
+    print("destination_list appended")
     display.circle(current_predator_destination, 0.01, "red")
+    print("EPISODE ENDED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
 
 
 def on_capture( frame:int ):
@@ -112,21 +113,24 @@ def hidden_location():
 def on_episode_started(experiment_name):
     global display, episode_in_progress, current_experiment_name
     current_experiment_name = experiment_name
-    episode_in_progress = True
+    #episode_in_progress = True
     print("New Episode: ", experiment_name)
     # print("Occlusions: ", experiments[experiment_name].world.occlusions)
 
 def on_prey_entered_arena():
     global episode_in_progress
+    print("Prey entered arena")
     episode_in_progress = True
 
 
 def load_world():
-    global display, world, possible_destinations
+    global display, world, possible_destinations, spawn_locations, spawn_locations_weights
     occlusion = Cell_group_builder.get_from_name("robot", occlusions + ".occlusions")
     possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("robot", occlusions + ".spawn_locations"))
     world.set_occlusions(occlusion)
     display = Display(world, fig_size=(9.0*.75, 8.0*.75), animated=True)
+    spawn_locations = world.create_cell_group(Cell_group_builder.get_from_name("robot", occlusions + ".spawn_locations"))
+    spawn_locations_weights = [1.0 for x in spawn_locations]
 
 
 def on_step(step):
@@ -338,9 +342,9 @@ running = True
 controller_state = 0
 while running:
     # send new destination when predator gets close enough to target
-    if current_predator_destination.dist(tick_robot.step.location) < world.implementation.cell_transformation.size and controller_state:
+    if current_predator_destination.dist(tick_robot.step.location) < (world.implementation.cell_transformation.size * 1.5) and controller_state:
         print(episode_in_progress)
-        if episode_in_progress and not stop_this_madness:
+        if episode_in_progress:
             current_predator_destination = hidden_location()             # assign new destination
             controller.set_destination(current_predator_destination)     # set destination
             destination_list.append(current_predator_destination)
@@ -348,13 +352,13 @@ while running:
             display.circle(current_predator_destination, 0.01, "red")
 
     # check for timeout and resent current destination
-    if not controller_timer and controller_state and not stop_this_madness:
+    if not controller_timer and controller_state:
         controller.set_destination(current_predator_destination)
         controller_timer.reset()
 
     # check if prey is seen and if so prey new destination
     # TODO: may have to add prey timer
-    if prey.is_valid and controller_state and episode_in_progress and not stop_this_madness: # controller state allows pause to overrule pursue
+    if prey.is_valid and controller_state and episode_in_progress: # controller state allows pause to overrule pursue
         print("PREY SEEN")
         current_predator_destination = prey.step.location
         controller.set_destination(current_predator_destination)      # if prey is visible set new destination to prey location

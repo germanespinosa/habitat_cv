@@ -1,6 +1,6 @@
 {
-  "logs_folder": "../../logsV2/",
-  "videos_folder": "../../videos/",
+  "logs_folder": "/research/data/",
+  "videos_folder": "/research/data/",
   "backgrounds_folder": "../backgrounds/",
   "config_folder": "../config/"
 }
