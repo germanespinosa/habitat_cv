@@ -105,7 +105,7 @@ def on_episode_started(experiment_name):
     print("hi")
     global display, episode_in_progress, current_experiment_name
     current_experiment_name = experiment_name
-    episode_in_progress = True
+    # episode_in_progress = True
     print("New Episode: ", experiment_name)
     print("Occlusions: ", experiments[experiment_name].world.occlusions)
     # occlusions = Cell_group_builder.get_from_name("hexagonal", experiments[experiment_name].world.occlusions, "occlusions")
@@ -384,7 +384,7 @@ while running:
 
     # remove old destinations from map
     if len(destination_list) > 1:
-        display.circle(destination_list[0], 0.01, "white")
+        display.circle(destination_list[0], 0.008, "white")
         destination_list.remove(destination_list[0])
 
     display.update()
