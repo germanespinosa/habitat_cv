@@ -51,6 +51,7 @@ namespace habitat_cv{
         bool get_robot_step(const Binary_image &image, cell_world::Step &step, float scale);
         bool end_episode();
 
+        cell_world::Location robot_normalized_destination = NOLOCATION;
         cell_world::Location robot_destination = NOLOCATION;
         cell_world::Location gravity_adjustment = NOLOCATION;
 

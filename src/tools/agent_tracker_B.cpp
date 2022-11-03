@@ -108,6 +108,7 @@ int main(int argc, char **argv){
     Controller_service::set_logs_folder("controller/");
     Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client,
                                         cv_server.robot_destination,
+                                        cv_server.robot_normalized_destination,
                                         cv_server.gravity_adjustment);
 
     if (!controller_server.start(Controller_service::get_port())) {

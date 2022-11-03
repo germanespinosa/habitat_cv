@@ -169,10 +169,10 @@ namespace habitat_cv {
         Frame_rate fr;
         fr.filtered_fps = fps;
         fr.filter = .1;
+        mutex video_mutex;
         bool show_occlusions = false;
         int input_counter=0;
         unsigned int current_composite = 0;
-        unsigned int previous_composite = 0;
         Location_list occlusions_locations;
         Location entrance_location = cv_space.transform( ENTRANCE, canonical_space);
         float entrance_distance = ENTRANCE_DISTANCE * cv_space.transformation.size;
@@ -187,7 +187,6 @@ namespace habitat_cv {
             auto images = cameras.capture();
             PERF_STOP("CAPTURE");
             PERF_START("COMPOSITE");
-            previous_composite = current_composite;
             current_composite = (current_composite + 1) % 2;
             auto &composite = composites[current_composite];
             composite.start_composite(images);
@@ -247,10 +246,13 @@ namespace habitat_cv {
                 composite.get_video().circle(robot.location, 5, color_robot, true);
                 composite.get_video().arrow(robot.location, to_radians(robot.rotation), 50, color_robot, 3);
                 if ( show_robot_destination && robot_destination != NOLOCATION) {
+                    auto robot_normalized_destination_cv = cv_space.transform(robot_normalized_destination, canonical_space);
                     auto robot_destination_cv = cv_space.transform(robot_destination, canonical_space);
-                    composite.get_video().arrow(robot.location, robot_destination_cv, {0,255,0}, 1);
                     auto gravity_adjustment_cv = cv_space.transform(gravity_adjustment, canonical_space);
-                    composite.get_video().arrow(robot_destination_cv, robot_destination_cv + gravity_adjustment_cv, {255,0,0}, 1);
+
+                    composite.get_video().arrow(robot.location, robot_destination_cv, {0,255,0}, 1);
+                    composite.get_video().arrow(robot.location, robot_normalized_destination_cv, {0,0,255}, 1);
+                    composite.get_video().arrow(robot_normalized_destination_cv, robot_normalized_destination_cv + gravity_adjustment_cv, {255,0,0}, 1);
                 }
             }
             PERF_STOP("SCREEN_ROBOT");
@@ -428,15 +430,14 @@ namespace habitat_cv {
             fr.new_frame();
             PERF_START("VIDEO");
             if (main_video.is_open() && mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
-//                if (composite_threads[previous_composite].joinable()) composite_threads[previous_composite].join();
-//                composite_threads[current_composite] = thread ([this, &composites, current_composite](){
-//                    auto &composite=composites[current_composite];
+                video_mutex.lock();
+                thread ([this, &composite, &video_mutex](){
                     auto main_frame = main_layout.get_frame(composite.get_video(), main_video.frame_count);
                     main_video.add_frame(main_frame);
                     raw_video.add_frame(composite.get_raw_composite());
                     zoom_video.add_frame(composite.get_zoom());
-//                // write videos
-//                });
+                    video_mutex.unlock();
+                }).detach();
             } else {
                 mouse.location = NOLOCATION;
             }
