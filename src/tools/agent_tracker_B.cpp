@@ -98,12 +98,12 @@ int main(int argc, char **argv){
     controller_experiment_client.subscribe();
 
 
-    robot::Robot_agent robot(limits);
+    robot::Robot_agent robot(limits, cv_server.reset_robot_connection);
 
-    if (!robot.connect("192.168.137.155")){
-        cout << "Failed to connect to robot" << endl;
-        exit(1);
-    }
+//    if (!robot.connect("192.168.137.155")){
+//        cout << "Failed to connect to robot" << endl;
+//        exit(1);
+//    }
 
     Controller_service::set_logs_folder("controller/");
     Controller_server controller_server("../config/pid.json", robot, controller_tracking_client, controller_experiment_client,

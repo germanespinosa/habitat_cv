@@ -252,6 +252,7 @@ namespace habitat_cv {
 
                     composite.get_video().arrow(robot.location, robot_destination_cv, {0,255,0}, 1);
                     composite.get_video().arrow(robot.location, robot_normalized_destination_cv, {0,0,255}, 1);
+
                     composite.get_video().arrow(robot_normalized_destination_cv, robot_normalized_destination_cv + gravity_adjustment_cv, {255,0,0}, 1);
                 }
             }
@@ -354,6 +355,9 @@ namespace habitat_cv {
                 input_counter = 10;
                 auto key = cv::waitKey(1);
                 switch (key) {
+                    case 'K':
+                        reset_robot_connection = true;
+                        break;
                     case 'D':
                         show_robot_destination=!show_robot_destination;
                         break;

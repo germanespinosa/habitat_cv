@@ -83,7 +83,7 @@ namespace habitat_cv{
         Main_layout main_layout;
         Raw_layout raw_layout;
         Mouse_layout mouse_layout;
-
+        bool reset_robot_connection = false;
 
         Video main_video;
         Video raw_video;

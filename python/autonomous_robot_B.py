@@ -113,8 +113,11 @@ def on_episode_started(experiment_name):
     # print(occlusions)
 
 def on_prey_entered_arena():
-    global episode_in_progress
+    global episode_in_progress, controller_timer
     episode_in_progress = True
+
+    controller_timer = Timer(5.0)
+
 
 
 def load_world():
