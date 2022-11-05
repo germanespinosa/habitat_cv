@@ -41,8 +41,11 @@ pheromone_max = 50
 
 possible_destinations = Cell_group()
 possible_destinations_weights = []
+
 spawn_locations = Cell_group()
 spawn_locations_weights = []
+
+is_spawn = []
 
 class AgentData:
     """
@@ -69,18 +72,21 @@ def on_episode_finished(m):
     last_trajectory = Experiment.get_from_file(experiment_file).episodes[-1].trajectories.get_agent_trajectory("prey")
     #last_trajectory = Experiment.get_from_file(experiment_log_folder + "/" + current_experiment_name + "_experiment.json").episodes[-1].trajectories.get_agent_trajectory("prey")
     for step in last_trajectory:
-        cell_id = world.cells[spawn_locations.find(step.location)].id
-        for index, pd in enumerate(possible_destinations):
-            if pd.id == cell_id:
-                possible_destinations_weights[index] = min(possible_destinations_weights[index] + pheromone_charge, pheromone_max)
+        cell_index = possible_destinations.find(step.location)
+        possible_destinations_weights[cell_index] = min(possible_destinations_weights[cell_index] + pheromone_charge, pheromone_max)
 
         for index, pd in enumerate(spawn_locations):
-            if pd.id == cell_id:
-                spawn_locations_weights[index] = min(spawn_locations_weights[index] + pheromone_charge, pheromone_max)
+            if pd.id == possible_destinations[cell_index].id:
+                spawn_locations_weights[index] = possible_destinations_weights[cell_index]
 
-    cmap=plt.cm.Reds([w / max(spawn_locations_weights) for w in spawn_locations_weights])
-    for i, sl in enumerate(spawn_locations):
-        display.cell(cell=sl, color=cmap[i])
+    cmap = plt.cm.Reds([w / max(possible_destinations_weights) for w in possible_destinations_weights])
+    print(spawn_locations_weights)
+
+    for i, sl in enumerate(possible_destinations):
+        if is_spawn[i]:
+            display.cell(cell=sl, color=cmap[i], edge_color="blue")
+        else:
+            display.cell(cell=sl, color=cmap[i])
 
     controller.resume()
     controller.set_behavior(0)
@@ -130,12 +136,14 @@ def load_world():
     global possible_destinations_weights
     global spawn_locations
     global spawn_locations_weights
+    global is_spawn
 
     occlusion = Cell_group_builder.get_from_name("hexagonal", occlusions + ".occlusions")
     possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("hexagonal", occlusions + ".predator_destinations"))
     possible_destinations_weights = [1.0 for x in possible_destinations]
     spawn_locations = world.create_cell_group(Cell_group_builder.get_from_name("hexagonal", occlusions + ".spawn_locations"))
     spawn_locations_weights = [1.0 for x in spawn_locations]
+    is_spawn = [len(spawn_locations.where("id", c.id)) > 0 for c in possible_destinations]
     world.set_occlusions(occlusion)
     display = Display(world, fig_size=(9.0*.75, 8.0*.75), animated=True)
 

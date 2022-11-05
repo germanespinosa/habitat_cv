@@ -30,6 +30,7 @@ namespace habitat_cv{
     struct Cv_server_experiment_client : experiment::Experiment_client{
         explicit Cv_server_experiment_client();
         void on_episode_started(const std::string &experiment_name) override;
+        void on_experiment_resumed(const experiment::Resume_experiment_response &) override;
         void on_capture(int frame) override;
         void on_episode_finished() override;
         void on_experiment_started(const experiment::Start_experiment_response &) override;
@@ -97,5 +98,7 @@ namespace habitat_cv{
         float robot_height = 10.4;    // cm  // 5 (short) , 10.4 (tall)
         std::vector<cv::Point2f> zoom_rectangles;
         cv::Size zoom_size{150,150};
+        unsigned int episode_count{};
+        cell_world::Timer experiment_timer;
     };
 }

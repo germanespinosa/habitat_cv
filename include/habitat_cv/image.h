@@ -16,6 +16,12 @@ namespace habitat_cv {
         explicit Binary_image(cv::Mat);
     };
 
+    struct Marker {
+        int marker_id;
+        cv::Point2f centroid;
+        std::vector<cv::Point2f> corners;
+    };
+
     struct Image : cv::Mat {
         enum Type{
             rgb,
@@ -45,6 +51,7 @@ namespace habitat_cv {
         Image diff(const Image &) const;
         cv::Point2f get_point(const cell_world::Location &) const;
         cell_world::Location get_location(const cv::Point2f &) const;
+        std::vector<Marker> get_markers();
         Image mask(const Binary_image &);
         Image clone() const;
     };

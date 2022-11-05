@@ -155,6 +155,9 @@ add_executable(create_paths
 
 target_link_libraries(create_paths cellworld params-cpp)
 
+add_executable(homography src/tools/homography.cpp)
+target_link_libraries(homography habitat_cv)
+
 if (NOT ${USE_FAKE_CAMERA})
 
     add_executable(camera_test

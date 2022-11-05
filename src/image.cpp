@@ -1,6 +1,7 @@
 #include <habitat_cv/image.h>
 #include <filesystem>
 #include <utility>
+#include <opencv2/aruco.hpp>
 
 using namespace std;
 
@@ -215,6 +216,28 @@ namespace habitat_cv{
         auto i = Image(m,"");
         i.type = type;
         return i;
+    }
+
+    std::vector<Marker> Image::get_markers() {
+        std::vector<Marker> markers;
+        cv::Ptr<cv::aruco::Dictionary> dictionary = getPredefinedDictionary(cv::aruco::DICT_4X4_100);
+        cv::Ptr<cv::aruco::DetectorParameters> parameters = cv::aruco::DetectorParameters::create();
+        vector<vector<cv::Point2f>> markerCorners, rejectedCandidates;
+        json_cpp::Json_vector<int> markerIds;
+        detectMarkers(*this, dictionary, markerCorners, markerIds, parameters, rejectedCandidates);
+        for (unsigned int m=0 ;m < markerIds.size(); m ++) {
+            cv::Point2f centroid;
+            for (auto &c: markerCorners[m]){
+                centroid += {c.x, c.y};
+            }
+            centroid = centroid / (float)markerCorners[m].size();
+            Marker nm;
+            nm.marker_id = markerIds[m];
+            nm.centroid = centroid;
+            nm.corners = markerCorners[m];
+            markers.push_back(nm);
+        }
+        return markers;
     }
 
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {
