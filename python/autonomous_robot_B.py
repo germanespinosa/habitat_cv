@@ -1,26 +1,3 @@
-"""
-Automated robot controller
-Program Inputs:
-1. To start autonomous motion type m
-2. To start experiment and avoind occlusions right click********************************
-3. To follow robot path modify path variable controller_service.cpp
-4. Specify occlusions
-
-Program timers:
-1. predator step updates
-2. prey step updates
-3. controller - destination timer
-
-Mutable Variables:
-1. occlusions
-
-TO DO:
-1. change random location to "belief state" new location
-2. test predator canonical pursuit
-5. look at PID fix distance overshoot check normalize error correct
-6. added pause and resume to avoid overshoot fix later
-7. PREYS LOCATION NOT CANNONICAL FIX THIS!!!
-"""
 
 import sys
 from cellworld import *
@@ -48,9 +25,6 @@ spawn_locations_weights = []
 is_spawn = []
 
 class AgentData:
-    """
-    Class to initialize prey and predator objects
-    """
     def __init__(self, agent_name: str):
         self.is_valid = None # timers for predator and prey updates
         self.step = Step()
@@ -66,11 +40,12 @@ def on_experiment_started(experiment):
 
 
 def on_episode_finished(m):
+    print("EPISODE FINISHED")
     global episode_in_progress, current_predator_destination, inertia_buffer, display
 
     experiment_file = experiment_log_folder + "/" + current_experiment_name.split('_')[0] + "/" + current_experiment_name + "/" + current_experiment_name + "_experiment.json"
     last_trajectory = Experiment.get_from_file(experiment_file).episodes[-1].trajectories.get_agent_trajectory("prey")
-    #last_trajectory = Experiment.get_from_file(experiment_log_folder + "/" + current_experiment_name + "_experiment.json").episodes[-1].trajectories.get_agent_trajectory("prey")
+    print("LAST TRAJ FOUND")
     for step in last_trajectory:
         cell_index = possible_destinations.find(step.location)
         possible_destinations_weights[cell_index] = min(possible_destinations_weights[cell_index] + pheromone_charge, pheromone_max)
@@ -80,8 +55,8 @@ def on_episode_finished(m):
                 spawn_locations_weights[index] = possible_destinations_weights[cell_index]
 
     cmap = plt.cm.Reds([w / max(possible_destinations_weights) for w in possible_destinations_weights])
-    print(spawn_locations_weights)
 
+    print(spawn_locations_weights)
     for i, sl in enumerate(possible_destinations):
         if is_spawn[i]:
             display.cell(cell=sl, color=cmap[i], edge_color="blue")
@@ -94,10 +69,9 @@ def on_episode_finished(m):
     episode_in_progress = False
     current_predator_destination = choices(spawn_locations, weights=spawn_locations_weights)[0].location
     controller.set_destination(current_predator_destination)     # set destination
-    destination_list.append(current_predator_destination)
     if controller_timer != 1: # no idea why the timer would be an integer but whatevs
         controller_timer.reset()                                     # reset controller timer
-    display.circle(current_predator_destination, 0.01, "magenta")
+    destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = spawn_color)
 
 
 def on_capture( frame:int ):
@@ -108,35 +82,23 @@ def on_capture( frame:int ):
 
 
 def on_episode_started(experiment_name):
-    print("hi")
-    global display, episode_in_progress, current_experiment_name
+    global episode_in_progress, current_experiment_name
     current_experiment_name = experiment_name
-    # episode_in_progress = True
     print("New Episode: ", experiment_name)
     print("Occlusions: ", experiments[experiment_name].world.occlusions)
-    # occlusions = Cell_group_builder.get_from_name("hexagonal", experiments[experiment_name].world.occlusions, "occlusions")
-    # display.set_occlusions(occlusions)
-    # print(occlusions)
+
 
 def on_prey_entered_arena():
     global episode_in_progress, controller_timer
     episode_in_progress = True
-
     controller_timer = Timer(5.0)
-
 
 
 def load_world():
     """
     Load world to display
     """
-    global display
-    global world
-    global possible_destinations
-    global possible_destinations_weights
-    global spawn_locations
-    global spawn_locations_weights
-    global is_spawn
+    global display, world, possible_destinations, possible_destinations_weights, spawn_locations, spawn_locations_weights, is_spawn
 
     occlusion = Cell_group_builder.get_from_name("hexagonal", occlusions + ".occlusions")
     possible_destinations = world.create_cell_group(Cell_group_builder.get_from_name("hexagonal", occlusions + ".predator_destinations"))
@@ -148,40 +110,20 @@ def load_world():
     display = Display(world, fig_size=(9.0*.75, 8.0*.75), animated=True)
 
 
-def load_robot_world():
-    """
-    Load world with extra occlusions for where the robot cannot navigate
-    """
-    global robot_world
-    global robot_visibility
-
-    occlusion = Cell_group_builder.get_from_name("hexagonal", occlusions + ".occlusions.robot")
-    robot_world.set_occlusions(occlusion)
-
-    # visibility set up
-    occlusion_locations = robot_world.cells.occluded_cells().get("location")            # all occludded locations in world
-    occlusions_polygons = Polygon_list.get_polygons(occlusion_locations, robot_world.configuration.cell_shape.sides, robot_world.implementation.cell_transformation.size / 2, robot_world.implementation.space.transformation.rotation + robot_world.implementation.cell_transformation.rotation)  # polygon object
-    robot_visibility = Location_visibility(occlusions_polygons) # create visibility object
-
 def random_location():
     """
     Returns random open location in robot_world (keep this for cases where there are no hidden locations)
     """
-    location = choice(robot_world.cells.free_cells().get("location")) #this is probably wrong?
-    return location
+    return choice(world.cells.free_cells().get("location"))
 
 
 def hidden_location():
     """
     Returns random hidden location in robot_world
     """
-    current_location = predator.step.location
-    #hidden_cells = robot_visibility.hidden_cells(current_location, robot_world.cells)
-    #hidden_cells = robot_visibility.hidden_cells(current_location, possible_destinations)
-
     try:    # find random hidden cell
         #new_cell = choices(hidden_cells)
-        new_cell = choices(possible_destinations, weights=possible_destinations_weights)[0]
+        new_cell = choices(possible_destinations, weights=possible_destinations_weights)[0] # use bias now ??
         new_cell_location = new_cell.location
     except:  # if no hidden locations
         new_cell_location = random_location()
@@ -213,21 +155,18 @@ def on_click(event):
     Right-click to start experiment
     """
     global current_predator_destination
-    global destination_list
 
     if event.button == 1:
         controller.resume()
         location = Location(event.xdata, event.ydata)
         cell_id = world.cells.find(location)
         destination_cell = world.cells[cell_id]
-        #QQQQQQQQQQprint("CELL", destination_cell)
         if destination_cell.occluded:
             print("can't navigate to an occluded cell")
             return
         current_predator_destination = destination_cell.location
         controller.set_destination(destination_cell.location)
-        destination_list.append(destination_cell.location)
-        display.circle(current_predator_destination, 0.01, "magenta")
+        destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = explore_color)
     else:
         print("starting experiment")
         exp = experiment_service.start_experiment(                  # call start experiment
@@ -247,11 +186,7 @@ def on_keypress(event):
     """
     Sets up keyboard intervention
     """
-    global running
-    global current_predator_destination
-    global controller_timer
-    global destination_list
-    global controller_state
+    global running, current_predator_destination, controller_timer, controller_state
 
     if event.key == "p":
         print("pause")
@@ -272,30 +207,25 @@ def on_keypress(event):
         controller_timer = Timer(5.0)                           # set initial destination and timer
         current_predator_destination = hidden_location()        # assign new destination
         controller.set_destination(current_predator_destination)
-        destination_list.append(current_predator_destination)
-        display.circle(current_predator_destination, 0.01, "magenta")
+        destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = explore_color)
 
 
-# SET UP GLOBAL VARIABLES
+
 occlusions = sys.argv[1]
-
-inertia_buffer = 1 #1.8 # 1.5
+inertia_buffer = 1
 time_out = 1.0      # step timer for predator and preyQ
 
 robot_visibility = None
 controller_state = 1 # resume = 1, pause = 0
 # create world
 world = World.get_from_parameters_names("hexagonal", "canonical")
-robot_world = World.get_from_parameters_names("hexagonal", "canonical")
 load_world()
-load_robot_world()
 cell_size = world.implementation.cell_transformation.size
 #  create predator and prey objects
 predator = AgentData("predator")
 prey = AgentData("prey")
 # set initial destination and behavior
 current_predator_destination = predator.step.location  # initial predator destination
-destination_list = []       # keeps track any NEW destinations
 behavior = -1                                          # Explore or Pursue
 
 
@@ -317,7 +247,6 @@ experiments = {}
 
 
 # CONNECT TO CONTROLLER
-#controller_timer = 1  # initialize controller timer variable
 controller_timer = 1     # initialize controller timer variable
 controller = ControllerClient()
 if not controller.connect("127.0.0.1", 4590):
@@ -337,26 +266,28 @@ display.set_agent_marker("predator", Agent_markers.arrow())
 display.set_agent_marker("prey", Agent_markers.arrow())
 
 
-running = True
+# ADD PREDATOR DESTINATION TO WORLD - initialize at current predator location
+explore_color = "magenta"
+pursue_color = "cyan"
+spawn_color = "green"
+destination_circle = display.circle(predator.step.location, 0.01, explore_color)
 
+
+running = True
 while running:
 # add inertia buffer logic
     # check predator distance from destination and send new on if reached
     if current_predator_destination.dist(predator.step.location) < (cell_size * inertia_buffer):
-        controller.pause()                                           # prevents overshoot - stop robot omce close enough to destination
+        controller.pause()                  # prevents overshoot - stop robot once close enough to destination
         controller.set_behavior(0)
         inertia_buffer = 1
-        print("episode in progress: ", episode_in_progress)
         if controller_timer != 1:
             if episode_in_progress:
                 current_predator_destination = hidden_location()             # assign new destination
                 controller.set_destination(current_predator_destination)     # set destination
-                destination_list.append(current_predator_destination)
                 controller_timer.reset()                                     # reset controller timer
-                display.circle(current_predator_destination, 0.01, "magenta")
-                #print("NEW DESTINATION: ", current_predator_destination)
+                destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = explore_color)
                 controller.resume()                                          # Resume controller (unpause)
-        # create distance tolerance to account for inertia
         else:
             current_predator_destination = predator.step.location  # assign destination to current predator location (artificially reach goal when "close enough")
 
@@ -364,7 +295,7 @@ while running:
     if not controller_timer:
         controller.set_destination(current_predator_destination)  # resend destination
         controller_timer.reset()
-        #print("RESEND DESTINATION: ", current_predator_destination)
+
 
     # check if prey was seen
     if prey.is_valid and controller_state and episode_in_progress: # controller state allows pause to overrule pursue
@@ -374,11 +305,13 @@ while running:
         inertia_buffer = 2
         current_predator_destination = prey.step.location
         controller.set_destination(current_predator_destination)      # if prey is visible set new destination to prey location
-        destination_list.append(current_predator_destination)
-        display.circle(prey.step.location, 0.01, "magenta")
+        destination_circle.set(center = (prey.step.location.x, prey.step.location.y), color = pursue_color)
+
         print(prey.step.location, predator.step.location)
         controller.resume()
-        #controller_timer.reset()
+        controller_timer.reset()
+
+        # could add prey timer reset in this if statement, and only send new prey destination if it is timed out
 
     # plotting the current location of the predator and prey
     if prey.is_valid:
@@ -392,11 +325,6 @@ while running:
 
     else:
         display.agent(step=predator.step, color="gray", size=10)
-
-    # remove old destinations from map
-    if len(destination_list) > 1:
-        display.circle(destination_list[0], 0.008, "white")
-        destination_list.remove(destination_list[0])
 
     display.update()
     sleep(0.1)
