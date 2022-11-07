@@ -31,6 +31,22 @@ class AgentData:
         self.step.agent_name = agent_name
 
 
+def get_experiment_folder (experiment_name):
+    return experiment_log_folder + "/" + experiment_name.split('_')[0] + "/" + experiment_name
+
+
+def get_experiment_file (experiment_name):
+    return get_experiment_folder(experiment_name) + current_experiment_name + "_experiment.json"
+
+
+def get_episode_folder (experiment_name, episode_number):
+    return get_experiment_folder(experiment_name) + f"/episode_{episode_number:03}"
+
+
+def get_episode_file (experiment_name, episode_number):
+    return get_episode_folder(experiment_name, episode_number) + f"/{experiment_name}_episode_{episode_number:03}.json"
+
+
 def on_experiment_started(experiment):
     """
     To start experiment right click on map
@@ -42,14 +58,13 @@ def on_experiment_started(experiment):
 def on_episode_finished(m):
     print("EPISODE FINISHED")
     global episode_in_progress, current_predator_destination, inertia_buffer, display
-
-    experiment_file = experiment_log_folder + "/" + current_experiment_name.split('_')[0] + "/" + current_experiment_name + "/" + current_experiment_name + "_experiment.json"
-    last_trajectory = Experiment.get_from_file(experiment_file).episodes[-1].trajectories.get_agent_trajectory("prey")
+    experiment_state = experiment_service.get_experiment(current_experiment_name)
+    last_episode_file = get_episode_file(current_experiment_name, experiment_state.episode_count-1)
+    last_trajectory = Episode.load_from_file(last_episode_file).trajectories.get_agent_trajectory("prey")
     print("LAST TRAJ FOUND")
     for step in last_trajectory:
         cell_index = possible_destinations.find(step.location)
         possible_destinations_weights[cell_index] = min(possible_destinations_weights[cell_index] + pheromone_charge, pheromone_max)
-
         for index, pd in enumerate(spawn_locations):
             if pd.id == possible_destinations[cell_index].id:
                 spawn_locations_weights[index] = possible_destinations_weights[cell_index]

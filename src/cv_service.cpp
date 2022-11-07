@@ -53,11 +53,13 @@ namespace habitat_cv {
     void Cv_server_experiment_client::on_episode_started(const string &experiment_name) {
         auto experiment = this->get_experiment(experiment_name);
         std::stringstream ss;
-        ss << "/" << get_experiment_prefix(experiment_name) << '/' << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
+        ss << get_experiment_prefix(experiment_name) << '/' << experiment_name << "/episode_" << std::setw(3) << std::setfill('0') << experiment.episode_count;
         std::string destination_folder = ss.str();
         cv_server->episode_count++;
         cv_server->new_episode(experiment.subject_name, experiment.experiment_name, experiment.episode_count, experiment.world_info.occlusions, destination_folder);
     }
+
+    mutex video_mutex;
 
     bool Cv_server::new_episode(const string &subject,
                                 const string &experiment,
@@ -70,21 +72,38 @@ namespace habitat_cv {
         std::filesystem::create_directories(destination_folder);
         cout << "Video destination folder: " + destination_folder << endl;
         main_layout.new_episode(subject, experiment, episode, occlusions);
-        main_video.new_video(destination_folder + "/main_" + experiment );
-        raw_video.new_video(destination_folder + "/raw_" + experiment );
-        zoom_video.new_video(destination_folder + "/mouse_" + experiment );
+        while(!video_mutex.try_lock()){
+            cout << "failed to lock  Cv_server::new_episode" << endl;
+            this_thread::sleep_for(10ms);
+        }
+        if (!main_video.new_video(destination_folder + "/main_" + experiment )) cout << "error creating video: " << destination_folder + "/main_" + experiment << endl;
+        if (!raw_video.new_video(destination_folder + "/raw_" + experiment )) cout << "error creating video: " << destination_folder + "/raw_" + experiment << endl;;
+        if (!zoom_video.new_video(destination_folder + "/mouse_" + experiment )) cout << "error creating video: " << destination_folder + "/mouse_" + experiment << endl;;;
+        video_mutex.unlock();
         ts.reset();
         waiting_for_prey = true;
         return true;
     }
 
+
     bool Cv_server::end_episode() {
         cout << "end_episode" << endl;
-        thread([this](){
-        main_video.close();
-        raw_video.close();
-        zoom_video.close();
-        }).detach();
+        waiting_for_prey = false;
+
+        thread( [this]() {
+                    while(!video_mutex.try_lock()){
+                        this_thread::sleep_for(10ms);
+                    }
+                    try {
+                        main_video.close();
+                        raw_video.close();
+                        zoom_video.close();
+                    } catch (...) {
+                        cout << "failed closing videos Cv_server::end_episode" << endl;
+                    };
+                    video_mutex.unlock();
+                }
+        ).detach();
         return true;
     }
 
@@ -194,7 +213,6 @@ namespace habitat_cv {
         Frame_rate fr;
         fr.filtered_fps = fps;
         fr.filter = .1;
-        mutex video_mutex;
         bool show_occlusions = false;
         int input_counter=0;
         unsigned int current_composite = 0;
@@ -479,14 +497,20 @@ namespace habitat_cv {
             fr.new_frame();
             //PERF_START("VIDEO");
             if (main_video.is_open() && mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
-                video_mutex.lock();
-                thread ([this, &composite, &video_mutex](){
-                    auto main_frame = main_layout.get_frame(composite.get_video(), main_video.frame_count);
-                    main_video.add_frame(main_frame);
-                    raw_video.add_frame(composite.get_raw_composite());
-                    zoom_video.add_frame(composite.get_zoom());
-                    video_mutex.unlock();
-                }).detach();
+                while(!video_mutex.try_lock()) this_thread::sleep_for(10us);
+                if (main_video.is_open()) {
+                    thread([this, &composite]() {
+                        try {
+                            auto main_frame = main_layout.get_frame(composite.get_video(), main_video.frame_count);
+                            main_video.add_frame(main_frame);
+                            raw_video.add_frame(composite.get_raw_composite());
+                            zoom_video.add_frame(composite.get_zoom());
+                        } catch (...) {
+                            cout << "failed add frames Cv_server::cv_process" << endl;
+                        }
+                        video_mutex.unlock();
+                    }).detach();
+                }
             } else {
                 mouse.location = NOLOCATION;
             }
