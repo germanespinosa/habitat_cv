@@ -5,10 +5,6 @@
 
 namespace habitat_cv {
     struct Video {
-
-        const std::string extension = ".mp4";
-        const int fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
-
         Video(const cv::Size &size, Image::Type type);
         ~Video();
         bool new_video(const std::string &file_name);
@@ -22,9 +18,9 @@ namespace habitat_cv {
         cv::Size size;
         Image::Type type;
         cv::VideoWriter writer;
-        std::thread writer_thread;
+        std::thread *writer_thread = nullptr;
         std::queue<Image> pending_frames;
-        std::atomic<bool> running;
+        std::atomic<bool> *running = nullptr;
         void split_video(const std::vector<cv::Point2f> &, const cv::Size &);
     };
 

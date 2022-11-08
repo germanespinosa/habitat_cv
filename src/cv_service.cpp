@@ -76,6 +76,9 @@ namespace habitat_cv {
             cout << "failed to lock  Cv_server::new_episode" << endl;
             this_thread::sleep_for(10ms);
         }
+        main_video = Video(main_layout.size(), Image::rgb);
+        raw_video = Video(raw_layout.size(), Image::gray);
+        zoom_video = Video(cv::Size(300,300), Image::gray);
         if (!main_video.new_video(destination_folder + "/main_" + experiment )) cout << "error creating video: " << destination_folder + "/main_" + experiment << endl;
         if (!raw_video.new_video(destination_folder + "/raw_" + experiment )) cout << "error creating video: " << destination_folder + "/raw_" + experiment << endl;;
         if (!zoom_video.new_video(destination_folder + "/mouse_" + experiment )) cout << "error creating video: " << destination_folder + "/mouse_" + experiment << endl;;;
