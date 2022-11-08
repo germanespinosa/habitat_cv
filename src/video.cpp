@@ -6,6 +6,8 @@ using namespace std;
 namespace habitat_cv {
 
     unsigned int fps = 90;
+    std::string extension = ".mp4";
+    int fourcc = cv::VideoWriter::fourcc('m', 'p', '4', 'v');
 
     Video::Video(const cv::Size &size, Image::Type type):
     frame_count(-1),
@@ -27,14 +29,14 @@ namespace habitat_cv {
     bool Video::new_video(const std::string &new_file_name) {
         if (running) return false;
         close();
-        running = true;
+        running = new atomic_bool(true);
         file_name = new_file_name;
         if (writer.open(file_name + extension, fourcc, fps, size, type == Image::rgb)) {
-            writer_thread = thread([this]() {
+            writer_thread = new thread([this]() {
                 frame_count = 0;
-                while (running || !pending_frames.empty()) {
-                    while (running && pending_frames.empty());
-                    if (!pending_frames.empty() && running) {
+                while (*running || !pending_frames.empty()) {
+                    while (*running && pending_frames.empty());
+                    if (!pending_frames.empty() && *running) {
                         auto frame = pending_frames.front();
                         pending_frames.pop();
                         if (frame.type != this->type || frame.size() != this->size) continue;
@@ -51,14 +53,20 @@ namespace habitat_cv {
     }
 
     bool Video::close() {
-        running = false;
-        if (writer_thread.joinable()) writer_thread.join();
+        if (running) {
+            *running = false;
+        }
+        if (writer_thread && writer_thread->joinable()) writer_thread->join();
+        delete running;
+        delete writer_thread;
+        running = nullptr;
+        writer_thread = nullptr;
         frame_count = 0;
         return true;
     }
 
     bool Video::is_open() const {
-        return running;
+        return running && * running;
     }
 
     void Video::set_fps(unsigned int new_fps) {
@@ -78,7 +86,7 @@ namespace habitat_cv {
             crop_rects.emplace_back(tls[parts_counter], crop_size);
         }
 
-        cv::VideoCapture capture(file_name + Video::extension);
+        cv::VideoCapture capture(file_name + extension);
         while (true) {
             cv::Mat frame;
             // Capture frame-by-frame
