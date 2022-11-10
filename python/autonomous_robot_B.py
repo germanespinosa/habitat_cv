@@ -7,6 +7,7 @@ from random import choice, choices
 from time import sleep
 from json_cpp import JsonList
 
+
 display = None
 episode_in_progress = False
 experiment_log_folder = "/research/data"
@@ -61,7 +62,6 @@ def on_episode_finished(m):
     experiment_state = experiment_service.get_experiment(current_experiment_name)
     last_episode_file = get_episode_file(current_experiment_name, experiment_state.episode_count-1)
     last_trajectory = Episode.load_from_file(last_episode_file).trajectories.get_agent_trajectory("prey")
-    print("LAST TRAJ FOUND")
     for step in last_trajectory:
         cell_index = possible_destinations.find(step.location)
         possible_destinations_weights[cell_index] = min(possible_destinations_weights[cell_index] + pheromone_charge, pheromone_max)
@@ -104,6 +104,7 @@ def on_episode_started(experiment_name):
 
 
 def on_prey_entered_arena():
+    print("Prey Entered")
     global episode_in_progress, controller_timer
     episode_in_progress = True
     controller_timer = Timer(5.0)
@@ -341,9 +342,10 @@ while running:
     else:
         display.agent(step=predator.step, color="gray", size=10)
 
-    display.update()
+    # display.update()
+    display.fig.canvas.draw_idle()
+    display.fig.canvas.start_event_loop(0.001)
     sleep(0.1)
-
 
 controller.unsubscribe()
 controller.stop()
