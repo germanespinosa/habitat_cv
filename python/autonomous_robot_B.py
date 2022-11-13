@@ -25,6 +25,8 @@ spawn_locations_weights = []
 
 is_spawn = []
 
+new_experiment = False
+
 class AgentData:
     def __init__(self, agent_name: str):
         self.is_valid = None # timers for predator and prey updates
@@ -47,19 +49,26 @@ def get_episode_folder (experiment_name, episode_number):
 def get_episode_file (experiment_name, episode_number):
     return get_episode_folder(experiment_name, episode_number) + f"/{experiment_name}_episode_{episode_number:03}.json"
 
+def go_to_start_location():
+    global current_predator_destination, destination_circle
+    controller.resume()
+    current_predator_destination = choice(spawn_locations.get("location"))
+    destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = explore_color)
+    controller.set_destination(current_predator_destination)  # resend destination
+    controller_timer.reset()
+
 
 def on_experiment_started(experiment):
     """
     To start experiment right click on map
     """
-    global current_predator_destination
+    global current_predator_destination, destination_circle, controller_timer
     print("Experiment started:", experiment)
     experiments[experiment.experiment_name] = experiment.copy()
 
-    # JUST ADDED
-    # current_predator_destination = predator.step.location
-    # should I call episode finished to auto spawn ??  test this with terminal
-    on_episode_finished()
+    current_predator_destination = predator.step.location
+    destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = explore_color)
+
 
 
 def on_episode_finished(m):
@@ -134,7 +143,7 @@ def load_world():
 
 def random_location():
     """
-    Returns random open location in robot_world (keep this for cases where there are no hidden locations)
+    Returns random open location (keep this for cases where there are no hidden locations)
     """
     return choice(world.cells.free_cells().get("location"))
 
@@ -300,6 +309,7 @@ while running:
 # add inertia buffer logic
     # check predator distance from destination and send new on if reached
     if current_predator_destination.dist(predator.step.location) < (cell_size * inertia_buffer):
+
         controller.pause()                  # prevents overshoot - stop robot once close enough to destination
         controller.set_behavior(0)
         inertia_buffer = 1
