@@ -58,7 +58,7 @@ def on_experiment_started(experiment):
 
     # JUST ADDED
     # current_predator_destination = predator.step.location
-    # should I call episode finished to auto spawn ??
+    # should I call episode finished to auto spawn ??  test this with terminal
     on_episode_finished()
 
 
