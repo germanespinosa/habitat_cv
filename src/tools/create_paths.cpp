@@ -15,7 +15,7 @@ int main (int argc, char **argv){
 //    Graph graph = world.create_graph();
 //   Paths paths = Paths::get_astar(graph);
 //    paths.save(output_file);
-    auto paths = Paths(world.create_paths(Resources::from("paths").key("hexagonal").key(occlusions).key("astar").key("robot").get_resource<Path_builder>()));
+    auto paths = Paths(world.create_paths(Resources::from("paths").key("hexagonal").key(occlusions).key("astar").get_resource<Path_builder>()));
     auto cells = world.create_cell_group();
     auto src = cells.find(Coordinates(-8,0));
     auto dst = cells.find(Coordinates(6,-2));

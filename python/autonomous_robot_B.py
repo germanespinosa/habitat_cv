@@ -52,8 +52,14 @@ def on_experiment_started(experiment):
     """
     To start experiment right click on map
     """
+    global current_predator_destination
     print("Experiment started:", experiment)
     experiments[experiment.experiment_name] = experiment.copy()
+
+    # JUST ADDED
+    # current_predator_destination = predator.step.location
+    # should I call episode finished to auto spawn ??
+    on_episode_finished()
 
 
 def on_episode_finished(m):
