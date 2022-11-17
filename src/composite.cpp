@@ -49,12 +49,15 @@ namespace habitat_cv {
         Polygon video_polygon(world.space.center, world.space.shape, t);
         video_mask_image.polygon(video_polygon,{255},true);
         mask_video = video_mask_image.threshold(0);
+        freezing_control_rect = cv::Rect(500,500,5,5);
 
         for (unsigned int c = 0; c < configuration.order.count(); c++) {
             warped.emplace_back(composite_size, Image::Type::gray);
             detection.emplace_back(composite_size, Image::Type::gray);
             detection_small.emplace_back(detection_small_size, Image::Type::gray);
             raw_small.emplace_back(crop_size, Image::Type::gray);
+            freezing_control.emplace_back(cv::Size(5,5), Image::Type::gray);
+            frozen_camera.push_back(false);
         }
 
 #ifdef USE_CUDA
@@ -85,7 +88,7 @@ namespace habitat_cv {
                                      camera_coordinates.y * crop_size.height);
             crop_rectangles.emplace_back(crop_location, crop_size);
             cv::Point2f zoom_location (camera_coordinates.x * zoom_size.width,
-                                     camera_coordinates.y * zoom_size.height);
+                                       camera_coordinates.y * zoom_size.height);
             zoom_rectangles.emplace_back(zoom_location);
             vector<cv::Point2f> src_cp;
             vector<cv::Point2f> dst_cp;
@@ -117,9 +120,14 @@ namespace habitat_cv {
         detection_threshold = Binary_image();
         detection_camera_threshold = vector<Binary_image>(4);
         raw = images;
+
         if (cameras_center.empty()) set_cameras_center(images);
 #ifdef USE_CUDA
         for (unsigned int c = 0; c < configuration.order.count(); c++){
+            cv::Mat control;
+            cv::absdiff(raw[c](freezing_control_rect), freezing_control[c], control);
+            frozen_camera[c] = cv::sum(control)[0] == 0;
+            raw[c](freezing_control_rect).copyTo(freezing_control[c]);
             gpu_raw[c].upload(raw[c], gpu_detection_streams[c]);
             cv::cuda::warpPerspective(gpu_raw[c], gpu_warped[c], homographies[c], composite_size, cv::INTER_LINEAR,
                                       cv::BORDER_CONSTANT, cv::Scalar(), gpu_detection_streams[c]);

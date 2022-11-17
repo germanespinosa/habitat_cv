@@ -224,6 +224,8 @@ namespace habitat_cv {
         float entrance_distance = ENTRANCE_DISTANCE * cv_space.transformation.size;
         bool show_robot_destination = false;
         unsigned int prey_entered_arena_indicator = 0;
+        vector<int> frozen_camera_counters(4, 0);
+        int frozen_camera_limit = 20;
         while (tracking_running) {
             ////PERF_START("WAIT");
             while ((!unlimited || main_video.is_open()) && !frame_timer.time_out()) this_thread::sleep_for(100us);

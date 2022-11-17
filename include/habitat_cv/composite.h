@@ -65,6 +65,9 @@ namespace habitat_cv{
         Binary_image detection_threshold;
         Binary_image subtracted_threshold;
         std::vector<Binary_image> detection_camera_threshold;
+        Images freezing_control;
+        cv::Rect freezing_control_rect;
+        std::vector<bool> frozen_camera;
     private:
         Camera_configuration configuration;
         Images raw; // raw images from the cameras
