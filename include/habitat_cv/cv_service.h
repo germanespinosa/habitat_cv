@@ -63,7 +63,7 @@ namespace habitat_cv{
         Cv_server_experiment_client &experiment_client;
 
         unsigned int mouse_threshold = 85;
-        unsigned int robot_threshold = 250;
+        unsigned int robot_threshold = 224; //250;
 
         cell_world::Space canonical_space;
         cell_world::Space cv_space;

@@ -293,6 +293,9 @@ namespace habitat_cv {
                 }
                 composite.get_video().circle(robot.location, 5, color_robot, true);
                 composite.get_video().arrow(robot.location, to_radians(robot.rotation), 50, color_robot, 3);
+                // TODO: check gabbie added also make it 2 cell size
+                composite.get_video().circle(robot.location, entrance_distance * 2.5,color_robot, false);
+
                 if ( show_robot_destination && robot_destination != NOLOCATION) {
                     auto robot_normalized_destination_cv = cv_space.transform(robot_normalized_destination, canonical_space);
                     auto robot_destination_cv = cv_space.transform(robot_destination, canonical_space);
@@ -371,13 +374,18 @@ namespace habitat_cv {
                         }
                     }
                     {
-                        auto minutes = (int(experiment_timer.to_seconds()) / 60) % 60;
-                        auto seconds = int(experiment_timer.to_seconds()) % 60;
-                        auto time = (minutes < 10 ? "0" + to_string(minutes) : to_string(minutes)) + ":" +
-                                    (seconds < 10 ? "0" + to_string(seconds) : to_string(seconds));
-                        screen_frame = screen_layout.get_frame(composite.get_video(),
-                                                               "episode: " + to_string(episode_count) + " time: " +
-                                                               time, fr.filtered_fps);
+                        if (episode_count > 0) {
+                            auto minutes = (int(experiment_timer.to_seconds()) / 60) % 60;
+                            auto seconds = int(experiment_timer.to_seconds()) % 60;
+                            auto time = (minutes < 10 ? "0" + to_string(minutes) : to_string(minutes)) + ":" +
+                                        (seconds < 10 ? "0" + to_string(seconds) : to_string(seconds));
+                            screen_frame = screen_layout.get_frame(composite.get_video(),
+                                                                   "episode: " + to_string(episode_count - 1) + " time: " +
+                                                                   time, fr.filtered_fps);
+                        } else {
+                            screen_frame = screen_layout.get_frame(composite.get_video(),
+                                                                   "main", fr.filtered_fps);
+                        }
                     }break;
                 case Screen_image::difference :
                     screen_frame = screen_layout.get_frame(composite.get_subtracted_small(), "difference", fr.filtered_fps);

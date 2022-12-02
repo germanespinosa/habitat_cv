@@ -198,19 +198,19 @@ def on_click(event):
         current_predator_destination = destination_cell.location
         controller.set_destination(destination_cell.location)
         destination_circle.set(center = (current_predator_destination.x, current_predator_destination.y), color = explore_color)
-    else:
-        print("starting experiment")
-        exp = experiment_service.start_experiment(                  # call start experiment
-            prefix="PREFIX",
-            suffix="SUFFIX",
-            occlusions=occlusions,
-            world_implementation="canonical",
-            world_configuration="hexagonal",
-            subject_name="SUBJECT",
-            duration=10)
-        print("Experiment Name: ", exp.experiment_name)
-        r = experiment_service.start_episode(exp.experiment_name)   # call start episode
-        print(r)
+    # else:
+    #     print("starting experiment")
+    #     exp = experiment_service.start_experiment(                  # call start experiment
+    #         prefix="PREFIX",
+    #         suffix="SUFFIX",
+    #         occlusions=occlusions,
+    #         world_implementation="canonical",
+    #         world_configuration="hexagonal",
+    #         subject_name="SUBJECT",
+    #         duration=10)
+    #     print("Experiment Name: ", exp.experiment_name)
+    #     r = experiment_service.start_episode(exp.experiment_name)   # call start episode
+    #     print(r)
 
 
 def on_keypress(event):
