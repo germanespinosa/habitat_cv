@@ -1,0 +1,22 @@
+#!/bin/bash
+
+EXPERIMENT="$1"
+EPISODE="$2"
+
+BASE_FOLDER="/research/data/PEEK"
+EXPERIMENT_FOLDER="$BASE_FOLDER/$EXPERIMENT"
+
+fls=$(printf "%03d" $EPISODE)
+if [ -f "$EXPERIMENT_FOLDER/episode_$fls/main_$EXPERIMENT.mp4" ]
+then
+  OLD_VIDEO="$EXPERIMENT_FOLDER/episode_$fls/main_$EXPERIMENT.mp4"
+  NEW_VIDEO="$EXPERIMENT_FOLDER/episode_$fls/main_${EXPERIMENT}_episode_${fls}_fixed"
+  OLD_LOG="$EXPERIMENT_FOLDER/episode_$fls/${EXPERIMENT}_episode_${fls}.json"
+  NEW_LOG="$EXPERIMENT_FOLDER/episode_$fls/${EXPERIMENT}_episode_${fls}_fixed.json"
+  FIXED_LOG="$EXPERIMENT_FOLDER/episode_$fls/${EXPERIMENT}_episode_${fls}_shifted.json"
+  ../cmake-build-planb/reverse_videos_logs $OLD_VIDEO $NEW_LOG $NEW_VIDEO >> fix_log_results.log
+  python ../python/fix_frame_numbering.py $OLD_LOG $NEW_LOG $FIXED_LOG >> fix_log_results.log
+  ../cmake-build-planb/control_frame_shift ${NEW_VIDEO} $FIXED_LOG >> fix_log_results.log
+fi
+
+echo "Finished episode $fls"

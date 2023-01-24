@@ -77,6 +77,7 @@ namespace habitat_cv {
             this_thread::sleep_for(10ms);
         }
         main_video = Video(main_layout.size(), Image::rgb);
+        frame_number = 0;
         raw_video = Video(raw_layout.size(), Image::gray);
         zoom_video = Video(cv::Size(300,300), Image::gray);
         if (!main_video.new_video(destination_folder + "/main_" + experiment )) cout << "error creating video: " << destination_folder + "/main_" + experiment << endl;
@@ -161,13 +162,13 @@ namespace habitat_cv {
  enum Screen_image {
         main,
         difference,
-        led,
         raw,
         zoom,
         cam0,
         cam1,
         cam2,
-        cam3
+        cam3,
+        led,
     };
 
     void Cv_server::tracking_process() {
@@ -226,6 +227,7 @@ namespace habitat_cv {
         unsigned int prey_entered_arena_indicator = 0;
         vector<int> frozen_camera_counters(4, 0);
         int frozen_camera_limit = 20;
+        bool change_threshold = false;
         while (tracking_running) {
             ////PERF_START("WAIT");
             while ((!unlimited || main_video.is_open()) && !frame_timer.time_out()) this_thread::sleep_for(100us);
@@ -337,6 +339,12 @@ namespace habitat_cv {
                         float time_stamp,
                         unsigned int frame_number,
                         Tracking_server &tracking_server ) {
+                    if (mouse_detected) {
+                        mouse.time_stamp = time_stamp;
+                        mouse.frame = frame_number;
+                        mouse.rotation = 0;
+                        tracking_server.send_step(mouse.convert(cv_space, canonical_space));
+                    }
                     if (robot_detected) {
                         Predator_data predator_data;
                         predator_data.capture = puff_state ==  PUFF_DURATION;
@@ -347,19 +355,13 @@ namespace habitat_cv {
                         robot.data = predator_data.to_json();
                         tracking_server.send_step(robot.convert(cv_space, canonical_space));
                     }
-                    if (mouse_detected) {
-                        mouse.time_stamp = time_stamp;
-                        mouse.frame = frame_number;
-                        mouse.rotation = 0;
-                        tracking_server.send_step(mouse.convert(cv_space, canonical_space));
-                    }
                 },
                        robot_detected,
                        mouse_detected,
                        robot,
                        mouse,
                        ts.to_seconds(),
-                       main_video.frame_count,
+                       frame_number,
                        reference_wrapper(tracking_server) ).detach();
             }
             //PERF_STOP("MESSAGE");
@@ -441,9 +443,42 @@ namespace habitat_cv {
                         // start video recording
                         images.save(".");
                         break;
-                    case 'H':
-
+                    case '\'':
+                        {
+                            change_threshold = !change_threshold;
+                            if (change_threshold) {
+                                screen_image = Screen_image::led;
+                                cout << "Threshold change enabled" << endl;
+                            } else {
+                                screen_image = Screen_image::main;
+                                cout << "Threshold change disabled" << endl;
+                            }
+                        }
                         break;
+                    case '!':
+                    {
+                        key = cv::waitKey();
+                        int  door_number = key - 176;
+                        if (door_number<=3) {
+                            auto m = Message("open_door", door_number);
+                            experiment_client.experiment_broadcast(m);
+                        } else {
+                            cout << "door number " << door_number << " not found." << endl;
+                        }
+                        break;
+                    }
+                    case '@':
+                    {
+                        key = cv::waitKey();
+                        int  door_number = key - 176;
+                        if (door_number<=3) {
+                            auto m = Message("close_door", door_number);
+                            experiment_client.experiment_broadcast(m);
+                        } else {
+                            cout << "door number " << door_number << " not found." << endl;
+                        }
+                        break;
+                    }
                     case 'V':
                         // start video recording
                         if (main_video.is_open() && mouse.location==NOLOCATION){
@@ -453,6 +488,7 @@ namespace habitat_cv {
                             main_video.new_video("main");
                             raw_video.new_video("raw");
                             zoom_video.new_video("mouse");
+                            frame_number = 0;
                         }
                         break;
                     case 'B':
@@ -465,23 +501,38 @@ namespace habitat_cv {
                         tracking_running = false;
                         break;
                     case 'M':
-                        show_markers = !show_markers;
+                        //show_markers = !show_markers;
                         break;
                     case 'R':
                         cameras.reset();
                         break;
-                    case '[':
-                        robot_threshold++;
-                        cout << "robot threshold set to " << robot_threshold << endl;
-                        break;
                     case ']':
-                        robot_threshold--;
-                        cout << "robot threshold set to " << robot_threshold << endl;
+                        if (!change_threshold){
+                            cout << "Threshold change disabled" << endl;
+                        } else {
+                            if (robot_threshold < 254) robot_threshold++;
+                            cout << "Threshold set to " << robot_threshold << endl;
+                        }
+                        break;
+                    case '[':
+                        if (!change_threshold){
+                            cout << "Threshold change disabled" << endl;
+                        } else {
+                            if (robot_threshold > 0) robot_threshold--;
+                            cout << "Threshold set to " << robot_threshold << endl;
+                        }
                         break;
                     case 'U':
-                        for (auto &comp:composites)
-                        comp.set_background(composite.get_detection());
-                        composite.get_detection().save(background_path,"composite.png");
+//                        cout << "Are you sure? confirm by pressing the key again. Any other key to cancel." << endl;
+//                        key = cv::waitKey(2000);
+//                        if ( key == 'U') {
+//                            cout << "Updating background" << endl;
+                            for (auto &comp: composites)
+                                comp.set_background(composite.get_detection());
+                            composite.get_detection().save(background_path, "composite.png");
+//                        } else {
+//                            cout << "Canceled" << endl;
+//                        }
                         break;
                     case 'O':
                         show_occlusions = !show_occlusions;
@@ -512,9 +563,9 @@ namespace habitat_cv {
             if (main_video.is_open() && mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
                 while(!video_mutex.try_lock()) this_thread::sleep_for(10us);
                 if (main_video.is_open()) {
-                    thread([this, &composite]() {
+                    thread([this, &composite](unsigned int frame_number) {
                         try {
-                            auto main_frame = main_layout.get_frame(composite.get_video(), main_video.frame_count);
+                            auto main_frame = main_layout.get_frame(composite.get_video(), frame_number);
                             main_video.add_frame(main_frame);
                             raw_video.add_frame(composite.get_raw_composite());
                             zoom_video.add_frame(composite.get_zoom());
@@ -522,7 +573,8 @@ namespace habitat_cv {
                             cout << "failed add frames Cv_server::cv_process" << endl;
                         }
                         video_mutex.unlock();
-                    }).detach();
+                    }, frame_number).detach();
+                    frame_number++;
                 }
             } else {
                 mouse.location = NOLOCATION;

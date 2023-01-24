@@ -1,0 +1,26 @@
+#!/bin/bash
+
+EXPERIMENT="$1"
+BASE_FOLDER="/research/data/PEEK"
+EXPERIMENT_FOLDER="$BASE_FOLDER/$EXPERIMENT"
+
+episode_number=0
+fls=$(printf "%03d" $episode_number)
+while [ -f "$EXPERIMENT_FOLDER/episode_$fls/main_$EXPERIMENT.mp4" ]
+do
+  ./fix_log $EXPERIMENT $episode_number &
+  JOBS[$episode_number]=$!
+  episode_number=$(($episode_number + 1))
+  fls=$(printf "%03d" $episode_number)
+done
+
+for P in $JOBS
+do
+  wait $P
+done
+
+echo "Experiment $EXPERIMENT is ready"
+
+python /research/habitat_controller/experiment_join_shifted.py $EXPERIMENT
+
+#JOINING THE LOGS CAN HAPPEN HERE

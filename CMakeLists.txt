@@ -150,6 +150,18 @@ target_link_libraries(habitat_cv
 
 target_link_libraries(agent_tracker habitat_cv )
 
+add_executable(reverse_videos_logs
+        src/tools/reverse_videos_logs.cpp)
+
+target_link_libraries(reverse_videos_logs habitat_cv)
+
+
+add_executable(control_frame_shift
+        src/tools/control_frame_shift.cpp)
+
+target_link_libraries(control_frame_shift habitat_cv)
+
+
 add_executable(create_paths
         src/tools/create_paths.cpp)
 
@@ -157,6 +169,7 @@ target_link_libraries(create_paths cellworld params-cpp)
 
 add_executable(homography src/tools/homography.cpp)
 target_link_libraries(homography habitat_cv)
+
 
 if (NOT ${USE_FAKE_CAMERA})
 

@@ -102,7 +102,7 @@ int main(int argc, char **argv){
 
     if (!robot.connect("192.168.137.155")){
         cout << "Failed to connect to robot" << endl;
-        exit(1);
+        //exit(1);
     }
 
     Controller_service::set_logs_folder("controller/");
