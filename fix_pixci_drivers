@@ -1,5 +1,7 @@
 #!/bin/bash
 cd /usr/local/xcap/drivers
 rmmod pixci
-rm /lib/modules/5.15.0-58-generic/kernel/drivers/misc/pixci.ko
-./pixci.sh install /usr/local/xcap/drivers /usr/local/xcap/drivers/x86_64/5.15.0-58-generic
+#rm /lib/modules/5.15.0-60-generic/kernel/drivers/misc/pixci.ko
+#./pixci.sh install /usr/local/xcap/drivers /usr/local/xcap/drivers/x86_64/5.15.0-60-generic
+rm /lib/modules/5.19.0-40-generic/kernel/drivers/misc/pixci.ko
+./pixci.sh install /usr/local/xcap/drivers /usr/local/xcap/drivers/x86_64/5.19.0-40-generic
