@@ -83,6 +83,7 @@ namespace habitat_cv {
         if (!main_video.new_video(destination_folder + "/main_" + experiment )) cout << "error creating video: " << destination_folder + "/main_" + experiment << endl;
         if (!raw_video.new_video(destination_folder + "/raw_" + experiment )) cout << "error creating video: " << destination_folder + "/raw_" + experiment << endl;;
         if (!zoom_video.new_video(destination_folder + "/mouse_" + experiment )) cout << "error creating video: " << destination_folder + "/mouse_" + experiment << endl;;;
+        sync_log.new_log(destination_folder + "/sync_" + experiment + ".json");
         video_mutex.unlock();
         ts.reset();
         waiting_for_prey = true;
@@ -102,6 +103,7 @@ namespace habitat_cv {
                         main_video.close();
                         raw_video.close();
                         zoom_video.close();
+                        sync_log.close();
                     } catch (...) {
                         cout << "failed closing videos Cv_server::end_episode" << endl;
                     };
@@ -175,6 +177,12 @@ namespace habitat_cv {
         unsigned int parallel_threads = 2;
         vector<Composite> composites;
         vector<thread> composite_threads;
+        Json_int_vector leds(4);
+        Coordinates_list leds_locations;
+        leds_locations.emplace_back(635,320);
+        leds_locations.emplace_back(1870,414);
+        leds_locations.emplace_back(662,1585);
+        leds_locations.emplace_back(1872,1648);
         for (unsigned int pt=0; pt < parallel_threads; pt++){
             composites.emplace_back(camera_configuration);
             composite_threads.emplace_back();
@@ -226,7 +234,6 @@ namespace habitat_cv {
         bool show_robot_destination = false;
         unsigned int prey_entered_arena_indicator = 0;
         vector<int> frozen_camera_counters(4, 0);
-        int frozen_camera_limit = 20;
         bool change_threshold = false;
         while (tracking_running) {
             ////PERF_START("WAIT");
@@ -235,6 +242,7 @@ namespace habitat_cv {
             frame_timer.reset();
             ////PERF_START("CAPTURE");
             auto images = cameras.capture();
+            auto time_stamp = ts.to_seconds();
             ////PERF_STOP("CAPTURE");
             ////PERF_START("COMPOSITE");
             current_composite = (current_composite + 1) % 2;
@@ -283,6 +291,10 @@ namespace habitat_cv {
             //PERF_START("DETECTION_PROCESSING");
             //PERF_START("SCREEN");
             composite.get_video().circle(entrance_location, entrance_distance, {120, 120, 0}, false);
+            for (int l=0;l<4;l++){
+                auto lv = images[l].data[leds_locations[l].x + leds_locations[l].y * images[l].cols];
+                leds[l] = lv>128;
+            }
             //PERF_START("SCREEN_ROBOT");
             if (robot_detected) {
                 auto color_robot = robot_color;
@@ -360,7 +372,7 @@ namespace habitat_cv {
                        mouse_detected,
                        robot,
                        mouse,
-                       ts.to_seconds(),
+                       time_stamp,
                        frame_number,
                        reference_wrapper(tracking_server) ).detach();
             }
@@ -421,6 +433,12 @@ namespace habitat_cv {
                     screen_frame.circle({15, 15}, 5, {0, 0, 0}, true);
                 }
             }
+            for (int l=0;l<4;l++){
+                if (leds[l]) {
+                    screen_frame.circle({55 + (float)l * 15, 15}, 5, {0, 255, 0}, true);
+                }
+            }
+
             if (human_intervention) screen_frame.circle({35, 15}, 10, {255, 0, 0}, true);
             if (prey_entered_arena_indicator){
                 prey_entered_arena_indicator--;
@@ -563,6 +581,7 @@ namespace habitat_cv {
             if (main_video.is_open() && mouse.location != NOLOCATION) { // starts recording when mouse crosses the door
                 while(!video_mutex.try_lock()) this_thread::sleep_for(10us);
                 if (main_video.is_open()) {
+                    sync_log.sync_event(frame_number,time_stamp, leds);
                     thread([this, &composite](unsigned int frame_number) {
                         try {
                             auto main_frame = main_layout.get_frame(composite.get_video(), frame_number);
@@ -607,5 +626,36 @@ namespace habitat_cv {
             background_path(background_path)
     {
         experiment_client.cv_server = this;
+    }
+
+    void SyncLog::new_log(const string &pfile_path) {
+        file_path = pfile_path;
+        leds.clear();
+        frames.clear();
+        time_stamps.clear();
+    }
+
+    void SyncLog::sync_event(int frame, float time_stamp, const Json_int_vector &pleds) {
+        if (!leds.empty()) {
+            auto &b = leds.back();
+            for (unsigned int i = 0; i < pleds.size(); i++) {
+                if (b[i] != pleds[i]) {
+                    leds.push_back(pleds);
+                    frames.push_back(frame);
+                    time_stamps.push_back(time_stamp);
+                    return;
+                }
+            }
+        }
+        else
+        {
+            leds.push_back(pleds);
+            frames.push_back(frame);
+            time_stamps.push_back(time_stamp);
+        }
+    }
+
+    void SyncLog::close() {
+        this->save(file_path);
     }
 }
