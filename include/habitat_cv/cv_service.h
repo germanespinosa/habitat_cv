@@ -38,6 +38,21 @@ namespace habitat_cv{
         Cv_server *cv_server;
     };
 
+    struct SyncLog : json_cpp::Json_object {
+        Json_object_members(
+                Add_member(time_stamps);
+                Add_member(frames);
+                Add_member(leds);
+        )
+        cell_world::Json_float_vector time_stamps;
+        cell_world::Json_int_vector frames;
+        json_cpp::Json_vector<cell_world::Json_int_vector> leds;
+        std::string file_path;
+        void new_log(const std::string &);
+        void sync_event(int frame, float time_stamp, const cell_world::Json_int_vector &leds);
+        void close();
+    };
+
     struct Cv_server {
         explicit Cv_server(const Camera_configuration &camera_configuration,
                            const std::string &camera_configuration_file,
@@ -86,6 +101,7 @@ namespace habitat_cv{
         Mouse_layout mouse_layout;
         bool reset_robot_connection = false;
 
+        SyncLog sync_log;
         Video main_video;
         Video raw_video;
         Video zoom_video;
