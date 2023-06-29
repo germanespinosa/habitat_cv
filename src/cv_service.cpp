@@ -182,12 +182,12 @@ namespace habitat_cv {
         cam1,
         cam2,
         cam3,
-        sync_led,
         led,
     };
 
     void Cv_server::tracking_process() {
-        Profile sync_led;
+        bool show_magnets = false;
+        Location magnet_distance(0, 12.5);        Profile sync_led;
         sync_led.area_upper_bound=160;
         sync_led.area_lower_bound=15;
 
@@ -204,6 +204,7 @@ namespace habitat_cv {
             composites.emplace_back(camera_configuration);
             composite_threads.emplace_back();
         }
+
         for (auto &composite:composites) {
             Image bg;
             auto images = cameras.capture();
@@ -252,6 +253,9 @@ namespace habitat_cv {
         unsigned int prey_entered_arena_indicator = 0;
         vector<int> frozen_camera_counters(4, 0);
         bool change_threshold = false;
+        bool record_perf_data = false;
+        Json_float_vector latency;
+        Json_float_vector throughput;
         while (tracking_running) {
             ////PERF_START("WAIT");
             while ((!unlimited || main_video.is_open()) && !frame_timer.time_out()) this_thread::sleep_for(100us);
@@ -264,6 +268,7 @@ namespace habitat_cv {
             ////PERF_START("COMPOSITE");
             current_composite = (current_composite + 1) % 2;
             auto &composite = composites[current_composite];
+            Timer latency_timer;
             composite.start_composite(images);
             ////PERF_STOP("COMPOSITE");
             ////PERF_START("COLOR CONVERSION");
@@ -366,6 +371,11 @@ namespace habitat_cv {
             //PERF_STOP("SCREEN_MARKERS");
             //PERF_STOP("SCREEN");
             //PERF_START("MESSAGE");
+            if (record_perf_data) {
+                latency.push_back(latency_timer.to_seconds()*1000);
+                throughput.push_back(fr.current_fps);
+            }
+
             if (robot_detected || mouse_detected) {
                 thread([this, &composite](
                         bool robot_detected,
@@ -406,6 +416,12 @@ namespace habitat_cv {
             Image screen_frame;
             switch (screen_image) {
                 case Screen_image::main :
+                    if (show_magnets){
+                        for (const Cell &cell: composite.world.cells) {
+                            composite.get_video().circle(cell.location + magnet_distance, 2, {0, 0, 255}, true);
+                            composite.get_video().circle(cell.location - magnet_distance, 2, {0, 0, 255}, true);
+                        }
+                    }
                     if (show_occlusions) {
                         for (const Cell &occlusion: occlusions) {
                             composite.get_video().circle(composite.world.cells[occlusion.id].location, 20, {255, 0, 0}, true);
@@ -478,6 +494,16 @@ namespace habitat_cv {
                 input_counter = 10;
                 auto key = cv::waitKey(1);
                 switch (key) {
+                    case 'I':
+                        // start video recording
+                        if (record_perf_data){
+                            latency.save("latency_data.json");
+                            latency.clear();
+                            throughput.save("throughput_data.json");
+                            throughput.clear();
+                        }
+                        record_perf_data = !reset_robot_connection;
+                        break;
                     case 'K':
                         reset_robot_connection = true;
                         break;
@@ -485,10 +511,9 @@ namespace habitat_cv {
                         show_robot_destination=!show_robot_destination;
                         break;
                     case 'C':
-                        // start video recording
                         images.save(".");
                         break;
-                    case '\'':
+                    case 'T':
                         {
                             change_threshold = !change_threshold;
                             if (change_threshold) {
@@ -579,6 +604,9 @@ namespace habitat_cv {
 //                            cout << "Canceled" << endl;
 //                        }
                         break;
+                    case 'L':
+                        show_magnets = !show_magnets;
+                        break;
                     case 'O':
                         show_occlusions = !show_occlusions;
                         break;
@@ -598,6 +626,44 @@ namespace habitat_cv {
                         else
                             screen_image = static_cast<Screen_image>(screen_image - 1);
                         //cout << "change_screen_output to " << screen_image << endl;
+                        break;
+                    case 'S':
+                        //"%Y-%m-%d %T"
+                        auto file_name = json_cpp::Json_date::now().to_string("%Y%m%d_%H%M%S");
+                        cv::imwrite(file_name + ".png", screen_frame);
+                        cv::imwrite(file_name + "_composite.png", composite.get_composite());
+                        cv::imwrite(file_name + "_darken.png", (composite.get_composite().to_gray() - 140)*(255/(255-140)));
+                        cv::imwrite(file_name + "_robot.png", composite.get_composite().to_gray().threshold(robot_threshold));
+
+                        cv::imwrite(file_name + "_raw.png", composite.get_raw_composite());
+                        cv::imwrite(file_name + "_subtracted.png", composite.get_subtracted());
+                        cv::imwrite(file_name + "_threshold.png", composite.subtracted_threshold);
+                        auto t2 = screen_frame.threshold(60).negative();
+                        cv::imwrite(file_name + "_t1.png", t2);
+                        t2 = screen_frame.threshold(70).negative();
+                        cv::imwrite(file_name + "_t2.png", t2);
+                        t2 = screen_frame.threshold(80).negative();
+                        cv::imwrite(file_name + "_t3.png", t2);
+                        t2 = screen_frame.threshold(90).negative();
+                        cv::imwrite(file_name + "_t4.png", t2);
+                        t2 = screen_frame.threshold(100).negative();
+                        cv::imwrite(file_name + "_t5.png", t2);
+                        t2 = screen_frame.threshold(110).negative();
+                        cv::imwrite(file_name + "_t6.png", t2);
+                        t2 = screen_frame.threshold(120).negative();
+                        cv::imwrite(file_name + "_t7.png", t2);
+                        t2 = screen_frame.threshold(130).negative();
+                        cv::imwrite(file_name + "_t8.png", t2);
+                        t2 = screen_frame.threshold(140).negative();
+                        cv::imwrite(file_name + "_t9.png", t2);
+                        cv::imwrite(file_name + "_zoom.png", composite.get_zoom());
+
+                        auto o = Image(composite.get_video().size,Image::Type::rgb);
+                        for (const Cell &cell: composite.world.cells) {
+                            o.circle(cell.location + magnet_distance, 2, {0, 0, 255}, true);
+                            o.circle(cell.location - magnet_distance, 2, {0, 0, 255}, true);
+                        }
+                        cv::imwrite(file_name + "_predicted.png", o);
                         break;
                 }
             } else {

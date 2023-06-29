@@ -8,6 +8,7 @@ namespace habitat_cv {
     struct Binary_image : cv::Mat {
         Binary_image() = default;
         explicit Binary_image(cv::MatExpr);
+        Binary_image negative();
         Binary_image dilate(unsigned int);
         Binary_image erode(unsigned int);
         cv::Point2f get_point(const cell_world::Location &) const;
@@ -29,6 +30,7 @@ namespace habitat_cv {
         };
         Image()=default;
         Image(cv::Size , Type type);
+        Image(cv::MatSize, Type type);
         Image(int rows, int cols, Type type);
         Image(cv::Mat, std::string);
         [[nodiscard]] Image to_rgb() const;
