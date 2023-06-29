@@ -197,16 +197,17 @@ namespace habitat_cv {
         vector<Composite> composites;
         vector<thread> composite_threads;
         Json_int_vector leds(4);
-        vector<cv::Rect> leds_locations;
-        leds_locations.emplace_back(620,300,40,40);
-        leds_locations.emplace_back(1850,394,40,40);
-        leds_locations.emplace_back(652,1565,40,40);
-        leds_locations.emplace_back(1854,1629,40,40);
+        Location_list sync_leds_locations;
+        sync_leds_locations.load("../config/sync_led_location.json");
+        vector<cv::Rect> sync_leds_rects;
+        float sunc_rect_rect_size = 40;
+        for (auto &ll:sync_leds_locations) {
+            sync_leds_rects.emplace_back(ll.x-sunc_rect_rect_size/2, ll.y-sunc_rect_rect_size/2, sunc_rect_rect_size, sunc_rect_rect_size);
+        }
         for (unsigned int pt=0; pt < parallel_threads; pt++){
             composites.emplace_back(camera_configuration);
             composite_threads.emplace_back();
         }
-
         for (auto &composite:composites) {
             Image bg;
             auto images = cameras.capture();
@@ -319,7 +320,7 @@ namespace habitat_cv {
             //SYNC LED DETECTION
             Images sync_led_images;
             for (int l=0; l<4; l++){
-                auto &li = sync_led_images.emplace_back(images[l](leds_locations[l]),"");
+                auto &li = sync_led_images.emplace_back(images[l](sync_leds_rects[l]), "");
                 auto ld = li.threshold(220);
                 auto lv = !(Detection_list::get_detections(ld).filter(sync_led).empty());
                 leds[l] = lv;
