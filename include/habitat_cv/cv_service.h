@@ -66,6 +66,7 @@ namespace habitat_cv{
                            const std::string &video_path,
                            agent_tracking::Tracking_server &,
                            Cv_server_experiment_client &,
+                           const cell_world::Location_list &,
                            bool unlimited = false);
         void tracking_process();
         bool new_episode(const std::string &subject, const std::string &experiment, int episode, const std::string &occlusions, const std::string &destination_folder);
@@ -123,6 +124,7 @@ namespace habitat_cv{
         unsigned int episode_count{};
         cell_world::Timer experiment_timer;
         unsigned int frame_number{};
+        cell_world::Location_list sync_led_locations;
 #ifdef USE_SYNCHRONIZATION
         mcp2221::Device *synchronization_device;
         bool synchronization_enabled;
