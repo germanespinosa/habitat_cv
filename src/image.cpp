@@ -72,6 +72,7 @@ namespace habitat_cv{
 
     Image::Image(int rows, int cols, Type type) :
         cv::Mat(rows, cols, type == gray ? CV_8UC1 : CV_8UC3), type(type) {
+        clear();
     }
 
     Image Image::to_rgb() const{
@@ -240,11 +241,20 @@ namespace habitat_cv{
         return markers;
     }
 
+    Image::Image(cv::MatSize size, Type type) : Image(size[0], size[1], type){
+
+    }
+
     Binary_image::Binary_image(cv::MatExpr me) : cv::Mat(me) {
     }
 
     Binary_image::Binary_image(cv::Mat m) : cv::Mat(m){
 
+    }
+
+    Binary_image Binary_image::negative() {
+        cv::Mat inverted = *this == 0;
+        return Binary_image(inverted);
     }
 
     Binary_image Binary_image::dilate(unsigned int dilations) {

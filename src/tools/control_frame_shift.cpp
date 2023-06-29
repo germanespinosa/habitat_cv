@@ -30,8 +30,8 @@ int main(int argc, char **argv){
     params_cpp::Parser p(argc,argv);
     Episode episode;
     episode.load(p.get(1));
-    Trajectories mouse_trajectories = episode.trajectories.filter([](const Step &s){ return s.agent_name=="prey";});
-    Trajectories robot_trajectories = episode.trajectories.filter([](const Step &s){ return s.agent_name=="predator";});
+    auto mouse_trajectories = episode.trajectories.filter([](const Step &s){ return s.agent_name=="prey";});
+    auto robot_trajectories = episode.trajectories.filter([](const Step &s){ return s.agent_name=="predator";});
 
     auto vc = cv::VideoCapture(p.get(0) + ".mp4");
     Image frame;
