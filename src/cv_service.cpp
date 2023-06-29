@@ -182,7 +182,9 @@ namespace habitat_cv {
         cam1,
         cam2,
         cam3,
+        sync_led,
         led,
+
     };
 
     void Cv_server::tracking_process() {
@@ -756,7 +758,7 @@ namespace habitat_cv {
             auto &b = leds.back();
             for (unsigned int i = 0; i < pleds.size(); i++) {
                 if (b[i] != pleds[i]) {
-                    auto &nl = leds.emplace_back(pleds);
+                    leds.push_back(pleds);
                     frames.push_back(frame);
                     time_stamps.push_back(time_stamp);
                     return;
@@ -765,7 +767,7 @@ namespace habitat_cv {
         }
         else
         {
-            auto &nl = leds.emplace_back(pleds);
+            leds.push_back(pleds);
             frames.push_back(frame);
             time_stamps.push_back(time_stamp);
         }
