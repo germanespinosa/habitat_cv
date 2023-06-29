@@ -1,0 +1,298 @@
+{
+  "centroids": [
+    [
+      {
+        "centroid": {
+          "x": 1511,
+          "y": 765
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 866,
+          "y": 722
+        },
+        "cell_coordinates": {
+          "x": -20,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1478,
+          "y": 1319
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": -10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1159,
+          "y": 1305
+        },
+        "cell_coordinates": {
+          "x": -10,
+          "y": -10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1012,
+          "y": 1013
+        },
+        "cell_coordinates": {
+          "x": -15,
+          "y": -5
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1527,
+          "y": 1041
+        },
+        "cell_coordinates": {
+          "x": 1,
+          "y": -5
+        },
+        "trust": 1
+      }
+    ],
+    [
+      {
+        "centroid": {
+          "x": 827,
+          "y": 747
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1475,
+          "y": 766
+        },
+        "cell_coordinates": {
+          "x": 20,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1138,
+          "y": 1321
+        },
+        "cell_coordinates": {
+          "x": 10,
+          "y": -10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 812,
+          "y": 1311
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": -10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1309,
+          "y": 1040
+        },
+        "cell_coordinates": {
+          "x": 15,
+          "y": -5
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 786,
+          "y": 1028
+        },
+        "cell_coordinates": {
+          "x": -1,
+          "y": -5
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1153,
+          "y": 755
+        },
+        "cell_coordinates": {
+          "x": 10,
+          "y": 0
+        },
+        "trust": 1
+      }
+    ],
+    [
+      {
+        "centroid": {
+          "x": 1546,
+          "y": 1453
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 905,
+          "y": 1449
+        },
+        "cell_coordinates": {
+          "x": -20,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1239,
+          "y": 891
+        },
+        "cell_coordinates": {
+          "x": -10,
+          "y": 10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1562,
+          "y": 896
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": 10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1071,
+          "y": 1174
+        },
+        "cell_coordinates": {
+          "x": -15,
+          "y": 5
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1589,
+          "y": 1177
+        },
+        "cell_coordinates": {
+          "x": 1,
+          "y": 5
+        },
+        "trust": 1
+      }
+    ],
+    [
+      {
+        "centroid": {
+          "x": 823,
+          "y": 1473
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1468,
+          "y": 1490
+        },
+        "cell_coordinates": {
+          "x": 20,
+          "y": 0
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 838,
+          "y": 910
+        },
+        "cell_coordinates": {
+          "x": 0,
+          "y": 10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1169,
+          "y": 919
+        },
+        "cell_coordinates": {
+          "x": 10,
+          "y": 10
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 1322,
+          "y": 1208
+        },
+        "cell_coordinates": {
+          "x": 15,
+          "y": 5
+        },
+        "trust": 1
+      },
+      {
+        "centroid": {
+          "x": 797,
+          "y": 1192
+        },
+        "cell_coordinates": {
+          "x": -1,
+          "y": 5
+        },
+        "trust": 1
+      }
+    ]
+  ],
+  "order": [
+    [
+      2,
+      3
+    ],
+    [
+      0,
+      1
+    ]
+  ]
+}
+
