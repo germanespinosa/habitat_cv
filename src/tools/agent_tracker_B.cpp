@@ -59,19 +59,16 @@ int main(int argc, char **argv){
     experiment_server.start(Experiment_service::get_port()); // added by gabbie // 4540
 
     Tracking_server tracking_server;
-    string cam_config = argv[1];
-    string bg_path = config.backgrounds_folder + cam_config + "/";
+    string cam_config = p.get(params_cpp::Key("-pc","--pixci_config"), "Default");
     string cam_file;
-    if (argc==1){
-        cam_file = "/usr/local/xcap/settings/xcvidset.fmt";
-    } else {
-        cam_file = config.config_folder + "/EPIX_" + cam_config + ".fmt";
-    }
+    cam_file = config.config_folder + "/EPIX_" + cam_config + ".fmt";
+    string bg_path = config.backgrounds_folder + cam_config + "/";
+
 
     auto &experiment_client = experiment_server.create_local_client<Cv_server_experiment_client>();
     experiment_client.subscribe();
-
-    auto camera_configuration= json_cpp::Json_from_file<Camera_configuration>(config.config_folder + "camera_config.json");
+    auto homography_file = "homography_" + p.get(params_cpp::Key("-h","--homography"), "hab1");
+    auto camera_configuration = json_cpp::Json_from_file<Camera_configuration>(config.config_folder + homography_file + ".json");
 
     Cv_server cv_server(camera_configuration, cam_file, bg_path, config.videos_folder, tracking_server, experiment_client, p.contains(params_cpp::Key("-u")));
     auto &experiment_tracking_client = tracking_server.create_local_client<Experiment_tracking_client>();
