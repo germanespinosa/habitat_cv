@@ -189,19 +189,18 @@ namespace habitat_cv {
 
     void Cv_server::tracking_process() {
         bool show_magnets = false;
-        Location magnet_distance(0, 12.5);        Profile sync_led;
-        sync_led.area_upper_bound=160;
+        Location magnet_distance(0, 12.5);
+        Profile sync_led;
+        sync_led.area_upper_bound=1000;
         sync_led.area_lower_bound=15;
 
         unsigned int parallel_threads = 2;
         vector<Composite> composites;
         vector<thread> composite_threads;
         Json_int_vector leds(4);
-        Location_list sync_leds_locations;
-        sync_leds_locations.load("../config/sync_led_location.json");
         vector<cv::Rect> sync_leds_rects;
         float sunc_rect_rect_size = 40;
-        for (auto &ll:sync_leds_locations) {
+        for (auto &ll:sync_led_locations) {
             sync_leds_rects.emplace_back(ll.x-sunc_rect_rect_size/2, ll.y-sunc_rect_rect_size/2, sunc_rect_rect_size, sunc_rect_rect_size);
         }
         for (unsigned int pt=0; pt < parallel_threads; pt++){
@@ -705,6 +704,7 @@ namespace habitat_cv {
                          const std::string &video_path,
                          agent_tracking::Tracking_server &tracking_server,
                          Cv_server_experiment_client &experiment_client,
+                         const Location_list &sync_led_locations,
                          bool unlimited):
             tracking_server(tracking_server),
             experiment_client(experiment_client),
@@ -719,7 +719,8 @@ namespace habitat_cv {
             led_profile(Resources::from("profile").key("led").get_resource<Profile>()),
             mouse_profile(Resources::from("profile").key("mouse").get_resource<Profile>()),
             video_path(video_path),
-            background_path(background_path)
+            background_path(background_path),
+            sync_led_locations(sync_led_locations)
     {
         experiment_client.cv_server = this;
 #ifdef USE_SYNCHRONIZATION
