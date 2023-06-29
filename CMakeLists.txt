@@ -17,6 +17,7 @@ string(APPEND CMAKE_CXX_FLAGS_RELEASE " -O3 ")
 option(USE_FAKE_CAMERA OFF)
 option(USE_CUDA OFF)
 option(PLAN_B OFF)
+option(USE_MCP2221 OFF)
 
 ####
 #### DEPENDENCIES
@@ -83,6 +84,18 @@ install_git_dependency( Perf-analysis
         IMPORT_TARGETS perf-analysis
         INCLUDE_DIRECTORIES include)
 
+if (${USE_MCP2221})
+    install_git_dependency ( Mcp2221_lib
+            https://github.com/germanespinosa/mcp2221
+            CMAKE_PROJECT
+            IMPORT_TARGETS
+            mcp2221
+            INCLUDE_DIRECTORIES include
+            CONNECTED)
+    add_definitions(-DUSE_SYNCHRONIZATION=TRUE)
+    message(STATUS "Using MCP2221 synchronization")
+endif()
+
 if (${PLAN_B})
     install_git_dependency ( Pid_controller
             https://github.com/germanespinosa/cellworld_pid_controller
@@ -147,6 +160,12 @@ target_link_libraries(habitat_cv
         robot_lib
         perf-analysis
         params-cpp)
+
+if (${USE_MCP2221})
+    target_link_libraries(habitat_cv
+            PRIVATE
+            mcp2221 )
+endif()
 
 target_link_libraries(agent_tracker habitat_cv )
 

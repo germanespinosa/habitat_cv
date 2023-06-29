@@ -83,6 +83,13 @@ namespace habitat_cv {
         if (!main_video.new_video(destination_folder + "/main_" + experiment )) cout << "error creating video: " << destination_folder + "/main_" + experiment << endl;
         if (!raw_video.new_video(destination_folder + "/raw_" + experiment )) cout << "error creating video: " << destination_folder + "/raw_" + experiment << endl;;
         if (!zoom_video.new_video(destination_folder + "/mouse_" + experiment )) cout << "error creating video: " << destination_folder + "/mouse_" + experiment << endl;;;
+
+#ifdef USE_SYNCHRONIZATION
+        if (synchronization_enabled){
+            synchronization_device->set_pin(mcp2221::GPIO::pin0, true);
+        }
+#endif
+
         sync_log.new_log(destination_folder + "/sync_" + experiment + ".json");
         video_mutex.unlock();
         ts.reset();
@@ -94,6 +101,11 @@ namespace habitat_cv {
     bool Cv_server::end_episode() {
         cout << "end_episode" << endl;
         waiting_for_prey = false;
+#ifdef USE_SYNCHRONIZATION
+        if (synchronization_enabled){
+            synchronization_device->set_pin(mcp2221::GPIO::pin0, false);
+        }
+#endif
 
         thread( [this]() {
                     while(!video_mutex.try_lock()){
@@ -170,19 +182,24 @@ namespace habitat_cv {
         cam1,
         cam2,
         cam3,
+        sync_led,
         led,
     };
 
     void Cv_server::tracking_process() {
+        Profile sync_led;
+        sync_led.area_upper_bound=160;
+        sync_led.area_lower_bound=15;
+
         unsigned int parallel_threads = 2;
         vector<Composite> composites;
         vector<thread> composite_threads;
         Json_int_vector leds(4);
-        Coordinates_list leds_locations;
-        leds_locations.emplace_back(635,320);
-        leds_locations.emplace_back(1870,414);
-        leds_locations.emplace_back(662,1585);
-        leds_locations.emplace_back(1872,1648);
+        vector<cv::Rect> leds_locations;
+        leds_locations.emplace_back(620,300,40,40);
+        leds_locations.emplace_back(1850,394,40,40);
+        leds_locations.emplace_back(652,1565,40,40);
+        leds_locations.emplace_back(1854,1629,40,40);
         for (unsigned int pt=0; pt < parallel_threads; pt++){
             composites.emplace_back(camera_configuration);
             composite_threads.emplace_back();
@@ -291,10 +308,17 @@ namespace habitat_cv {
             //PERF_START("DETECTION_PROCESSING");
             //PERF_START("SCREEN");
             composite.get_video().circle(entrance_location, entrance_distance, {120, 120, 0}, false);
-            for (int l=0;l<4;l++){
-                auto lv = images[l].data[leds_locations[l].x + leds_locations[l].y * images[l].cols];
-                leds[l] = lv>128;
+
+            //SYNC LED DETECTION
+            Images sync_led_images;
+            for (int l=0; l<4; l++){
+                auto &li = sync_led_images.emplace_back(images[l](leds_locations[l]),"");
+                auto ld = li.threshold(220);
+                auto lv = !(Detection_list::get_detections(ld).filter(sync_led).empty());
+                leds[l] = lv;
             }
+
+
             //PERF_START("SCREEN_ROBOT");
             if (robot_detected) {
                 auto color_robot = robot_color;
@@ -403,6 +427,9 @@ namespace habitat_cv {
                     }break;
                 case Screen_image::difference :
                     screen_frame = screen_layout.get_frame(composite.get_subtracted_small(), "difference", fr.filtered_fps);
+                    break;
+                case Screen_image::sync_led :
+                    screen_frame = screen_layout.get_frame(raw_layout.get_frame(sync_led_images), "sync led", fr.filtered_fps);
                     break;
                 case Screen_image::led :
                     screen_frame = screen_layout.get_frame(Image(composite.get_detection_threshold(robot_threshold),""), "LEDs", fr.filtered_fps);
@@ -559,7 +586,7 @@ namespace habitat_cv {
                         screen_image = static_cast<Screen_image>(key-'0');
                         break;
                     case '\t':
-                        if (screen_image == Screen_image::cam3)
+                        if (screen_image == Screen_image::led)
                             screen_image = Screen_image::main;
                         else
                             screen_image = static_cast<Screen_image>(screen_image + 1);
@@ -567,7 +594,7 @@ namespace habitat_cv {
                         break;
                     case ' ':
                         if (screen_image == Screen_image::main)
-                            screen_image = Screen_image::cam3;
+                            screen_image = Screen_image::led;
                         else
                             screen_image = static_cast<Screen_image>(screen_image - 1);
                         //cout << "change_screen_output to " << screen_image << endl;
@@ -626,6 +653,29 @@ namespace habitat_cv {
             background_path(background_path)
     {
         experiment_client.cv_server = this;
+#ifdef USE_SYNCHRONIZATION
+
+        auto device_info = mcp2221::Device::get_devices();
+        if (device_info.empty()){
+            synchronization_enabled = false;
+            cerr << "MCP2221 device not found" << endl;
+        } else {
+            cout << "MCP2221 device found" << endl;
+            auto d = device_info[0];
+            synchronization_device = new mcp2221::Device(d.path);
+            synchronization_device->set_direction(mcp2221::pin0, mcp2221::OUTPUT);
+            synchronization_device->set_direction(mcp2221::pin1, mcp2221::INTERRUPT);
+            synchronization_device->open();
+            synchronization_device->set_interrupt(mcp2221::RISING, [this](auto p){
+                cout << "sync signal received:" << ts.to_seconds() << endl;
+                if (main_video.is_open()) {
+                    sync_log.sync_signal(ts.to_seconds());
+                }
+                }, NULL);
+            synchronization_enabled = true;
+        }
+        cout << "MCP2221 Syncronization enabled" << endl;
+#endif
     }
 
     void SyncLog::new_log(const string &pfile_path) {
@@ -640,7 +690,7 @@ namespace habitat_cv {
             auto &b = leds.back();
             for (unsigned int i = 0; i < pleds.size(); i++) {
                 if (b[i] != pleds[i]) {
-                    leds.push_back(pleds);
+                    auto &nl = leds.emplace_back(pleds);
                     frames.push_back(frame);
                     time_stamps.push_back(time_stamp);
                     return;
@@ -649,7 +699,7 @@ namespace habitat_cv {
         }
         else
         {
-            leds.push_back(pleds);
+            auto &nl = leds.emplace_back(pleds);
             frames.push_back(frame);
             time_stamps.push_back(time_stamp);
         }
@@ -657,5 +707,9 @@ namespace habitat_cv {
 
     void SyncLog::close() {
         this->save(file_path);
+    }
+
+    void SyncLog::sync_signal(float time_stamp) {
+        sync_signals.push_back(time_stamp);
     }
 }

@@ -10,6 +10,9 @@
 #include <habitat_cv/frame_rate.h>
 #include <agent_tracking/tracking_service.h>
 #include <experiment/experiment_client.h>
+#ifdef USE_SYNCHRONIZATION
+#include <mcp2221.h>
+#endif
 
 #define NOLOCATION cell_world::Location(-1000,-1000)
 
@@ -43,13 +46,16 @@ namespace habitat_cv{
                 Add_member(time_stamps);
                 Add_member(frames);
                 Add_member(leds);
+                Add_member(sync_signals);
         )
         cell_world::Json_float_vector time_stamps;
         cell_world::Json_int_vector frames;
         json_cpp::Json_vector<cell_world::Json_int_vector> leds;
+        cell_world::Json_float_vector sync_signals;
         std::string file_path;
         void new_log(const std::string &);
         void sync_event(int frame, float time_stamp, const cell_world::Json_int_vector &leds);
+        void sync_signal(float time_stamp);
         void close();
     };
 
@@ -117,5 +123,9 @@ namespace habitat_cv{
         unsigned int episode_count{};
         cell_world::Timer experiment_timer;
         unsigned int frame_number{};
+#ifdef USE_SYNCHRONIZATION
+        mcp2221::Device *synchronization_device;
+        bool synchronization_enabled;
+#endif
     };
 }
