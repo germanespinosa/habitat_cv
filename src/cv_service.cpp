@@ -67,6 +67,7 @@ namespace habitat_cv {
                                 const string &occlusions,
                                 const string &folder) {
         cout << "new_episode" << endl;
+        ts.reset();
         auto destination_folder = video_path + folder;
         if (main_video.is_open()) end_episode();
         std::filesystem::create_directories(destination_folder);
@@ -92,7 +93,6 @@ namespace habitat_cv {
 
         sync_log.new_log(destination_folder + "/sync_" + experiment + ".json");
         video_mutex.unlock();
-        ts.reset();
         waiting_for_prey = true;
         return true;
     }
