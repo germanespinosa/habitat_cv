@@ -67,6 +67,7 @@ namespace habitat_cv{
                            agent_tracking::Tracking_server &,
                            Cv_server_experiment_client &,
                            const cell_world::Location_list &,
+                           const cell_world::Capture_parameters &,
                            bool unlimited = false);
         void tracking_process();
         bool new_episode(const std::string &subject, const std::string &experiment, int episode, const std::string &occlusions, const std::string &destination_folder);
@@ -87,7 +88,10 @@ namespace habitat_cv{
         unsigned int mouse_threshold = 85;
         unsigned int robot_threshold = 237; //250;
 
+        cell_world::Capture_parameters capture_parameters;
+
         cell_world::Space canonical_space;
+        cell_world::World_implementation cv_implementation;
         cell_world::Space cv_space;
         bool human_intervention = false;
         cell_world::Timer ts;
@@ -99,7 +103,6 @@ namespace habitat_cv{
         bool waiting_for_prey = false;
         Camera_configuration camera_configuration;
         Camera_array cameras;
-
 
         Background background;
         Screen_layout screen_layout;

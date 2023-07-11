@@ -73,7 +73,7 @@ int main(int argc, char **argv){
     auto sync_led_locations_file = "sync_led_locations_" + p.get(params_cpp::Key("-sll","--sync_led_locations"), "hab2");
     auto sync_led_locations = json_cpp::Json_from_file<Location_list>(config.config_folder + sync_led_locations_file + ".json");
 
-    Cv_server cv_server(camera_configuration, cam_file, bg_path, config.videos_folder, tracking_server, experiment_client, sync_led_locations, p.contains(params_cpp::Key("-u")));
+    Cv_server cv_server(camera_configuration, cam_file, bg_path, config.videos_folder, tracking_server, experiment_client, sync_led_locations, capture_parameters, p.contains(params_cpp::Key("-u")));
     auto &experiment_tracking_client = tracking_server.create_local_client<Experiment_tracking_client>();
     experiment_tracking_client.subscribe();
     experiment_server.set_tracking_client(experiment_tracking_client);
