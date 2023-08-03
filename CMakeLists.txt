@@ -230,7 +230,7 @@ endif()
 ### TESTS
 ###
 install_git_dependency( Catch
-        https://github.com/germanespinosa/catch
+        https://github.com/cellworld-neuro/dependency_catch
         ADD_SUBDIRECTORY)
 
 ###
