@@ -1,4 +1,4 @@
-
+import matplotlib.pyplot as plt
 import sys
 from cellworld import *
 from cellworld_controller_service import ControllerClient
@@ -111,11 +111,11 @@ def on_capture( frame:int ):
     print ("PREY CAPTURED")
 
 
-def on_episode_started(experiment_name):
+def on_episode_started(parameters):
     global episode_in_progress, current_experiment_name
-    current_experiment_name = experiment_name
-    print("New Episode: ", experiment_name)
-    print("Occlusions: ", experiments[experiment_name].world.occlusions)
+    current_experiment_name = parameters.experiment_name
+    print("New Episode: ", parameters.experiment_name)
+    print("Occlusions: ", experiments[parameters.experiment_name].world.occlusions)
 
 
 def on_prey_entered_arena():

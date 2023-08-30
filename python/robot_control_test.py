@@ -209,13 +209,17 @@ pursue_color = "cyan"
 spawn_color = "green"
 destination_circle = display.circle(predator.step.location, 0.01, explore_color)
 
-coord1 = Coordinates(9,9)
-coord2 = Coordinates(-9,-9)
+# coord1 = Coordinates(9,9)
+# coord2 = Coordinates(-9,-9)
+coord1 = Coordinates(11,7)
+coord2 = Coordinates(11,-7)
 loc1 = world.cells[map[coord1]].location
 loc2 = world.cells[map[coord2]].location
 
 running = True
 state = 1
+x_locs = []
+y_locs = []
 while running:
 
     if current_predator_destination.dist(predator.step.location) < (cell_size * inertia_buffer):
@@ -249,7 +253,8 @@ while running:
     display.fig.canvas.draw_idle()
     display.fig.canvas.start_event_loop(0.001)
     sleep(0.1)
-    plt.scatter(predator.step.location.x, predator.step.location.y, s = 1.0, color = 'black')
+    # plt.scatter(predator.step.location.x, predator.step.location.y, s = 1.0, color = 'black')
+
 
 controller.unsubscribe()
 controller.stop()

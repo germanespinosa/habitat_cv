@@ -1,5 +1,6 @@
 #!/bin/bash
+kernel_version=$(uname -r)
 cd /usr/local/xcap/drivers
 rmmod pixci
-rm /lib/modules/5.19.0-46-generic/kernel/drivers/misc/pixci.ko
-./pixci.sh install /usr/local/xcap/drivers /usr/local/xcap/drivers/x86_64/5.19.0-46-generic
+rm /lib/modules/$kernel_version/kernel/drivers/misc/pixci.ko
+./pixci.sh install /usr/local/xcap/drivers /usr/local/xcap/drivers/x86_64/$kernel_version
