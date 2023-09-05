@@ -92,7 +92,7 @@ int main(int argc, char **argv){
             peeking,
             "predator",
             "prey");
-    controller_tracking_client.subscribe();
+//    controller_tracking_client.subscribe();
 
     auto &controller_experiment_client = experiment_server.create_local_client<Controller_server::Controller_experiment_client>();
     controller_experiment_client.subscribe();

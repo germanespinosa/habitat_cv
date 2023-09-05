@@ -39,7 +39,7 @@ namespace habitat_cv{
         bool is_transitioning(const cell_world::Location &);
         cell_world::Location get_perspective_correction(const cell_world::Location &location, float height, int camera = -1);
 
-        float camera_height = 243;  // 200 (hab0) cm
+        float camera_height = 205;  // 200 (hab0) cm
         int transition_size = 40;
         Image zoom;
         Image background; // background image

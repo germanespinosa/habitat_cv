@@ -143,7 +143,9 @@ namespace habitat_cv {
 
     bool Cv_server::get_robot_step(const Binary_image &image, Step &step, float scale) {
         auto leds = Detection_list::get_detections(image).scale(scale).filter(led_profile);
-        if (leds.size() != 3) return false;
+        if (leds.size() != 3) {
+            return false;
+        }
         double d1 = leds[0].location.dist(leds[1].location);
         double d2 = leds[1].location.dist(leds[2].location);
         double d3 = leds[2].location.dist(leds[0].location);
@@ -187,6 +189,7 @@ namespace habitat_cv {
     };
 
     void Cv_server::tracking_process() {
+        int msg_count = 0;
         bool show_magnets = false;
         Location magnet_distance(0, 12.5);
         Profile sync_led;
@@ -255,6 +258,7 @@ namespace habitat_cv {
         vector<int> frozen_camera_counters(4, 0);
         bool change_threshold = false;
         bool record_perf_data = false;
+        mutex message_mtx;
         Json_float_vector latency;
         Json_float_vector throughput;
         while (tracking_running) {
@@ -377,7 +381,7 @@ namespace habitat_cv {
             }
 
             if (robot_detected || mouse_detected) {
-                thread([this, &composite](
+                thread([this, &composite, &message_mtx](
                         bool robot_detected,
                         bool mouse_detected,
                         Step robot,
@@ -385,12 +389,7 @@ namespace habitat_cv {
                         float time_stamp,
                         unsigned int frame_number,
                         Tracking_server &tracking_server ) {
-                    if (mouse_detected) {
-                        mouse.time_stamp = time_stamp;
-                        mouse.frame = frame_number;
-                        mouse.rotation = 0;
-                        tracking_server.send_step(mouse.convert(cv_space, canonical_space));
-                    }
+                    message_mtx.lock();
                     if (robot_detected) {
                         Predator_data predator_data;
                         predator_data.capture = puff_state ==  PUFF_DURATION;
@@ -399,8 +398,16 @@ namespace habitat_cv {
                         robot.time_stamp = time_stamp;
                         robot.frame = frame_number;
                         robot.data = predator_data.to_json();
-                        tracking_server.send_step(robot.convert(cv_space, canonical_space));
+                        auto step = robot.convert(cv_space, canonical_space);
+                        tracking_server.send_step(step);
                     }
+                    if (mouse_detected) {
+                       mouse.time_stamp = time_stamp;
+                       mouse.frame = frame_number;
+                       mouse.rotation = 0;
+                       tracking_server.send_step(mouse.convert(cv_space, canonical_space));
+                    }
+                    message_mtx.unlock();
                 },
                        robot_detected,
                        mouse_detected,
@@ -493,7 +500,7 @@ namespace habitat_cv {
             if (!input_counter) {
                 input_counter = 10;
                 auto key = cv::waitKey(1);
-                switch (key) {
+                 switch (key) {
                     case 'I':
                         // start video recording
                         if (record_perf_data){

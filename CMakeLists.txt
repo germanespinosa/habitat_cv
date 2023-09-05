@@ -86,7 +86,7 @@ install_git_dependency( Perf-analysis
 
 if (${USE_MCP2221})
     install_git_dependency ( Mcp2221_lib
-            https://github.com/germanespinosa/mcp2221
+            https://github.com/cellworld/dependency_mcp2221
             CMAKE_PROJECT
             IMPORT_TARGETS
             mcp2221
@@ -104,7 +104,7 @@ install_git_dependency ( Pid_controller
         CONNECTED)
 
 install_git_dependency ( Robot_pid_lib
-        https://github.com/germanespinosa/robot_pid_library
+        https://github.com/cellworld/cellworld_robot_library
         CMAKE_PROJECT
         IMPORT_TARGETS
         gamepad_lib

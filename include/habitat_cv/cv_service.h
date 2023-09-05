@@ -85,7 +85,7 @@ namespace habitat_cv{
         agent_tracking::Tracking_server &tracking_server;
         Cv_server_experiment_client &experiment_client;
 
-        unsigned int mouse_threshold = 85;
+        unsigned int mouse_threshold = 65;
         unsigned int robot_threshold = 237; //250;
 
         cell_world::Capture_parameters capture_parameters;
@@ -121,7 +121,7 @@ namespace habitat_cv{
         std::string video_path;
         std::string background_path;
 
-        float robot_height = 10.4;    // cm  // 5 (short) , 10.4 (tall)
+        float robot_height = 12.0;    // cm  // 5.0 (short) , 10.4 (tall), 12.0 (carapace)
         std::vector<cv::Point2f> zoom_rectangles;
         cv::Size zoom_size{150,150};
         unsigned int episode_count{};
